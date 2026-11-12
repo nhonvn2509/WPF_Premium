@@ -117,6 +117,11 @@ public sealed class FilePreviewUiTests
             else if (scenario.Kind == PreviewKind.Audio)
             {
                 Assert.AreEqual("Dạng sóng trực quan", elementsByAutomationId["PreviewZoomText"].Name);
+                if (scenario.Extension == ".wav")
+                {
+                    WaitForEnabled(window, "AudioSeekSlider");
+                }
+                Assert.IsTrue(elementsByAutomationId.ContainsKey("AudioPlaybackTimeText"));
             }
             else if (scenario.Kind == PreviewKind.Video)
             {
@@ -224,6 +229,23 @@ public sealed class FilePreviewUiTests
         throw new AssertFailedException("Unreachable after Assert.Fail.");
     }
 
+    private static void WaitForEnabled(AutomationElement root, string automationId)
+    {
+        var timeout = Stopwatch.StartNew();
+        while (timeout.Elapsed < TimeSpan.FromSeconds(10))
+        {
+            var element = root.FindFirstDescendant(condition => condition.ByAutomationId(automationId));
+            if (element?.IsEnabled == true)
+            {
+                return;
+            }
+
+            Thread.Sleep(100);
+        }
+
+        Assert.Fail($"UI Automation element '{automationId}' did not become enabled within 10 seconds.");
+    }
+
     private static void WriteFixture(string path, string extension)
     {
         switch (extension)
@@ -324,7 +346,7 @@ public sealed class FilePreviewUiTests
         public IReadOnlyList<string> RequiredAutomationIds => Kind switch
         {
             PreviewKind.Image => ["PreviewImage", "ImageZoomInButton", "ImageZoomOutButton", "ImageZoomResetButton", "ImageMagnifierToggle"],
-            PreviewKind.Audio => ["AudioWaveform", "AudioPlayButton", "AudioStopButton", "AudioSeekSlider"],
+            PreviewKind.Audio => ["AudioWaveform", "AudioPlayButton", "AudioStopButton", "AudioSeekSlider", "AudioPlaybackTimeText"],
             PreviewKind.Video => ["VideoPlayButton", "VideoSeekSlider", "VideoVolumeSlider"],
             _ => ["PreviewTextContent", "PreviewSearchBox", "PreviewFindNextButton", "PreviewWordWrapToggle", "PreviewCopyButton"]
         };

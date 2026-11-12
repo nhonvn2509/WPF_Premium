@@ -250,6 +250,10 @@
                                     IsRequired="True" Style="{StaticResource Field}">
                         <TextBox x:Name="RetryCountInput" />
                     </controls:Field>
+                    <controls:Field x:Name="EmailField" Label="Thư điện tử"
+                                    IsRequired="True" Style="{StaticResource Field}">
+                        <TextBox x:Name="EmailInput" Tag="ten@vidu.vn" />
+                    </controls:Field>
                     <controls:Field x:Name="TermsField" Label="Điều khoản"
                                     IsRequired="True" Style="{StaticResource Field}">
                         <CheckBox x:Name="TermsInput" Content="Tôi đồng ý với điều khoản" />
@@ -266,22 +270,35 @@
                     <Button Content="Kiểm tra biểu mẫu" Click="ValidateForm_Click"
                             Style="{StaticResource ButtonOutline}" HorizontalAlignment="Left"
                             Margin="0,0,0,12" />
-                    <TextBlock Text="Vùng văn bản" FontWeight="Medium" Margin="0,0,0,6" />
-                    <TextBox Style="{StaticResource Textarea}" Text="Ô nhập nhiều dòng." />
-                    <TextBlock Text="Nhóm ô nhập" FontWeight="Medium" Margin="0,12,0,6" />
-                    <DockPanel Style="{StaticResource InputGroup}">
-                        <Button Content="Tìm kiếm" Style="{StaticResource ButtonSecondary}" DockPanel.Dock="Right" />
-                        <TextBox Tag="Tìm thành phần..." />
-                    </DockPanel>
-                    <TextBlock Text="Ô nhập theo định dạng" FontWeight="Medium" Margin="0,12,0,6" />
+                    <controls:Field x:Name="DescriptionField" Label="Vùng văn bản"
+                                    IsRequired="True" Style="{StaticResource Field}">
+                        <TextBox x:Name="DescriptionInput" Style="{StaticResource Textarea}" Tag="Mô tả dự án" />
+                    </controls:Field>
+                    <controls:Field x:Name="KeywordField" Label="Nhóm ô nhập"
+                                    IsRequired="True" Style="{StaticResource Field}">
+                        <DockPanel Style="{StaticResource InputGroup}">
+                            <Button Content="Tìm kiếm" Style="{StaticResource ButtonSecondary}" DockPanel.Dock="Right" />
+                            <TextBox x:Name="KeywordInput" Tag="Tìm thành phần..." />
+                        </DockPanel>
+                    </controls:Field>
+                    <controls:Field x:Name="TechnologyField" Label="Chọn nhiều công nghệ"
+                                    IsRequired="True" Style="{StaticResource Field}">
+                        <controls:MultiSelectControl x:Name="TechnologyMultiSelect"
+                                                     Placeholder="Chọn công nghệ"
+                                                     Style="{StaticResource MultiSelect}" />
+                    </controls:Field>
                     <WrapPanel>
                         <StackPanel Width="220" Margin="0,0,12,0">
-                            <TextBlock Text="Số điện thoại" FontSize="12" Foreground="{DynamicResource MutedForegroundBrush}" Margin="0,0,0,5" />
-                            <controls:FormattedInputControl Mask="+## (###) ###-####" Placeholder="+84 (___) ___-____" />
+                            <controls:Field x:Name="PhoneField" Label="Số điện thoại"
+                                            IsRequired="True" Style="{StaticResource Field}">
+                                <controls:FormattedInputControl x:Name="PhoneInput" Mask="+## (###) ###-####" Placeholder="+84 (___) ___-____" />
+                            </controls:Field>
                         </StackPanel>
                         <StackPanel Width="180">
-                            <TextBlock Text="Ngày" FontSize="12" Foreground="{DynamicResource MutedForegroundBrush}" Margin="0,0,0,5" />
-                            <controls:FormattedInputControl Mask="##/##/####" Placeholder="ngày/tháng/năm" />
+                            <controls:Field x:Name="BirthDateField" Label="Ngày"
+                                            IsRequired="True" Style="{StaticResource Field}">
+                                <controls:FormattedInputControl x:Name="BirthDateInput" Mask="##/##/####" Placeholder="ngày/tháng/năm" />
+                            </controls:Field>
                         </StackPanel>
                     </WrapPanel>
                 </StackPanel>
@@ -316,11 +333,6 @@
                         <controls:ComboBoxControl x:Name="FrameworkPicker" Placeholder="Chọn nền tảng"
                                                   Style="{StaticResource Combobox}" />
                     </controls:Field>
-                    <TextBlock Text="Chọn nhiều mục" FontWeight="Medium" Margin="0,0,0,6" />
-                    <controls:MultiSelectControl x:Name="TechnologyMultiSelect"
-                                                 Placeholder="Chọn công nghệ"
-                                                 Style="{StaticResource MultiSelect}"
-                                                 Margin="0,0,0,12" />
                     <ListBox Style="{StaticResource Command}" MaxHeight="100" Margin="0,0,0,12">
                         <ListBoxItem Content="Tìm dự án" />
                         <ListBoxItem Content="Mở cài đặt" />

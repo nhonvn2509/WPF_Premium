@@ -1,5 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Globalization;
 using WPF_Premium.Controls;
 
 namespace WPF_Premium_Demo;
@@ -16,8 +18,6 @@ public partial class ControlsGallery : UserControl
         };
         FrameworkPicker.ItemsSource = new[] { "WPF", "WinUI", "Avalonia" };
         TechnologyMultiSelect.ItemsSource = new[] { "WPF", "WinUI", "Avalonia", "Blazor", "MAUI" };
-        TechnologyMultiSelect.SelectedItems.Add("WPF");
-        TechnologyMultiSelect.SelectedItems.Add("Avalonia");
         ToolbarFontPicker.ItemsSource = new[] { "Aptos", "Arial", "Calibri", "Times New Roman" };
         ToolbarFontPicker.SelectedItem = "Aptos";
         ToolbarFontSizePicker.ItemsSource = new[] { "10", "11", "12", "14", "16", "18", "24", "36" };
@@ -67,6 +67,18 @@ public partial class ControlsGallery : UserControl
         RetryCountField.Error = !int.TryParse(RetryCountInput.Text, out var retryCount) || retryCount < 1
             ? "Vui lòng nhập số nguyên dương."
             : null;
+        EmailField.Error = !EmailInput.Text.Contains('@')
+            ? "Vui lòng nhập địa chỉ thư điện tử hợp lệ."
+            : null;
+        DescriptionField.Error = string.IsNullOrWhiteSpace(DescriptionInput.Text)
+            ? "Vui lòng nhập mô tả."
+            : null;
+        KeywordField.Error = string.IsNullOrWhiteSpace(KeywordInput.Text)
+            ? "Vui lòng nhập từ khóa."
+            : null;
+        TechnologyField.Error = TechnologyMultiSelect.SelectedItems.Count == 0
+            ? "Vui lòng chọn ít nhất một công nghệ."
+            : null;
         TermsField.Error = TermsInput.IsChecked == true
             ? null
             : "Vui lòng đồng ý với điều khoản để tiếp tục.";
@@ -75,6 +87,18 @@ public partial class ControlsGallery : UserControl
             : "Vui lòng chọn chế độ triển khai.";
         FrameworkField.Error = FrameworkPicker.SelectedItem is null
             ? "Vui lòng chọn nền tảng."
+            : null;
+        PhoneField.Error = PhoneInput.Value.Length != 12
+            ? "Vui lòng nhập đủ 12 chữ số của số điện thoại."
+            : null;
+        BirthDateField.Error = BirthDateInput.Value.Length != 8 ||
+                               !DateTime.TryParseExact(
+                                   BirthDateInput.Value,
+                                   "ddMMyyyy",
+                                   CultureInfo.InvariantCulture,
+                                   DateTimeStyles.None,
+                                   out _)
+            ? "Vui lòng nhập ngày hợp lệ theo định dạng ngày/tháng/năm."
             : null;
     }
 
@@ -107,13 +131,13 @@ public partial class ControlsGallery : UserControl
             "Sheet" => "Bảng trượt",
             _ => "Hộp thoại"
         };
-        var content = new TextBlock
-        {
-            Text = panelType is "Drawer" or "Sheet"
-                ? $"{panelTitle} xuất hiện từ cạnh {directionText} của cửa sổ."
-                : $"{panelTitle} hiển thị phía trên cửa sổ hiện tại.",
-            TextWrapping = TextWrapping.Wrap
-        };
+        object content = panelType is "Dialog" or "Drawer" or "Sheet"
+            ? CreateValidationForm()
+            : new TextBlock
+            {
+                Text = $"{panelTitle} hiển thị phía trên cửa sổ hiện tại.",
+                TextWrapping = TextWrapping.Wrap
+            };
 
         switch (panelType)
         {
@@ -132,6 +156,136 @@ public partial class ControlsGallery : UserControl
             default:
                 throw new InvalidOperationException($"Unknown panel type '{panelType}'.");
         }
+    }
+
+    private UIElement CreateValidationForm()
+    {
+        var form = new StackPanel { Margin = new Thickness(2) };
+        var nameInput = new TextBox { Tag = "Tên dự án" };
+        var nameField = AddFormField(form, "Tên dự án", nameInput);
+        var emailInput = new TextBox { Tag = "ten@vidu.vn" };
+        var emailField = AddFormField(form, "Thư điện tử", emailInput);
+        var countInput = new TextBox { Tag = "Số nguyên dương" };
+        var countField = AddFormField(form, "Số lần thử lại", countInput);
+        var phoneInput = new FormattedInputControl
+        {
+            Mask = "+## (###) ###-####",
+            Placeholder = "+84 (___) ___-____"
+        };
+        var phoneField = AddFormField(form, "Số điện thoại", phoneInput);
+        var dateInput = new FormattedInputControl
+        {
+            Mask = "##/##/####",
+            Placeholder = "ngày/tháng/năm"
+        };
+        var dateField = AddFormField(form, "Ngày", dateInput);
+        var keywordInput = new TextBox { Tag = "Từ khóa tìm kiếm" };
+        var keywordGroup = new DockPanel { LastChildFill = true };
+        var keywordButton = new Button
+        {
+            Content = "Tìm",
+            Style = (Style)FindResource("ButtonSecondary"),
+            Padding = new Thickness(8, 4, 8, 4)
+        };
+        DockPanel.SetDock(keywordButton, Dock.Right);
+        keywordGroup.Children.Add(keywordButton);
+        keywordGroup.Children.Add(keywordInput);
+        var keywordField = AddFormField(form, "Nhóm ô nhập", keywordGroup);
+        var descriptionInput = new TextBox
+        {
+            Tag = "Mô tả dự án",
+            Style = (Style)FindResource("Textarea"),
+            AcceptsReturn = true,
+            MinHeight = 64
+        };
+        var descriptionField = AddFormField(form, "Mô tả", descriptionInput);
+        var termsInput = new CheckBox { Content = "Tôi đồng ý với điều khoản" };
+        var termsField = AddFormField(form, "Điều khoản", termsInput);
+        var radioInput = new StackPanel();
+        var standardOption = new RadioButton { Content = "Tiêu chuẩn", GroupName = "OverlayValidationPlan" };
+        var compactOption = new RadioButton { Content = "Thu gọn", GroupName = "OverlayValidationPlan" };
+        radioInput.Children.Add(standardOption);
+        radioInput.Children.Add(compactOption);
+        var radioField = AddFormField(form, "Chế độ triển khai", radioInput);
+        var frameworkInput = new ComboBoxControl
+        {
+            Placeholder = "Chọn nền tảng",
+            ItemsSource = new[] { "WPF", "Avalonia", "WinUI" },
+            Style = (Style)FindResource("Combobox")
+        };
+        var frameworkField = AddFormField(form, "Nền tảng", frameworkInput);
+        var technologyInput = new MultiSelectControl
+        {
+            Placeholder = "Chọn công nghệ",
+            ItemsSource = new[] { "WPF", "Avalonia", "WinUI", "MAUI" },
+            Style = (Style)FindResource("MultiSelect"),
+            MinHeight = 42
+        };
+        var technologyField = AddFormField(form, "Công nghệ", technologyInput);
+        var status = new TextBlock
+        {
+            Margin = new Thickness(0, 4, 0, 10),
+            TextWrapping = TextWrapping.Wrap
+        };
+        var validateButton = new Button
+        {
+            Content = "Kiểm tra biểu mẫu",
+            Style = (Style)FindResource("ButtonPrimary"),
+            HorizontalAlignment = HorizontalAlignment.Left
+        };
+        validateButton.Click += (_, _) =>
+        {
+            nameField.Error = string.IsNullOrWhiteSpace(nameInput.Text) ? "Vui lòng nhập tên dự án." : null;
+            emailField.Error = !emailInput.Text.Contains('@') ? "Vui lòng nhập địa chỉ thư điện tử hợp lệ." : null;
+            countField.Error = !int.TryParse(countInput.Text, out var count) || count < 1
+                ? "Vui lòng nhập số nguyên dương."
+                : null;
+            phoneField.Error = phoneInput.Value.Length != 12 ? "Vui lòng nhập đủ số điện thoại." : null;
+            dateField.Error = dateInput.Value.Length != 8 ||
+                              !DateTime.TryParseExact(dateInput.Value, "ddMMyyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out _)
+                ? "Vui lòng nhập ngày hợp lệ."
+                : null;
+            keywordField.Error = string.IsNullOrWhiteSpace(keywordInput.Text) ? "Vui lòng nhập từ khóa." : null;
+            descriptionField.Error = string.IsNullOrWhiteSpace(descriptionInput.Text) ? "Vui lòng nhập mô tả." : null;
+            termsField.Error = termsInput.IsChecked == true ? null : "Vui lòng đồng ý với điều khoản.";
+            radioField.Error = standardOption.IsChecked == true || compactOption.IsChecked == true
+                ? null
+                : "Vui lòng chọn chế độ triển khai.";
+            frameworkField.Error = frameworkInput.SelectedItem is null ? "Vui lòng chọn nền tảng." : null;
+            technologyField.Error = technologyInput.SelectedItems.Count > 0 ? null : "Vui lòng chọn ít nhất một công nghệ.";
+
+            var isValid = new[]
+            {
+                nameField, emailField, countField, phoneField, dateField, keywordField,
+                descriptionField, termsField, radioField, frameworkField, technologyField
+            }.All(field => !field.HasError);
+            status.Text = isValid
+                ? "Biểu mẫu hợp lệ. Tất cả trường đã được kiểm tra."
+                : "Vui lòng sửa các trường được đánh dấu trước khi tiếp tục.";
+            status.Foreground = (Brush)FindResource(isValid ? "PrimaryBrush" : "DestructiveBrush");
+        };
+        form.Children.Add(status);
+        form.Children.Add(validateButton);
+        return new ScrollViewer
+        {
+            Content = form,
+            MaxHeight = 580,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled
+        };
+    }
+
+    private Field AddFormField(Panel parent, string label, UIElement input)
+    {
+        var field = new Field
+        {
+            Label = label,
+            IsRequired = true,
+            Content = input,
+            Style = (Style)FindResource("Field")
+        };
+        parent.Children.Add(field);
+        return field;
     }
 
     private void ShowToast_Click(object sender, RoutedEventArgs e)

@@ -28,7 +28,13 @@ public partial class FilePreviewControl : UserControl
     private double _zoom = 1;
     private bool _magnifier;
 
-    public FilePreviewControl() { InitializeComponent(); AllowDrop = true; Drop += OnDrop; }
+    public FilePreviewControl()
+    {
+        InitializeComponent();
+        AllowDrop = true;
+        Drop += OnDrop;
+        Unloaded += (_, _) => StopCurrentMedia();
+    }
 
     public string? FilePath
     {
@@ -49,11 +55,7 @@ public partial class FilePreviewControl : UserControl
         FileNameText.Text = System.IO.Path.GetFileName(_filePath);
         var info = new FileInfo(_filePath);
         FileInfoText.Text = $"{System.IO.Path.GetExtension(path).TrimStart('.').ToUpperInvariant()} · {FormatSize(info.Length)} · {info.LastWriteTime:g}";
-        _audioPositionTimer?.Stop();
-        _audioPositionTimer = null;
-        _audioPlayer?.Close();
-        _audioPlayer = null;
-        _media?.Stop();
+        StopCurrentMedia();
         ContentHost.Children.Clear(); _image = null; _media = null; _textView = null;
         ImageTools.Visibility = TextTools.Visibility = Visibility.Collapsed; ZoomText.Visibility = Visibility.Visible;
         var ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
@@ -87,7 +89,27 @@ public partial class FilePreviewControl : UserControl
         for (var i = 0; i < n; i++) { var amp = .08 + (bytes[Math.Min(i * stride, bytes.Length - 1)] / 255d) * .78; var h = amp * 145; wave.Children.Add(new Line { X1 = i, X2 = i, Y1 = (180 - h) / 2, Y2 = (180 + h) / 2, Stroke = new SolidColorBrush(Color.FromRgb(76, 164, 245)), StrokeThickness = 1.2 }); }
         root.Children.Add(wave);
         var controls = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 12, 0, 0) };
+        var audioStatus = new TextBlock
+        {
+            Text = "Âm thanh · kéo thanh để tua",
+            VerticalAlignment = VerticalAlignment.Center,
+            TextWrapping = TextWrapping.Wrap,
+            MaxWidth = 250,
+            Foreground = (Brush)FindResource("MutedForegroundBrush")
+        };
+        AutomationProperties.SetAutomationId(audioStatus, "AudioWaveform");
+        AutomationProperties.SetName(audioStatus, "Dạng sóng âm thanh");
+        var seek = new Slider { Minimum = 0, Maximum = 100, Value = 0, VerticalAlignment = VerticalAlignment.Center, MinWidth = 160, IsEnabled = false };
+        AutomationProperties.SetAutomationId(seek, "AudioSeekSlider");
+        var playbackTime = new TextBlock
+        {
+            Text = "00:00",
+            Margin = new Thickness(8, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        AutomationProperties.SetAutomationId(playbackTime, "AudioPlaybackTimeText");
         _audioPlayer = new MediaPlayer { Volume = .7 };
+        var isAudioPlaying = false;
         _audioPlayer.MediaOpened += (_, _) =>
         {
             if (_audioPlayer.NaturalDuration.HasTimeSpan)
@@ -96,14 +118,40 @@ public partial class FilePreviewControl : UserControl
                 seek.IsEnabled = true;
             }
         };
-        _audioPlayer.MediaFailed += (_, e) => ShowMessage($"Không thể phát tệp âm thanh: {e.ErrorException?.Message ?? "định dạng hoặc bộ giải mã không được hỗ trợ"}");
-        _audioPlayer.Open(new Uri(path));
-        var play = new Button { Content = new PackIconMaterial { Kind = PackIconMaterialKind.Play }, ToolTip = "Phát / tạm dừng", Margin = new Thickness(0, 0, 8, 0) }; AutomationProperties.SetName(play, "Phát hoặc tạm dừng"); play.Click += (_, _) => { if (_audioPlayer!.CanPause) _audioPlayer.Pause(); else _audioPlayer.Play(); };
+        _audioPlayer.MediaEnded += (_, _) =>
+        {
+            isAudioPlaying = false;
+            _audioPlayer.Position = TimeSpan.Zero;
+            seek.Value = 0;
+        };
+        _audioPlayer.MediaFailed += (_, _) =>
+        {
+            audioStatus.Text = "Không thể phát định dạng âm thanh này. Hãy mở tệp bằng ứng dụng mặc định.";
+            audioStatus.Foreground = (Brush)FindResource("DestructiveBrush");
+        };
+        var playIcon = new PackIconMaterial { Kind = PackIconMaterialKind.Play };
+        var play = new Button { Content = playIcon, ToolTip = "Phát / tạm dừng", Margin = new Thickness(0, 0, 8, 0) };
+        AutomationProperties.SetName(play, "Phát");
+        play.Click += (_, _) =>
+        {
+            if (isAudioPlaying)
+            {
+                _audioPlayer!.Pause();
+                playIcon.Kind = PackIconMaterialKind.Play;
+                AutomationProperties.SetName(play, "Phát");
+                isAudioPlaying = false;
+            }
+            else
+            {
+                _audioPlayer!.Play();
+                playIcon.Kind = PackIconMaterialKind.Pause;
+                AutomationProperties.SetName(play, "Tạm dừng");
+                isAudioPlaying = true;
+            }
+        };
         AutomationProperties.SetAutomationId(play, "AudioPlayButton");
-        var stop = new Button { Content = new PackIconMaterial { Kind = PackIconMaterialKind.Stop }, ToolTip = "Dừng", Style = (Style)FindResource("ButtonOutline"), Margin = new Thickness(0, 0, 14, 0) }; AutomationProperties.SetName(stop, "Dừng"); stop.Click += (_, _) => { _audioPlayer!.Stop(); _audioPlayer.Position = TimeSpan.Zero; seek.Value = 0; };
+        var stop = new Button { Content = new PackIconMaterial { Kind = PackIconMaterialKind.Stop }, ToolTip = "Dừng", Style = (Style)FindResource("ButtonOutline"), Margin = new Thickness(0, 0, 14, 0) }; AutomationProperties.SetName(stop, "Dừng"); stop.Click += (_, _) => { _audioPlayer!.Stop(); _audioPlayer.Position = TimeSpan.Zero; seek.Value = 0; playIcon.Kind = PackIconMaterialKind.Play; AutomationProperties.SetName(play, "Phát"); isAudioPlaying = false; };
         AutomationProperties.SetAutomationId(stop, "AudioStopButton");
-        var seek = new Slider { Minimum = 0, Maximum = 100, Value = 0, VerticalAlignment = VerticalAlignment.Center, MinWidth = 160, IsEnabled = false };
-        AutomationProperties.SetAutomationId(seek, "AudioSeekSlider");
         seek.ValueChanged += (_, _) =>
         {
             if (!_updatingAudioSeek && _audioPlayer is not null && Math.Abs(_audioPlayer.Position.TotalSeconds - seek.Value) > 1)
@@ -123,24 +171,20 @@ public partial class FilePreviewControl : UserControl
             }
 
             _updatingAudioSeek = true;
-            seek.Value = Math.Clamp(_audioPlayer.Position.TotalSeconds, seek.Minimum, seek.Maximum);
+            var position = _audioPlayer.Position;
+            seek.Value = Math.Clamp(position.TotalSeconds, seek.Minimum, seek.Maximum);
+            playbackTime.Text = position.ToString(@"mm\:ss");
             _updatingAudioSeek = false;
         };
         _audioPositionTimer.Start();
         controls.Children.Add(play);
         controls.Children.Add(stop);
         controls.Children.Add(seek);
+        controls.Children.Add(playbackTime);
         controls.Children.Add(volume);
-        var waveformDescription = new TextBlock
-        {
-            Text = "  Âm thanh · kéo thanh để tua",
-            VerticalAlignment = VerticalAlignment.Center,
-            Foreground = (Brush)FindResource("MutedForegroundBrush")
-        };
-        AutomationProperties.SetAutomationId(waveformDescription, "AudioWaveform");
-        AutomationProperties.SetName(waveformDescription, "Dạng sóng âm thanh");
-        controls.Children.Add(waveformDescription);
-        Grid.SetRow(controls, 1); root.Children.Add(controls); root.Children.Add(_media); ContentHost.Children.Add(root);
+        controls.Children.Add(audioStatus);
+        Grid.SetRow(controls, 1); root.Children.Add(controls); ContentHost.Children.Add(root);
+        _audioPlayer.Open(new Uri(path));
         ZoomText.Text = "Dạng sóng trực quan";
     }
 
@@ -150,7 +194,27 @@ public partial class FilePreviewControl : UserControl
         _media = new MediaElement { Source = new Uri(path), LoadedBehavior = MediaState.Manual, UnloadedBehavior = MediaState.Stop, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
         grid.Children.Add(_media);
         var bar = new DockPanel { VerticalAlignment = VerticalAlignment.Bottom, Background = new SolidColorBrush(Color.FromArgb(210, 20, 20, 24)), Margin = new Thickness(14), LastChildFill = true };
-        var play = new Button { Content = new PackIconMaterial { Kind = PackIconMaterialKind.Play }, ToolTip = "Phát / tạm dừng", Margin = new Thickness(0, 0, 10, 0) }; AutomationProperties.SetName(play, "Phát hoặc tạm dừng"); play.Click += (_, _) => { if (_media!.CanPause) _media.Pause(); else _media.Play(); };
+        var isVideoPlaying = false;
+        var videoPlayIcon = new PackIconMaterial { Kind = PackIconMaterialKind.Play };
+        var play = new Button { Content = videoPlayIcon, ToolTip = "Phát / tạm dừng", Margin = new Thickness(0, 0, 10, 0) };
+        AutomationProperties.SetName(play, "Phát");
+        play.Click += (_, _) =>
+        {
+            if (isVideoPlaying)
+            {
+                _media!.Pause();
+                videoPlayIcon.Kind = PackIconMaterialKind.Play;
+                AutomationProperties.SetName(play, "Phát");
+                isVideoPlaying = false;
+            }
+            else
+            {
+                _media!.Play();
+                videoPlayIcon.Kind = PackIconMaterialKind.Pause;
+                AutomationProperties.SetName(play, "Tạm dừng");
+                isVideoPlaying = true;
+            }
+        };
         AutomationProperties.SetAutomationId(play, "VideoPlayButton");
         var seek = new Slider { Minimum = 0, Maximum = 100, VerticalAlignment = VerticalAlignment.Center };
         AutomationProperties.SetAutomationId(seek, "VideoSeekSlider");
@@ -186,6 +250,15 @@ public partial class FilePreviewControl : UserControl
     private static bool IsAudio(string e) => new[] { ".mp3", ".wav", ".wma", ".m4a", ".aac", ".mid", ".midi" }.Contains(e);
     private static bool IsVideo(string e) => new[] { ".mp4", ".wmv", ".avi", ".mpeg", ".mpg", ".mov" }.Contains(e);
     private static string FormatSize(long n) => n < 1024 ? $"{n} B" : n < 1048576 ? $"{n / 1024d:0.0} KB" : $"{n / 1048576d:0.0} MB";
+    private void StopCurrentMedia()
+    {
+        _audioPositionTimer?.Stop();
+        _audioPositionTimer = null;
+        _audioPlayer?.Close();
+        _audioPlayer = null;
+        _media?.Stop();
+        _media = null;
+    }
     private void OnDrop(object sender, DragEventArgs e) { if (e.Data.GetData(DataFormats.FileDrop) is string[] files && files.Length > 0) LoadFile(files[0]); }
     private void ZoomIn_Click(object s, RoutedEventArgs e) => SetZoom(Math.Min(6, _zoom * 1.2)); private void ZoomOut_Click(object s, RoutedEventArgs e) => SetZoom(Math.Max(.15, _zoom / 1.2)); private void ZoomReset_Click(object s, RoutedEventArgs e) => SetZoom(1);
     private void SetZoom(double z) { _zoom = z; if (_image?.RenderTransform is ScaleTransform t) t.ScaleX = t.ScaleY = z; ZoomText.Text = $"{z:P0}"; }
