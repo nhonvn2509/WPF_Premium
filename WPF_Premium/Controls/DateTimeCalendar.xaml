@@ -1,0 +1,71 @@
+<UserControl x:Class="WPF_Premium.Controls.DateTimeCalendar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:WPF_Premium.Controls"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             MinWidth="190"
+             HorizontalAlignment="Left"
+             Height="34">
+    <Grid>
+        <ToggleButton x:Name="DateToggle"
+                      Click="DateToggle_Click"
+                      Style="{StaticResource ComboBoxToggle}">
+            <Grid>
+                <TextBlock Text="{Binding SelectedDateTimeText, RelativeSource={RelativeSource AncestorType={x:Type controls:DateTimeCalendar}}}"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           Margin="29,0,28,0" />
+                <iconPacks:PackIconMaterial Kind="Calendar"
+                                            Width="14" Height="14"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center"
+                                            Margin="9,0,0,0"
+                                            Foreground="{DynamicResource MutedForegroundBrush}" />
+                <iconPacks:PackIconMaterial Kind="ChevronDown"
+                                            Width="14" Height="14"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Margin="0,0,9,0"
+                                            Foreground="{DynamicResource MutedForegroundBrush}" />
+            </Grid>
+        </ToggleButton>
+        <Popup x:Name="CalendarPopup"
+               Placement="Bottom"
+               PlacementTarget="{Binding ElementName=DateToggle}"
+               StaysOpen="False"
+               Closed="CalendarPopup_Closed">
+            <Border Width="300"
+                    Background="{DynamicResource PopoverBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="8">
+                <StackPanel>
+                    <controls:CalendarControl x:Name="DateSelector" Width="280" />
+                    <Separator Style="{StaticResource Marker}" />
+                    <TextBlock Text="ВРЕМЯ"
+                               FontSize="11"
+                               Foreground="{DynamicResource MutedForegroundBrush}"
+                               Margin="2,2,0,6" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <controls:ComboBoxControl x:Name="HourPicker"
+                                                  Width="72"
+                                                  MinWidth="0"
+                                                  Height="32"
+                                                  SearchEnabled="False"
+                                                  Placeholder="чч" />
+                        <TextBlock Text=":"
+                                   VerticalAlignment="Center"
+                                   Margin="6,0" />
+                        <controls:ComboBoxControl x:Name="MinutePicker"
+                                                  Width="72"
+                                                  MinWidth="0"
+                                                  Height="32"
+                                                  SearchEnabled="False"
+                                                  Placeholder="мм" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

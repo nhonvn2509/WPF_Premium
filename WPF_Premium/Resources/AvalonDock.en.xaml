@@ -1,0 +1,14 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <sys:String x:Key="AvalonDock.Title" xmlns:sys="clr-namespace:System;assembly=mscorlib">Workspace</sys:String>
+    <sys:String x:Key="AvalonDock.SolutionExplorer" xmlns:sys="clr-namespace:System;assembly=mscorlib">Solution Explorer</sys:String>
+    <sys:String x:Key="AvalonDock.Output" xmlns:sys="clr-namespace:System;assembly=mscorlib">Output</sys:String>
+    <sys:String x:Key="AvalonDock.Document" xmlns:sys="clr-namespace:System;assembly=mscorlib">Document</sys:String>
+    <sys:String x:Key="AvalonDock.Welcome" xmlns:sys="clr-namespace:System;assembly=mscorlib">Drag document tabs to arrange your workspace.</sys:String>
+    <sys:String x:Key="AvalonDock.Close" xmlns:sys="clr-namespace:System;assembly=mscorlib">Close</sys:String>
+    <sys:String x:Key="AvalonDock.Hide" xmlns:sys="clr-namespace:System;assembly=mscorlib">Hide</sys:String>
+    <sys:String x:Key="AvalonDock.Dock" xmlns:sys="clr-namespace:System;assembly=mscorlib">Dock</sys:String>
+    <sys:String x:Key="AvalonDock.AutoHide" xmlns:sys="clr-namespace:System;assembly=mscorlib">Auto hide</sys:String>
+    <sys:String x:Key="AvalonDock.Float" xmlns:sys="clr-namespace:System;assembly=mscorlib">Float</sys:String>
+    <sys:String x:Key="AvalonDock.DockAsDocument" xmlns:sys="clr-namespace:System;assembly=mscorlib">Dock as Tabbed Document</sys:String>
+</ResourceDictionary>

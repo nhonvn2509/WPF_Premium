@@ -1,0 +1,14 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <sys:String x:Key="AvalonDock.Title" xmlns:sys="clr-namespace:System;assembly=mscorlib">Không gian làm việc</sys:String>
+    <sys:String x:Key="AvalonDock.SolutionExplorer" xmlns:sys="clr-namespace:System;assembly=mscorlib">Trình khám phá giải pháp</sys:String>
+    <sys:String x:Key="AvalonDock.Output" xmlns:sys="clr-namespace:System;assembly=mscorlib">Đầu ra</sys:String>
+    <sys:String x:Key="AvalonDock.Document" xmlns:sys="clr-namespace:System;assembly=mscorlib">Tài liệu</sys:String>
+    <sys:String x:Key="AvalonDock.Welcome" xmlns:sys="clr-namespace:System;assembly=mscorlib">Kéo các tab tài liệu để sắp xếp không gian làm việc.</sys:String>
+    <sys:String x:Key="AvalonDock.Close" xmlns:sys="clr-namespace:System;assembly=mscorlib">Đóng</sys:String>
+    <sys:String x:Key="AvalonDock.Hide" xmlns:sys="clr-namespace:System;assembly=mscorlib">Ẩn</sys:String>
+    <sys:String x:Key="AvalonDock.Dock" xmlns:sys="clr-namespace:System;assembly=mscorlib">Gắn vào vùng</sys:String>
+    <sys:String x:Key="AvalonDock.AutoHide" xmlns:sys="clr-namespace:System;assembly=mscorlib">Tự động ẩn</sys:String>
+    <sys:String x:Key="AvalonDock.Float" xmlns:sys="clr-namespace:System;assembly=mscorlib">Tách thành cửa sổ</sys:String>
+    <sys:String x:Key="AvalonDock.DockAsDocument" xmlns:sys="clr-namespace:System;assembly=mscorlib">Gắn thành tài liệu dạng thẻ</sys:String>
+</ResourceDictionary>

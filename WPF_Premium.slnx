@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="WPF_Premium.UIAutomationTests/WPF_Premium.UIAutomationTests.csproj" />
+  <Project Path="WPF_Premium/WPF_Premium.csproj" />
+  <Project Path="WPF_Premium_Demo/WPF_Premium_Demo.csproj" />
+</Solution>

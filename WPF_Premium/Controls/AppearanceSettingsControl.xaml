@@ -1,0 +1,14 @@
+<UserControl x:Class="WPF_Premium.Controls.AppearanceSettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks">
+    <Button x:Name="SettingsButton"
+            Style="{StaticResource ButtonGhost}"
+            Padding="8"
+            ToolTip="Tùy chỉnh giao diện"
+            AutomationProperties.Name="Tùy chỉnh giao diện"
+            AutomationProperties.AutomationId="OpenAppearanceSettingsButton"
+            Click="SettingsButton_Click">
+        <iconPacks:PackIconMaterial Kind="Tune" />
+    </Button>
+</UserControl>

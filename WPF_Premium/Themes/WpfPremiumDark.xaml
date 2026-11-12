@@ -1,0 +1,30 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/WPF_Premium;component/Themes/WpfPremium.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#FF09090B" />
+    <SolidColorBrush x:Key="ForegroundBrush" Color="#FFFAFAFA" />
+    <SolidColorBrush x:Key="CardBrush" Color="#FF09090B" />
+    <SolidColorBrush x:Key="PopoverBrush" Color="#FF09090B" />
+    <SolidColorBrush x:Key="MutedBrush" Color="#FF27272A" />
+    <SolidColorBrush x:Key="MutedForegroundBrush" Color="#FFA1A1AA" />
+    <SolidColorBrush x:Key="BorderBrush" Color="#FF27272A" />
+    <SolidColorBrush x:Key="InputBrush" Color="#FF27272A" />
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#FFFAFAFA" />
+    <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FF18181B" />
+    <SolidColorBrush x:Key="SecondaryBrush" Color="#FF27272A" />
+    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FFFAFAFA" />
+    <SolidColorBrush x:Key="DestructiveBrush" Color="#FF7F1D1D" />
+    <SolidColorBrush x:Key="DestructiveForegroundBrush" Color="#FFFAFAFA" />
+    <SolidColorBrush x:Key="SuccessBrush" Color="#FF22C55E" />
+    <SolidColorBrush x:Key="WarningBrush" Color="#FFEAB308" />
+    <SolidColorBrush x:Key="FocusBrush" Color="#FFD4D4D8" />
+    <SolidColorBrush x:Key="TraceActiveBrush" Color="#FF60A5FA" />
+    <SolidColorBrush x:Key="ChartColor1Brush" Color="#FFFAFAFA" />
+    <SolidColorBrush x:Key="ChartColor2Brush" Color="#FF60A5FA" />
+    <SolidColorBrush x:Key="ChartColor3Brush" Color="#FF4ADE80" />
+    <SolidColorBrush x:Key="ChartColor4Brush" Color="#FFFACC15" />
+    <SolidColorBrush x:Key="ChartColor5Brush" Color="#FFF87171" />
+</ResourceDictionary>
