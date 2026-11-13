@@ -30,20 +30,18 @@ internal static class AppearanceSettingsDialog
         application.Dispatcher.VerifyAccess();
 
         var current = AppearanceSettingsManager.GetCurrent(application);
-        var fontFamilies = new[]
-            {
-                current.FontFamily,
-                "Segoe UI",
-                "Arial",
-                "Calibri",
-                "Tahoma",
-                "Verdana",
-                "Times New Roman",
-                "Consolas"
-            }
+        var fontFamilies = Fonts.SystemFontFamilies
+            .Select(font => font.Source)
+            .Append(current.FontFamily)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(name => name, StringComparer.CurrentCultureIgnoreCase)
             .ToArray();
+        var componentSizes = new[]
+        {
+            new ComponentSizeOption("Nhỏ (sm)", ComponentSize.Small),
+            new ComponentSizeOption("Vừa (md)", ComponentSize.Medium),
+            new ComponentSizeOption("Lớn (lg)", ComponentSize.Large)
+        };
 
         var dialog = new PremiumWindow
         {
@@ -60,15 +58,16 @@ internal static class AppearanceSettingsDialog
         };
         AutomationProperties.SetAutomationId(dialog, "AppearanceSettingsDialog");
 
-        var fontFamilySelector = new ComboBox
+        var fontFamilySelector = new ComboBoxControl
         {
             ItemsSource = fontFamilies,
             SelectedItem = fontFamilies.FirstOrDefault(name =>
                 string.Equals(name, current.FontFamily, StringComparison.OrdinalIgnoreCase))
                 ?? fontFamilies.FirstOrDefault(name => name.StartsWith("Segoe UI", StringComparison.OrdinalIgnoreCase))
                 ?? fontFamilies.FirstOrDefault(),
+            Placeholder = "Phông chữ",
+            SearchEnabled = true,
             MinWidth = 250,
-            IsEditable = true,
             HorizontalAlignment = HorizontalAlignment.Stretch
         };
         AutomationProperties.SetAutomationId(fontFamilySelector, "AppearanceFontFamilySelector");
@@ -82,6 +81,7 @@ internal static class AppearanceSettingsDialog
             Value = current.FontSize,
             VerticalAlignment = VerticalAlignment.Center
         };
+        fontSizeSlider.SetResourceReference(FrameworkElement.StyleProperty, "Slider");
         AutomationProperties.SetAutomationId(fontSizeSlider, "AppearanceFontSizeSlider");
         var fontSizeLabel = new TextBlock
         {
@@ -92,15 +92,15 @@ internal static class AppearanceSettingsDialog
         };
         fontSizeSlider.ValueChanged += (_, _) => fontSizeLabel.Text = $"{fontSizeSlider.Value:0} pt";
 
-        var componentSizeSelector = new ComboBox
+        var componentSizeSelector = new ComboBoxControl
         {
-            SelectedValuePath = "Tag",
+            ItemsSource = componentSizes,
+            DisplayMemberPath = nameof(ComponentSizeOption.Label),
+            SelectedItem = componentSizes.First(option => option.Size == current.ComponentSize),
+            Placeholder = "Kích thước thành phần",
+            SearchEnabled = false,
             HorizontalAlignment = HorizontalAlignment.Stretch
         };
-        componentSizeSelector.Items.Add(new ComboBoxItem { Content = "Nhỏ (sm)", Tag = ComponentSize.Small });
-        componentSizeSelector.Items.Add(new ComboBoxItem { Content = "Vừa (md)", Tag = ComponentSize.Medium });
-        componentSizeSelector.Items.Add(new ComboBoxItem { Content = "Lớn (lg)", Tag = ComponentSize.Large });
-        componentSizeSelector.SelectedValue = current.ComponentSize;
         AutomationProperties.SetAutomationId(componentSizeSelector, "AppearanceComponentSizeSelector");
 
         var previewText = new TextBlock
@@ -127,8 +127,8 @@ internal static class AppearanceSettingsDialog
             }
 
             previewText.FontSize = fontSizeSlider.Value;
-            var dimensions = componentSizeSelector.SelectedValue is ComponentSize selectedSize
-                ? selectedSize
+            var dimensions = componentSizeSelector.SelectedItem is ComponentSizeOption selectedOption
+                ? selectedOption.Size
                 : current.ComponentSize;
             var (height, padding) = dimensions switch
             {
@@ -205,14 +205,14 @@ internal static class AppearanceSettingsDialog
         applyButton.Click += (_, _) =>
         {
             if (fontFamilySelector.SelectedItem is not string selectedFont ||
-                componentSizeSelector.SelectedValue is not ComponentSize selectedSize)
+                componentSizeSelector.SelectedItem is not ComponentSizeOption selectedOption)
             {
                 return;
             }
 
             AppearanceSettingsManager.Apply(
                 application,
-                new AppearanceSettings(selectedFont, fontSizeSlider.Value, selectedSize));
+                new AppearanceSettings(selectedFont, fontSizeSlider.Value, selectedOption.Size));
             dialog.DialogResult = true;
         };
         actions.Children.Add(resetButton);
@@ -259,4 +259,6 @@ internal static class AppearanceSettingsDialog
 
     private static Brush GetBrush(Application application, string key, Color fallback) =>
         application.TryFindResource(key) as Brush ?? new SolidColorBrush(fallback);
+
+    private sealed record ComponentSizeOption(string Label, ComponentSize Size);
 }

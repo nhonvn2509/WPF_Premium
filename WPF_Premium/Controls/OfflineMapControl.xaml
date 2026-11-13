@@ -8,6 +8,32 @@
             BorderThickness="1" CornerRadius="8" ClipToBounds="True">
         <Grid>
             <Grid x:Name="MapHost" Background="{DynamicResource BackgroundBrush}" />
+            <Border x:Name="MarineLegend" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8"
+                    Padding="8" CornerRadius="6" Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    Opacity="0.94" IsHitTestVisible="False">
+                <StackPanel>
+                    <TextBlock Text="Địa hình đáy biển (tham khảo)" FontSize="11" FontWeight="SemiBold"
+                               Foreground="{DynamicResource ForegroundBrush}" />
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                        <Border Width="14" Height="9" Background="#CFEDEA" BorderBrush="#6BA3C2" BorderThickness="0.5" />
+                        <TextBlock Text="0 m" FontSize="10" Margin="3,0,8,0" Foreground="{DynamicResource MutedForegroundBrush}" />
+                        <Border Width="14" Height="9" Background="#A5D9E0" BorderBrush="#6BA3C2" BorderThickness="0.5" />
+                        <TextBlock Text="1.000 m" FontSize="10" Margin="3,0,8,0" Foreground="{DynamicResource MutedForegroundBrush}" />
+                        <Border Width="14" Height="9" Background="#5BA8C1" BorderBrush="#6BA3C2" BorderThickness="0.5" />
+                        <TextBlock Text="5.000 m" FontSize="10" Margin="3,0,8,0" Foreground="{DynamicResource MutedForegroundBrush}" />
+                        <Border Width="14" Height="9" Background="#1D4E6F" BorderBrush="#6BA3C2" BorderThickness="0.5" />
+                        <TextBlock Text="10.000 m" FontSize="10" Margin="3,0,0,0" Foreground="{DynamicResource MutedForegroundBrush}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <Border Width="14" Height="9" Background="#F5896C" BorderBrush="#A84635" BorderThickness="0.5" />
+                        <TextBlock Text="Rạn san hô / đảo san hô" FontSize="10" Margin="3,0,0,0"
+                                   Foreground="{DynamicResource MutedForegroundBrush}" />
+                    </StackPanel>
+                    <TextBlock Text="Tên đảo / địa hình: GeoNames (CC BY 4.0)" FontSize="9" Margin="0,4,0,0"
+                               Foreground="{DynamicResource MutedForegroundBrush}" />
+                </StackPanel>
+            </Border>
             <TextBlock x:Name="OfflineStatusText"
                        Text="B&#7843;n &#273;&#7891; ngo&#7841;i tuy&#7871;n kh&#244;ng kh&#7843; d&#7909;ng."
                        HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -43,6 +69,16 @@
                 <TextBlock x:Name="LocationCountText" Text="0 v&#7883; tr&#237;" FontSize="12"
                            Foreground="{DynamicResource MutedForegroundBrush}"
                            AutomationProperties.AutomationId="OfflineMapLocationCountText" />
+            </Border>
+            <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8"
+                    Padding="7,4" CornerRadius="6"
+                    Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    Opacity="0.94" IsHitTestVisible="False">
+                <TextBlock x:Name="CoordinateText" Text="&#8212;" FontSize="12"
+                           Foreground="{DynamicResource MutedForegroundBrush}"
+                           IsHitTestVisible="False"
+                           AutomationProperties.AutomationId="OfflineMapCoordinateText" />
             </Border>
         </Grid>
     </Border>

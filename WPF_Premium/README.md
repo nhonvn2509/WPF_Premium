@@ -66,8 +66,9 @@ Các ứng dụng dùng control cần tham chiếu thư viện và gộp `WpfPre
 | Appearance settings | `controls:AppearanceSettingsControl`; runtime API `AppearanceSettingsManager` với `ComponentSize.Small`, `Medium`, `Large` |
 | Alert | `ContentControl`, styles `Alert`, `AlertDestructive` |
 | Alert dialog, Dialog | `DialogService.ShowAlertDialog` and `DialogService.ShowDialog` |
-| AvalonDock | AvalonDock `DockingManager`, theme resource `WpfPremiumDockingTheme` |
+| AvalonDock | AvalonDock `DockingManager`, style `WpfPremiumDockingManager` and theme resource `WpfPremiumDockingTheme` |
 | Attachment | `controls:AttachmentControl`, style `Attachment` |
+| Badge | `controls:Badge`, style `Badge`; variants `Primary`, `Secondary`, `Success`, `Warning`, `Destructive`, and `Outline` |
 | Button | `Button` default style; keys `Button`, `ButtonPrimary`, `ButtonSecondary`, `ButtonOutline`, `ButtonGhost`, `ButtonDestructive`, `ButtonLink` |
 | Button group | `StackPanel`, style `ButtonGroup` |
 | Split button | `controls:SplitButton`, style `SplitButton`; supports `Command`, `CommandParameter`, `Click`, `ContextMenu`, and a configurable `ButtonStyle` |
@@ -81,9 +82,11 @@ Các ứng dụng dùng control cần tham chiếu thư viện và gộp `WpfPre
 | Multi-select | `controls:MultiSelectControl`, style `MultiSelect`; supports search, display templates, and bindable `SelectedItems` |
 | Command | `ListBox`, style `Command` |
 | Context menu, Dropdown menu | `ContextMenu`, styles `ContextMenu`, `DropdownMenu` |
+| Divider | `controls:Divider`, style `Divider`; supports horizontal and vertical orientation |
 | Drawer, Sheet | `DialogService.ShowDrawer` and `DialogService.ShowSheet` |
 | Empty | `ContentControl`, style `Empty` |
 | Field validation | `controls:Field` wraps any input or input group and displays invalid state with a red frame and legend |
+| File preview | `controls:FilePreviewControl`; embeds PDF viewing and visual previews for Office/OpenDocument files |
 | Input | `TextBox` default style; key `Input` |
 | Input group | `DockPanel`, style `InputGroup` |
 | Formatted input | `controls:FormattedInputControl` with a mask and placeholder |
@@ -98,6 +101,7 @@ Các ứng dụng dùng control cần tham chiếu thư viện và gộp `WpfPre
 | Radio group | `StackPanel`, style `RadioGroup` |
 | Skeleton | `Border`, style `Skeleton` |
 | Slider | `Slider`, style `Slider` |
+| StepBar | `controls:StepBar`; set `CurrentStep` to a zero-based step index |
 | Switch | `ToggleButton`, style `Switch` |
 | Table | `controls:Table`, style `Table` |
 | Tabs | `TabControl`, style `Tabs` |
@@ -108,6 +112,7 @@ Các ứng dụng dùng control cần tham chiếu thư viện và gộp `WpfPre
 | Tooltip | `ToolTip` default style; style key `Tooltip` |
 | Trace | `ItemsControl`, style `Trace`, with `TraceEntry` items |
 | Typography | `TextBlock` styles `Typography`, `TypographyH1`, `TypographyH2`, `TypographyH3`, `TypographyMuted` |
+| Waterfall panel | `controls:WaterfallPanel`; set `ColumnCount`, `HorizontalSpacing`, and `VerticalSpacing` |
 
 Other components compose WPF primitives with the library's shared compact styles and resource tokens.
 
@@ -130,18 +135,18 @@ Sử dụng AvalonDock cùng giao diện WPF Premium có sẵn:
 
 ```xml
 xmlns:avalonDock="clr-namespace:AvalonDock;assembly=AvalonDock"
-<avalonDock:DockingManager Theme="{StaticResource WpfPremiumDockingTheme}">
+<avalonDock:DockingManager Style="{StaticResource WpfPremiumDockingManager}">
     <!-- Khai báo LayoutRoot, các ngăn và tài liệu tại đây. -->
 </avalonDock:DockingManager>
 ```
 
-`Themes/WpfPremiumAvalonDock.xaml` được gộp bởi `Themes/WpfPremium.xaml`. Thêm từ điển ngôn ngữ vào tài nguyên ứng dụng sau giao diện WPF Premium để trình đơn ngữ cảnh AvalonDock sử dụng bản dịch tương ứng:
+`Themes/WpfPremiumAvalonDock.xaml` được gộp bởi `Themes/WpfPremium.xaml`. Style `WpfPremiumDockingManager` áp dụng theme và bảng màu WPF Premium, đồng thời thay menu ngữ cảnh mặc định bằng menu có thể bản địa hóa. Thêm từ điển ngôn ngữ vào tài nguyên ứng dụng sau giao diện WPF Premium:
 
 ```xml
 <ResourceDictionary Source="/WPF_Premium;component/Resources/AvalonDock.vi.xaml" />
 ```
 
-`Resources/AvalonDock.vi.xaml` cung cấp các khóa `AvalonDock.*`; trình đơn ngữ cảnh của thẻ tài liệu và thẻ neo trong thư viện sử dụng các khóa này thông qua tài nguyên động.
+`Resources/AvalonDock.vi.xaml` cung cấp các khóa `AvalonDock.*`; menu ngữ cảnh của tài liệu và các ngăn có thể ghim dùng các khóa này qua tài nguyên động. Các menu dùng style `DropdownMenu` để đồng bộ màu sắc, viền và trạng thái rê chuột với giao diện dự án.
 
 `CalendarControl` tự vẽ lịch tháng và hỗ trợ chọn ngày đơn hoặc khoảng ngày qua các thuộc tính `SelectionMode`, `SelectedDate`, `RangeStartDate` và `RangeEndDate`. `DateTimeCalendar` là trường chọn ngày giờ gọn, mở lịch và bộ chọn giờ tùy chỉnh, đồng thời cung cấp thuộc tính `SelectedDateTime` hỗ trợ liên kết hai chiều. `DateTimeRangeCalendar` mở bộ chọn khoảng ngày hai tháng, có mốc chọn nhanh, giờ bắt đầu/kết thúc và thao tác Áp dụng/Hủy/Xóa. Hai thuộc tính `StartDateTime` và `EndDateTime` được cập nhật khi nhấn Áp dụng.
 
@@ -234,7 +239,11 @@ Cùng thành phần `Field` có thể bao quanh nhóm hộp kiểm, nhóm nút c
 
 `Pagination` keeps `CurrentPage` within `1..PageCount`, provides previous/next and a bounded set of page buttons, and raises the bubbling `PageChanged` routed event. Bind `CurrentPage` two-way for MVVM use.
 
+`StepBar.CurrentStep` is zero-based; completed, current, and upcoming steps receive distinct theme-aware markers. `WaterfallPanel` assigns each visible child to the currently shortest column and lays out children without requiring fixed heights.
+
 `AttachmentControl.Files` is an `ObservableCollection<string>` of selected local file paths. The control opens the system file picker and supports removing a selected path; it does not copy, upload, or delete files.
+
+`FilePreviewControl` opens PDF files in the embedded WebView2 PDF viewer and renders DOC/DOCX, XLS/XLSX, PPT/PPTX, and ODT/ODS/ODP locally as pagelike documents, spreadsheet tables, or slides. Preview generation does not upload documents or require a network connection. WebView2 Runtime must be installed; Office layout is an approximation and advanced features such as spreadsheet recalculation, animations, and some embedded objects may differ from Microsoft Office or WPS.
 
 `ToastService.Show(owner, message, kind, duration)` displays a non-modal toast and returns its `Window`. `kind` can be `ToastKind.Default`, `ToastKind.Success`, or `ToastKind.Destructive`; duration must be positive.
 
@@ -257,14 +266,13 @@ Colors are exposed as dynamic resources, including `BackgroundBrush`, `Foregroun
 
 ## Bản đồ ngoại tuyến
 
-`OfflineMapControl` hiển thị dữ liệu bản đồ từ tệp MBTiles cục bộ, không gọi dịch vụ tile trên mạng. Ứng dụng sử dụng control cần cung cấp dữ liệu bản đồ phù hợp với phạm vi và giấy phép của mình, sau đó truyền các vị trí WGS84 (vĩ độ, kinh độ):
+`OfflineMapControl` có sẵn bản đồ thế giới ngoại tuyến từ dữ liệu địa lý tích hợp; không cần cung cấp tệp bản đồ hoặc kết nối mạng. Ứng dụng chỉ cần truyền danh sách vị trí WGS84 (vĩ độ, kinh độ):
 
 ```xml
 <controls:OfflineMapControl x:Name="MapView" Height="420" />
 ```
 
 ```csharp
-MapView.MapFilePath = @"D:\Maps\vietnam.mbtiles";
 MapView.Locations = new[]
 {
     new OfflineMapLocation(21.0285, 105.8542, "Hồ Gươm", "ho-guom"),
@@ -272,4 +280,8 @@ MapView.Locations = new[]
 };
 ```
 
-Có thể gán một `ObservableCollection<OfflineMapLocation>` để tự cập nhật các điểm khi danh sách thay đổi. Tọa độ sai phạm vi được bỏ qua. Điều khiển có nút phóng to, thu nhỏ và đưa tất cả vị trí vào khung nhìn; `Attribution` có thể dùng để hiển thị thông tin nguồn dữ liệu bản đồ.
+Có thể gán một `ObservableCollection<OfflineMapLocation>` để tự cập nhật các điểm khi danh sách thay đổi. Tọa độ sai phạm vi được bỏ qua. Điều khiển có nút phóng to, thu nhỏ và đưa tất cả vị trí vào khung nhìn. Nếu cần, `MapFilePath` có thể trỏ đến MBTiles cục bộ; cách hiển thị nhãn/biểu tượng đã được kết xuất sẵn trong MBTiles sẽ giữ nguyên.
+
+Nhãn trên bản đồ tích hợp được phân cấp theo mức thu phóng: bản đồ tổng quan ưu tiên địa danh lớn, còn tên tỉnh, thành phố, đảo và địa hình biển lần lượt xuất hiện khi phóng gần để giảm chồng lấp.
+
+Bản đồ tích hợp dùng dữ liệu [Natural Earth 1:10m](https://www.naturalearthdata.com/downloads/), gồm đường bờ, quốc gia, hơn 4.500 vùng hành chính cấp 1, địa danh, đảo nhỏ, các vùng biển, rạn san hô/đảo san hô và các dải địa hình đáy biển từ 0 đến 10.000 m. Khi phóng to, đường bờ đảo nhỏ được vẽ chi tiết hơn và có thêm nhãn đảo, đá, rạn, bãi cạn/bãi ngầm từ [GeoNames](https://www.geonames.org/), theo giấy phép [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). GeoNames ghi công dữ liệu gốc như sau: “This work is based on data from GeoNames.org.” Dữ liệu đảo và tên địa danh được cung cấp nguyên trạng, có thể chưa đầy đủ hoặc có sai số. Lớp đáy biển là các đường đẳng sâu khái quát tạo từ SRTM Plus; lớp rạn san hô Natural Earth chỉ gồm các rạn lớn từ WDB2. Các lớp này giúp định hướng trực quan ở quy mô bản đồ thế giới, không thể hiện đầy đủ mọi rạn, bãi cạn, điểm đo độ sâu hay chướng ngại hàng hải, và không phải hải đồ hàng hải chính thức. Không dùng để điều hướng hoặc đánh giá an toàn hàng hải. Dữ liệu Natural Earth thuộc phạm vi công cộng. Các vùng biển và biên giới hiển thị chỉ mang tính tham khảo, không phải ranh giới chủ quyền, EEZ hay dữ liệu pháp lý.

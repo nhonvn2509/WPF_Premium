@@ -2,20 +2,148 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:avalonDock="clr-namespace:AvalonDock;assembly=AvalonDock"
                     xmlns:avalonDockControls="clr-namespace:AvalonDock.Controls;assembly=AvalonDock"
+                    xmlns:avalonDockConverters="clr-namespace:AvalonDock.Converters;assembly=AvalonDock"
                     xmlns:avalonDockThemes="clr-namespace:AvalonDock.Themes;assembly=AvalonDock">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/AvalonDock;component/Themes/generic.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
     <avalonDockThemes:GenericTheme x:Key="WpfPremiumDockingTheme" />
 
-    <Style TargetType="{x:Type avalonDock:DockingManager}">
+    <Style x:Key="WpfPremiumDocumentPaneControl"
+           TargetType="{x:Type avalonDockControls:LayoutDocumentPaneControl}"
+           BasedOn="{StaticResource DocumentPaneControlStyle}">
+        <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style TargetType="{x:Type TabItem}">
+                    <Setter Property="Visibility"
+                            Value="{Binding IsVisible, Converter={avalonDockConverters:BoolToVisibilityConverter}}" />
+                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                    <Setter Property="IsEnabled" Value="{Binding IsEnabled}" />
+                    <Setter Property="ToolTip" Value="{Binding ToolTip}" />
+                    <Setter Property="Padding" Value="10,6" />
+                    <Setter Property="Margin" Value="0,2,0,0" />
+                    <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource MutedForegroundBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type TabItem}">
+                                <Border Padding="{TemplateBinding Padding}"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="1,1,1,0">
+                                    <ContentPresenter
+                                        HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                        VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                        ContentSource="Header"
+                                        RecognizesAccessKey="True"
+                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="Selector.IsSelected" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+                                        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+                                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                                        <Setter Property="Panel.ZIndex" Value="1" />
+                                        <Setter Property="Margin" Value="0,0,0,-2" />
+                                    </Trigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsMouseOver" Value="True" />
+                                            <Condition Property="Selector.IsSelected" Value="False" />
+                                        </MultiTrigger.Conditions>
+                                        <Setter Property="Background" Value="{DynamicResource MutedBrush}" />
+                                        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+                                    </MultiTrigger>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Foreground" Value="{DynamicResource MutedForegroundBrush}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="{x:Type avalonDockControls:LayoutDocumentPaneControl}"
+           BasedOn="{StaticResource WpfPremiumDocumentPaneControl}" />
+
+    <Style x:Key="WpfPremiumAnchorablePaneControl"
+           TargetType="{x:Type avalonDockControls:LayoutAnchorablePaneControl}"
+           BasedOn="{StaticResource AnchorablePaneControlStyle}">
+        <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style TargetType="{x:Type TabItem}">
+                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                    <Setter Property="IsEnabled" Value="{Binding IsEnabled}" />
+                    <Setter Property="ToolTip" Value="{Binding ToolTip}" />
+                    <Setter Property="Padding" Value="10,6" />
+                    <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource MutedForegroundBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type TabItem}">
+                                <Border Padding="{TemplateBinding Padding}"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="1,0,1,1">
+                                    <ContentPresenter
+                                        HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                        VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                        ContentSource="Header"
+                                        RecognizesAccessKey="True"
+                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="Selector.IsSelected" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+                                        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+                                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                                        <Setter Property="Panel.ZIndex" Value="1" />
+                                        <Setter Property="Margin" Value="0,-1,-1,-2" />
+                                    </Trigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsMouseOver" Value="True" />
+                                            <Condition Property="Selector.IsSelected" Value="False" />
+                                        </MultiTrigger.Conditions>
+                                        <Setter Property="Background" Value="{DynamicResource MutedBrush}" />
+                                        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+                                    </MultiTrigger>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Foreground" Value="{DynamicResource MutedForegroundBrush}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="{x:Type avalonDockControls:LayoutAnchorablePaneControl}"
+           BasedOn="{StaticResource WpfPremiumAnchorablePaneControl}" />
+
+    <Style x:Key="WpfPremiumDockingManager" TargetType="{x:Type avalonDock:DockingManager}">
         <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
         <Setter Property="FontFamily" Value="Segoe UI" />
         <Setter Property="FontSize" Value="13" />
+        <Setter Property="Theme" Value="{StaticResource WpfPremiumDockingTheme}" />
+        <Setter Property="DocumentPaneControlStyle" Value="{StaticResource WpfPremiumDocumentPaneControl}" />
+        <Setter Property="AnchorablePaneControlStyle" Value="{StaticResource WpfPremiumAnchorablePaneControl}" />
         <Setter Property="AnchorableContextMenu">
             <Setter.Value>
-                <ContextMenu Background="{DynamicResource CardBrush}"
-                             BorderBrush="{DynamicResource BorderBrush}"
-                             BorderThickness="1"
-                             Padding="4"
+                <ContextMenu Style="{DynamicResource DropdownMenu}"
                              DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                     <MenuItem Header="{DynamicResource AvalonDock.Float}" Command="{Binding DetachToWindowCommand}" />
                     <MenuItem Header="{DynamicResource AvalonDock.Dock}" Command="{Binding DockCommand}" />
@@ -26,15 +154,19 @@
                 </ContextMenu>
             </Setter.Value>
         </Setter>
+        <Setter Property="DocumentContextMenu">
+            <Setter.Value>
+                <ContextMenu Style="{DynamicResource DropdownMenu}"
+                             DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                    <MenuItem Header="{DynamicResource AvalonDock.Close}" Command="{Binding CloseCommand}" />
+                    <Separator />
+                    <MenuItem Header="{DynamicResource AvalonDock.Float}" Command="{Binding DetachToWindowCommand}" />
+                </ContextMenu>
+            </Setter.Value>
+        </Setter>
     </Style>
-    <Style TargetType="{x:Type avalonDockControls:LayoutDocumentPaneControl}">
-        <Setter Property="Background" Value="{DynamicResource CardBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-    </Style>
-    <Style TargetType="{x:Type avalonDockControls:LayoutAnchorablePaneControl}">
-        <Setter Property="Background" Value="{DynamicResource CardBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-    </Style>
+    <Style TargetType="{x:Type avalonDock:DockingManager}" BasedOn="{StaticResource WpfPremiumDockingManager}" />
+
     <Style TargetType="{x:Type avalonDockControls:LayoutDocumentTabItem}">
         <Setter Property="Background" Value="{DynamicResource CardBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource MutedForegroundBrush}" />
@@ -42,10 +174,7 @@
         <Setter Property="Padding" Value="10,6" />
         <Setter Property="ContextMenu">
             <Setter.Value>
-                <ContextMenu Background="{DynamicResource CardBrush}"
-                             BorderBrush="{DynamicResource BorderBrush}"
-                             BorderThickness="1"
-                             Padding="4"
+                <ContextMenu Style="{DynamicResource DropdownMenu}"
                              DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                     <MenuItem Header="{DynamicResource AvalonDock.Close}" Command="{Binding CloseCommand}" />
                 </ContextMenu>
@@ -69,10 +198,7 @@
         <Setter Property="Padding" Value="10,6" />
         <Setter Property="ContextMenu">
             <Setter.Value>
-                <ContextMenu Background="{DynamicResource CardBrush}"
-                             BorderBrush="{DynamicResource BorderBrush}"
-                             BorderThickness="1"
-                             Padding="4"
+                <ContextMenu Style="{DynamicResource DropdownMenu}"
                              DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                     <MenuItem Header="{DynamicResource AvalonDock.AutoHide}" Command="{Binding AutoHideCommand}" />
                     <MenuItem Header="{DynamicResource AvalonDock.Dock}" Command="{Binding DockCommand}" />
@@ -99,10 +225,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="ContextMenu">
             <Setter.Value>
-                <ContextMenu Background="{DynamicResource CardBrush}"
-                             BorderBrush="{DynamicResource BorderBrush}"
-                             BorderThickness="1"
-                             Padding="4"
+                <ContextMenu Style="{DynamicResource DropdownMenu}"
                              DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                     <MenuItem Header="{DynamicResource AvalonDock.Float}" Command="{Binding DetachToWindowCommand}" />
                     <MenuItem Header="{DynamicResource AvalonDock.Dock}" Command="{Binding DockCommand}" />

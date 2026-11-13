@@ -226,6 +226,7 @@ public partial class ChartControl : UserControl
                 CreateAxis(horizontalBar ? labels : Array.Empty<string>(), mutedForeground, border)
             ],
             LegendPosition = ShowLegend ? LegendPosition.Bottom : LegendPosition.Hidden,
+            Background = CreateWpfBrush(background),
             LegendTextPaint = new SolidColorPaint(foreground),
             LegendBackgroundPaint = new SolidColorPaint(background),
             TooltipTextPaint = new SolidColorPaint(foreground),
@@ -253,6 +254,7 @@ public partial class ChartControl : UserControl
                 HoverPushout = 5
             }).ToArray(),
             LegendPosition = ShowLegend ? LegendPosition.Right : LegendPosition.Hidden,
+            Background = CreateWpfBrush(background),
             LegendTextPaint = new SolidColorPaint(foreground),
             LegendBackgroundPaint = new SolidColorPaint(background),
             TooltipTextPaint = new SolidColorPaint(foreground),
@@ -404,6 +406,9 @@ public partial class ChartControl : UserControl
         var color = brush.Color;
         return new SKColor(color.R, color.G, color.B, color.A);
     }
+
+    private static SolidColorBrush CreateWpfBrush(SKColor color) =>
+        new(Color.FromArgb(color.Alpha, color.Red, color.Green, color.Blue));
 
     private static object? FindResource(ResourceDictionary dictionary, object key)
     {

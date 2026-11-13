@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WPF_Premium\WPF_Premium.csproj" />
     <ProjectReference Include="..\WPF_Premium_Demo\WPF_Premium_Demo.csproj" ReferenceOutputAssembly="false" />
     <PackageReference Include="FlaUI.Core" Version="5.0.0" />
     <PackageReference Include="FlaUI.UIA3" Version="5.0.0" />

@@ -31,7 +31,7 @@
                                FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <TextBlock Text="Giao diện" VerticalAlignment="Center"
+                    <TextBlock x:Name="ThemeSettingsHeading" Text="Giao diện" VerticalAlignment="Center"
                                Foreground="{DynamicResource MutedForegroundBrush}" FontSize="12"
                                Margin="0,0,8,0" />
                     <Button Content="Sáng" Tag="Light" Click="SetTheme_Click"
@@ -43,14 +43,64 @@
             </Grid>
         </Border>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel MaxWidth="900" HorizontalAlignment="Left" Margin="56,40,40,48">
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0"
+                    Background="{DynamicResource CardBrush}">
+                <DockPanel Margin="10">
+                    <TextBlock DockPanel.Dock="Top" Text="Danh mục điều khiển" FontWeight="SemiBold"
+                               Margin="8,8,8,12" />
+                    <ListBox x:Name="DemoNavigation" Style="{StaticResource Command}"
+                             SelectionChanged="DemoNavigation_SelectionChanged"
+                             AutomationProperties.Name="Danh mục demo điều khiển">
+                        <ListBoxItem Content="Giao diện" Tag="Main.Appearance" />
+                        <ListBoxItem Content="Nút" Tag="Main.Buttons" />
+                        <ListBoxItem Content="Biểu mẫu" Tag="Main.Form" />
+                        <ListBoxItem Content="Thẻ" Tag="Main.Tabs" />
+                        <ListBoxItem Content="Xem trước tệp" Tag="Main.FilePreview" />
+                        <ListBoxItem Content="Hộp thoại" Tag="Main.Dialog" />
+                        <Separator />
+                        <ListBoxItem Content="Cây điều hướng" Tag="Gallery.TreeView" />
+                        <ListBoxItem Content="Thanh công cụ" Tag="Gallery.Toolbar" />
+                        <ListBoxItem Content="Ngăn xếp / Thu gọn" Tag="Gallery.Accordion" />
+                        <ListBoxItem Content="Cảnh báo / Trống / Mục" Tag="Gallery.Alert" />
+                        <ListBoxItem Content="Tệp / Trường / Ô nhập" Tag="Gallery.Form" />
+                        <ListBoxItem Content="Lịch / Ngày giờ" Tag="Gallery.Calendar" />
+                        <ListBoxItem Content="Hộp chọn / Lệnh" Tag="Gallery.Selectors" />
+                        <ListBoxItem Content="Trình đơn" Tag="Gallery.Menus" />
+                        <ListBoxItem Content="Nút / Công tắc" Tag="Gallery.Buttons" />
+                        <ListBoxItem Content="Phân trang / Tiến trình" Tag="Gallery.Pagination" />
+                        <ListBoxItem Content="Bảng / Chú giải" Tag="Gallery.Table" />
+                        <ListBoxItem Content="Badge" Tag="Gallery.Badge" />
+                        <ListBoxItem Content="Divider" Tag="Gallery.Divider" />
+                        <ListBoxItem Content="StepBar" Tag="Gallery.StepBar" />
+                        <ListBoxItem Content="Waterfall Panel" Tag="Gallery.WaterfallPanel" />
+                        <ListBoxItem Content="Biểu đồ" Tag="Gallery.Charts" />
+                        <ListBoxItem Content="Trace / Kiểu chữ" Tag="Gallery.Trace" />
+                        <ListBoxItem Content="Hộp thoại / Bảng trượt" Tag="Gallery.Overlays" />
+                        <ListBoxItem Content="AvalonDock" Tag="Gallery.AvalonDock" />
+                        <ListBoxItem Content="Bản đồ ngoại tuyến" Tag="Gallery.OfflineMap" />
+                    </ListBox>
+                </DockPanel>
+            </Border>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="250" />
+                </Grid.RowDefinitions>
+                <ScrollViewer x:Name="DemoScrollViewer" Grid.Row="0"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="900" HorizontalAlignment="Left" Margin="16,24,16,24">
                 <TextBlock Text="Bộ thành phần giao diện" FontSize="30" FontWeight="Bold" />
                 <TextBlock Text="Nền tảng gọn gàng, linh hoạt để xây dựng ứng dụng WPF hiện đại."
                            FontSize="14" Foreground="{DynamicResource MutedForegroundBrush}"
                            Margin="0,8,0,30" />
 
-                <TextBlock Text="Nút" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12" />
+                <TextBlock x:Name="ButtonsHeading" Text="Nút" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12" />
                 <WrapPanel Margin="0,0,0,30">
                     <Button Content="Chính" Margin="0,0,8,8" />
                     <Button Content="Phụ" Style="{StaticResource ButtonSecondary}" Margin="0,0,8,8" />
@@ -60,7 +110,7 @@
                     <Button Content="Đã tắt" IsEnabled="False" Margin="0,0,8,8" />
                 </WrapPanel>
 
-                <TextBlock Text="Điều khiển biểu mẫu" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12" />
+                <TextBlock x:Name="FormHeading" Text="Điều khiển biểu mẫu" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12" />
                 <Border Background="{DynamicResource CardBrush}"
                         BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1" CornerRadius="8" Padding="22" Margin="0,0,0,30">
@@ -94,7 +144,7 @@
                     </Grid>
                 </Border>
 
-                <TextBlock Text="Thẻ" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12" />
+                <TextBlock x:Name="TabsHeading" Text="Thẻ" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12" />
                 <TabControl Margin="0,0,0,30">
                     <TabItem Header="Tổng quan">
                         <StackPanel>
@@ -113,7 +163,7 @@
                     <TabItem Header="Đã tắt" IsEnabled="False" />
                 </TabControl>
 
-                <TextBlock Text="Xem trước tệp" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12" />
+                <TextBlock x:Name="FilePreviewHeading" Text="Xem trước tệp" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12" />
                 <Border Background="{DynamicResource CardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,30">
                     <StackPanel>
                         <DockPanel Margin="0,0,0,12">
@@ -124,7 +174,7 @@
                     </StackPanel>
                 </Border>
 
-                <TextBlock Text="Hộp thoại" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12" />
+                <TextBlock x:Name="DialogHeading" Text="Hộp thoại" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12" />
                 <Border Background="{DynamicResource CardBrush}"
                         BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1" CornerRadius="8" Padding="22">
@@ -139,8 +189,39 @@
                                 Margin="20,0,0,0" />
                     </DockPanel>
                 </Border>
-                <demo:ControlsGallery />
+                <demo:ControlsGallery x:Name="ControlsGalleryPreview" />
             </StackPanel>
-        </ScrollViewer>
+                </ScrollViewer>
+                <Border Grid.Row="1" Margin="8,4,8,8" Padding="10" CornerRadius="8"
+                        Background="{DynamicResource CardBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <DockPanel Margin="0,0,0,8" LastChildFill="False">
+                            <TextBlock x:Name="CodeSampleTitle" Text="Mã ví dụ"
+                                       FontWeight="SemiBold" />
+                            <TextBlock Text="XAML / C#" DockPanel.Dock="Right"
+                                       Foreground="{DynamicResource MutedForegroundBrush}" FontSize="11" />
+                        </DockPanel>
+                        <TextBlock Grid.Row="1"
+                                   Text="Đoạn mã trích; khai báo xmlns tương ứng với prefix controls, premium hoặc avalonDock."
+                                   Foreground="{DynamicResource MutedForegroundBrush}" FontSize="10"
+                                   Margin="0,0,0,6" />
+                        <TextBox x:Name="CodeSampleText" Grid.Row="2" IsReadOnly="True"
+                                 AcceptsReturn="True" TextWrapping="NoWrap"
+                                 VerticalScrollBarVisibility="Auto"
+                                 HorizontalScrollBarVisibility="Auto"
+                                 Padding="8" Background="{DynamicResource BackgroundBrush}"
+                                 BorderBrush="{DynamicResource BorderBrush}"
+                                 FontFamily="Consolas" FontSize="12"
+                                 AutomationProperties.Name="Mã nguồn của demo đang chọn" />
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
     </Grid>
 </premium:PremiumWindow>

@@ -80,6 +80,9 @@ public static class DialogService
             Width = owner.ActualWidth,
             Height = owner.ActualHeight
         };
+        overlay.SetResourceReference(Control.ForegroundProperty, "ForegroundBrush");
+        overlay.SetResourceReference(Control.FontFamilyProperty, "WpfPremium.FontFamily");
+        overlay.SetResourceReference(Control.FontSizeProperty, "WpfPremium.FontSize");
         Action dismiss = kind == OverlayKind.AlertDialog
             ? () => overlay.DialogResult = false
             : overlay.Close;
@@ -136,7 +139,7 @@ public static class DialogService
         var panel = new Border
         {
             Width = !isEdgeOverlay ? 440 : isSideOverlay ? Math.Min(400, owner.ActualWidth) : double.NaN,
-            Height = isEdgeOverlay && !isSideOverlay ? Math.Min(380, owner.ActualHeight * 0.8) : double.NaN,
+            Height = isEdgeOverlay && !isSideOverlay ? owner.ActualHeight * 0.9 : double.NaN,
             MaxWidth = isEdgeOverlay ? owner.ActualWidth : double.PositiveInfinity,
             MaxHeight = isEdgeOverlay ? owner.ActualHeight : Math.Max(160, owner.ActualHeight - 48),
             HorizontalAlignment = !isEdgeOverlay
@@ -205,7 +208,7 @@ public static class DialogService
         {
             Content = content,
             Margin = new Thickness(16, 4, 16, kind == OverlayKind.AlertDialog ? 12 : 16),
-            VerticalContentAlignment = VerticalAlignment.Top
+            VerticalContentAlignment = VerticalAlignment.Stretch
         };
         Grid.SetRow(body, 1);
         layout.Children.Add(body);

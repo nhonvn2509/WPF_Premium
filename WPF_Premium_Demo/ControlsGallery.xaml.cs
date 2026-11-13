@@ -2,7 +2,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Globalization;
-using Microsoft.Win32;
 using WPF_Premium.Controls;
 
 namespace WPF_Premium_Demo;
@@ -66,18 +65,14 @@ public partial class ControlsGallery : UserControl
         ];
     }
 
-    private void ChooseOfflineMap_Click(object sender, RoutedEventArgs e)
+    public void NavigateToSection(string sectionName)
     {
-        var dialog = new OpenFileDialog
+        if (FindName(sectionName) is not FrameworkElement section)
         {
-            Title = "Chọn dữ liệu bản đồ ngoại tuyến",
-            Filter = "Cơ sở dữ liệu bản đồ MBTiles (*.mbtiles)|*.mbtiles|Tất cả các tệp (*.*)|*.*",
-            CheckFileExists = true
-        };
-        if (dialog.ShowDialog(Window.GetWindow(this)) == true)
-        {
-            OfflineMapPreview.MapFilePath = dialog.FileName;
+            throw new InvalidOperationException($"Gallery section '{sectionName}' was not found.");
         }
+
+        section.BringIntoView();
     }
 
     private void ValidateForm_Click(object sender, RoutedEventArgs e)
@@ -245,7 +240,6 @@ public partial class ControlsGallery : UserControl
         var technologyField = AddFormField(form, "Công nghệ", technologyInput);
         var status = new TextBlock
         {
-            Margin = new Thickness(0, 4, 0, 10),
             TextWrapping = TextWrapping.Wrap
         };
         var validateButton = new Button
@@ -285,15 +279,30 @@ public partial class ControlsGallery : UserControl
                 : "Vui lòng sửa các trường được đánh dấu trước khi tiếp tục.";
             status.Foreground = (Brush)FindResource(isValid ? "PrimaryBrush" : "DestructiveBrush");
         };
-        form.Children.Add(status);
-        form.Children.Add(validateButton);
-        return new ScrollViewer
+        var layout = new Grid();
+        layout.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        layout.Children.Add(new ScrollViewer
         {
             Content = form,
-            MaxHeight = 580,
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
             HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled
+        });
+
+        var actions = new DockPanel { Margin = new Thickness(2, 10, 2, 2) };
+        DockPanel.SetDock(validateButton, Dock.Right);
+        actions.Children.Add(validateButton);
+        actions.Children.Add(status);
+        var footer = new Border
+        {
+            BorderBrush = (Brush)FindResource("BorderBrush"),
+            BorderThickness = new Thickness(0, 1, 0, 0),
+            Padding = new Thickness(0, 10, 0, 0),
+            Child = actions
         };
+        Grid.SetRow(footer, 1);
+        layout.Children.Add(footer);
+        return layout;
     }
 
     private Field AddFormField(Panel parent, string label, UIElement input)

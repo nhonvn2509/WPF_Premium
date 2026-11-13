@@ -14,11 +14,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Assets/WorldMap/countries/ne_50m_admin_0_countries.shp;Assets/WorldMap/countries/ne_50m_admin_0_countries.shx;Assets/WorldMap/countries/ne_50m_admin_0_countries.dbf;Assets/WorldMap/countries/ne_50m_admin_0_countries.prj;Assets/WorldMap/countries/ne_50m_admin_0_countries.cpg" />
-    <EmbeddedResource Include="Assets/WorldMap/regions/ne_50m_admin_1_states_provinces.shp;Assets/WorldMap/regions/ne_50m_admin_1_states_provinces.shx;Assets/WorldMap/regions/ne_50m_admin_1_states_provinces.dbf;Assets/WorldMap/regions/ne_50m_admin_1_states_provinces.prj;Assets/WorldMap/regions/ne_50m_admin_1_states_provinces.cpg" />
-    <EmbeddedResource Include="Assets/WorldMap/cities/ne_50m_populated_places.shp;Assets/WorldMap/cities/ne_50m_populated_places.shx;Assets/WorldMap/cities/ne_50m_populated_places.dbf;Assets/WorldMap/cities/ne_50m_populated_places.prj;Assets/WorldMap/cities/ne_50m_populated_places.cpg" />
-    <EmbeddedResource Include="Assets/WorldMap/seas/ne_50m_geography_marine_polys.shp;Assets/WorldMap/seas/ne_50m_geography_marine_polys.shx;Assets/WorldMap/seas/ne_50m_geography_marine_polys.dbf;Assets/WorldMap/seas/ne_50m_geography_marine_polys.prj;Assets/WorldMap/seas/ne_50m_geography_marine_polys.cpg" />
-    <EmbeddedResource Include="Assets/WorldMap/geography/ne_50m_geography_regions_points.shp;Assets/WorldMap/geography/ne_50m_geography_regions_points.shx;Assets/WorldMap/geography/ne_50m_geography_regions_points.dbf;Assets/WorldMap/geography/ne_50m_geography_regions_points.prj;Assets/WorldMap/geography/ne_50m_geography_regions_points.cpg" />
+    <EmbeddedResource Include="Assets/WorldMap/countries/ne_10m_admin_0_countries.zip" />
+    <EmbeddedResource Include="Assets/WorldMap/regions/ne_10m_admin_1_states_provinces.zip" />
+    <EmbeddedResource Include="Assets/WorldMap/cities/ne_10m_populated_places.zip" />
+    <EmbeddedResource Include="Assets/WorldMap/bathymetry/ne_10m_bathymetry_all.zip" />
+    <EmbeddedResource Include="Assets/WorldMap/reefs/ne_10m_reefs.zip" />
+    <EmbeddedResource Include="Assets/WorldMap/seas/ne_10m_geography_marine_polys.zip" />
+    <EmbeddedResource Include="Assets/WorldMap/geography/ne_10m_geography_regions_points.zip" />
+    <EmbeddedResource Include="Assets/WorldMap/islands/ne_10m_minor_islands.zip" />
+    <EmbeddedResource Include="Assets/WorldMap/islands/ne_10m_minor_islands_coastline.zip" />
+    <EmbeddedResource Include="Assets/WorldMap/islands/geonames_marine_features.tsv" />
     <PackageReference Include="BruTile.MbTiles" Version="6.0.0" />
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
     <PackageReference Include="DotnetPoi.Legacy" Version="0.5.0" />
@@ -27,11 +32,11 @@
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.5" />
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="15.0.0" />
     <PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3179.45" />
     <PackageReference Include="Dirkster.AvalonDock" Version="5.0.2" />
     <None Update="README.md" Pack="true" PackagePath="/" />
     <PackageReference Include="Mapsui.Wpf" Version="5.1.0" />
     <PackageReference Include="Mapsui.Nts" Version="5.1.0" />
-    <PackageReference Include="PdfPig" Version="0.1.7" />
     <PackageReference Include="Sdcb.LibRaw" Version="0.21.1.7" />
     <PackageReference Include="Sdcb.LibRaw.runtime.win64" Version="0.21.1" />
     <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.24" />

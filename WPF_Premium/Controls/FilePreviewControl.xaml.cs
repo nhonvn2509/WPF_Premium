@@ -13,9 +13,9 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using MahApps.Metro.IconPacks;
 using Microsoft.Win32;
+using Microsoft.Web.WebView2.Wpf;
 using MagickImage = ImageMagick.MagickImage;
 using MagickFormat = ImageMagick.MagickFormat;
-using UglyToad.PdfPig;
 using Sdcb.LibRaw;
 
 namespace WPF_Premium.Controls;
@@ -30,6 +30,7 @@ public partial class FilePreviewControl : UserControl
     private LibVLCSharp.Shared.MediaPlayer? _vlcVideoPlayer;
     private LibVLCSharp.Shared.Media? _vlcMedia;
     private LibVLCSharp.WPF.VideoView? _vlcVideoView;
+    private WebView2? _documentBrowser;
     private DispatcherTimer? _audioPositionTimer;
     private DispatcherTimer? _videoPositionTimer;
     private bool _updatingAudioSeek;
@@ -67,6 +68,7 @@ public partial class FilePreviewControl : UserControl
         var info = new FileInfo(_filePath);
         FileInfoText.Text = $"{System.IO.Path.GetExtension(path).TrimStart('.').ToUpperInvariant()} · {FormatSize(info.Length)} · {info.LastWriteTime:g}";
         StopCurrentMedia();
+        CloseDocumentBrowser();
         CloseMagnifier();
         ContentHost.Children.Clear(); _image = null; _media = null; _textView = null;
         ImageTools.Visibility = TextTools.Visibility = Visibility.Collapsed; ZoomText.Visibility = Visibility.Visible;
@@ -76,10 +78,85 @@ public partial class FilePreviewControl : UserControl
             if (IsImage(ext)) ShowImage(path);
             else if (IsAudio(ext)) ShowAudio(path);
             else if (IsVideo(ext)) ShowVideo(path);
+            else if (ext == ".pdf") ShowDocument(path, null);
+            else if (IsOfficeDocument(ext)) ShowOfficeDocument(path, ext);
             else ShowText(path, ext);
         }
         catch (Exception ex) { ShowMessage($"Không thể tạo bản xem trước: {ex.Message}"); }
     }
+
+    private void ShowDocument(string path, string? html)
+    {
+        var browser = new WebView2();
+        AutomationProperties.SetAutomationId(browser, "PreviewDocumentBrowser");
+        AutomationProperties.SetName(browser, html is null ? "Trình xem PDF" : "Bản xem trước tài liệu Office");
+        RoutedEventHandler loaded = null!;
+        loaded = async (_, _) =>
+        {
+            browser.Loaded -= loaded;
+            if (ReferenceEquals(_documentBrowser, browser))
+                await InitializeDocumentBrowserAsync(browser, path, html);
+        };
+        browser.Loaded += loaded;
+        _documentBrowser = browser;
+        ContentHost.Children.Add(browser);
+        ZoomText.Text = html is null ? "PDF" : "Office";
+    }
+
+    private void ShowOfficeDocument(string path, string extension)
+    {
+        try
+        {
+            ShowDocument(path, OfficePreviewHtmlRenderer.Render(path));
+        }
+        catch (Exception) when (extension is ".doc" or ".xls" or ".ppt")
+        {
+            ShowText(path, extension);
+        }
+    }
+
+    private async Task InitializeDocumentBrowserAsync(WebView2 browser, string path, string? html)
+    {
+        try
+        {
+            await browser.EnsureCoreWebView2Async();
+            browser.CoreWebView2.Settings.IsScriptEnabled = html is null;
+            browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
+            browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+            browser.CoreWebView2.NavigationStarting += (_, args) =>
+            {
+                if (!Uri.TryCreate(args.Uri, UriKind.Absolute, out var uri)) return;
+                if (uri.IsFile &&
+                    !System.IO.Path.GetFullPath(uri.LocalPath).Equals(System.IO.Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase))
+                {
+                    args.Cancel = true;
+                }
+                else if (uri.Scheme is "http" or "https" or "mailto" or "ftp")
+                {
+                    args.Cancel = true;
+                }
+            };
+            if (html is null) browser.Source = new Uri(path);
+            else browser.NavigateToString(html);
+        }
+        catch (Exception ex)
+        {
+            if (!ReferenceEquals(_documentBrowser, browser)) return;
+            ContentHost.Children.Clear();
+            _documentBrowser = null;
+            ShowMessage($"Không thể khởi tạo trình xem tài liệu: {ex.Message}");
+        }
+    }
+
+    private void CloseDocumentBrowser()
+    {
+        _documentBrowser?.Dispose();
+        _documentBrowser = null;
+    }
+
+    private static bool IsOfficeDocument(string extension) =>
+        extension is ".docx" or ".docm" or ".xlsx" or ".xlsm" or ".pptx" or
+            ".doc" or ".xls" or ".ppt" or ".odt" or ".ott" or ".ods" or ".odp";
 
     private void ShowImage(string path)
     {
@@ -335,17 +412,10 @@ public partial class FilePreviewControl : UserControl
     private void ShowText(string path, string ext)
     {
         string content;
-        if (ext == ".docx") content = ReadDocx(path);
-        else if (ext == ".xlsx" || ext == ".xlsm") content = ReadXlsx(path);
-        else if (ext == ".pdf") content = ReadPdfText(path);
-        else if (ext is ".odt" or ".ott") content = ReadOpenDocument(path, "content.xml");
-        else if (ext is ".ods") content = ReadOpenDocument(path, "content.xml");
-        else if (ext is ".odp") content = ReadOpenDocument(path, "content.xml");
-        else if (ext is ".epub") content = ReadEbookArchive(path);
+        if (ext == ".epub") content = ReadEbookArchive(path);
         else if (ext is ".lrf") content = "Tệp sách LRF (Sony Broadband eBook). Định dạng nhị phân này chưa có bộ giải mã nội dung tích hợp; bạn vẫn có thể mở bằng ứng dụng mặc định hoặc xem thông tin tệp ở phía trên.";
         else if (ext is ".djvu" or ".djv") content = "Tài liệu DjVu nhiều trang. Bộ kết xuất DjVu chưa được tích hợp trên máy này; hãy dùng nút Mở bằng ứng dụng để xem đầy đủ tài liệu.";
         else if (ext is ".doc" or ".xls" or ".ppt") content = ReadLegacyOffice(path, ext);
-        else if (ext == ".doc" || ext == ".xls" || ext == ".ppt" || ext == ".pptx") content = "Định dạng Office này cần ứng dụng/engine Office để render chính xác. Hãy dùng 'Mở bằng ứng dụng'.";
         else if (ext == ".eml") content = ReadEml(path);
         else if (ext == ".json") { using var doc = JsonDocument.Parse(File.ReadAllText(path)); content = JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true }); }
         else if (ext == ".zip") content = string.Join(Environment.NewLine, ZipFile.OpenRead(path).Entries.Select(e => $"{e.FullName}    {FormatSize(e.Length)}"));
@@ -355,25 +425,6 @@ public partial class FilePreviewControl : UserControl
         ContentHost.Children.Add(_textView); TextTools.Visibility = Visibility.Visible; ZoomText.Visibility = Visibility.Collapsed;
     }
 
-    private static string ReadDocx(string path) { using var z = ZipFile.OpenRead(path); using var s = z.GetEntry("word/document.xml")!.Open(); var d = System.Xml.Linq.XDocument.Load(s); return string.Join(Environment.NewLine, d.Descendants().Where(x => x.Name.LocalName == "p").Select(p => string.Concat(p.Descendants().Where(x => x.Name.LocalName == "t").Select(t => t.Value)))); }
-    private static string ReadPdfText(string path)
-    {
-        try
-        {
-            using var document = PdfDocument.Open(path);
-            return string.Join(Environment.NewLine + Environment.NewLine, document.GetPages().Select(page => $"Trang {page.Number}{Environment.NewLine}{page.Text}"));
-        }
-        catch (Exception ex) { return $"Không thể trích xuất văn bản PDF: {ex.Message}"; }
-    }
-    private static string ReadOpenDocument(string path, string entryName)
-    {
-        using var archive = ZipFile.OpenRead(path);
-        var entry = archive.GetEntry(entryName);
-        if (entry is null) return "Không tìm thấy nội dung trong tài liệu OpenDocument.";
-        using var stream = entry.Open();
-        var xml = System.Xml.Linq.XDocument.Load(stream);
-        return string.Join(Environment.NewLine, xml.Descendants().Where(x => x.Name.LocalName is "p" or "h").Select(x => x.Value));
-    }
     private static string ReadEbookArchive(string path)
     {
         using var archive = ZipFile.OpenRead(path);
@@ -383,15 +434,13 @@ public partial class FilePreviewControl : UserControl
     {
         try
         {
-            var type = Type.GetType("NPOI.HWPF.HWPFDocument, NPOI", false);
-            if (extension == ".doc" && type is not null) { using var stream = File.OpenRead(path); dynamic doc = Activator.CreateInstance(type, stream)!; return (string)doc.GetText().Text; }
+            var type = Type.GetType("DotnetPoi.HWPF.UserModel.HWPFDocument, DotnetPoi.Legacy", false);
+            if (extension == ".doc" && type is not null) { using var stream = File.OpenRead(path); dynamic doc = Activator.CreateInstance(type, stream)!; return (string)doc.getText(); }
         }
-        catch (Exception ex) { return $"Không thể đọc tài liệu Office cũ: {ex.Message}"; }
+        catch (Exception ex) { return $"Không thể đọc tài liệu Office cũ: {ex.GetBaseException().Message}"; }
         return "Không thể trích xuất văn bản từ định dạng Office cũ này. Hãy mở bằng ứng dụng mặc định.";
     }
-    private static string ReadXlsx(string path) { using var z = ZipFile.OpenRead(path); var strings = new List<string>(); var se = z.GetEntry("xl/sharedStrings.xml"); if (se != null) { using var s = se.Open(); var d = System.Xml.Linq.XDocument.Load(s); strings = d.Descendants().Where(x => x.Name.LocalName == "si").Select(si => string.Concat(si.Descendants().Where(x => x.Name.LocalName == "t").Select(t => t.Value))).ToList(); } var sheet = z.GetEntry("xl/worksheets/sheet1.xml"); if (sheet == null) return "Không tìm thấy sheet đầu tiên."; using var stream = sheet.Open(); var xml = System.Xml.Linq.XDocument.Load(stream); return string.Join(Environment.NewLine, xml.Descendants().Where(x => x.Name.LocalName == "row").Select(row => string.Join("\t", row.Elements().Select(c => { var v = c.Elements().FirstOrDefault(x => x.Name.LocalName == "v")?.Value ?? ""; return c.Attribute("t")?.Value == "s" && int.TryParse(v, out var i) && i < strings.Count ? strings[i] : v; })))); }
     private static string ReadEml(string path) { var raw = File.ReadAllText(path, Encoding.UTF8); var split = raw.IndexOf("\r\n\r\n", StringComparison.Ordinal); if (split < 0) split = raw.IndexOf("\n\n", StringComparison.Ordinal); return split < 0 ? raw : raw[..split] + Environment.NewLine + Environment.NewLine + raw[(split + (raw.AsSpan(split).StartsWith("\r\n\r\n") ? 4 : 2))..]; }
-    private static string ExtractPdfText(string path) { try { var bytes = File.ReadAllBytes(path); return Encoding.Latin1.GetString(bytes).Split(new[] { "stream", "endstream" }, StringSplitOptions.None).SelectMany(s => System.Text.RegularExpressions.Regex.Matches(s, @"\(([^()]*)\)").Select(m => m.Groups[1].Value)).Where(s => s.Any(char.IsLetter)).Take(300).Aggregate(new StringBuilder(), (b, s) => b.AppendLine(s)).ToString(); } catch { return ""; } }
     private static Encoding DetectEncoding(string path) { using var f = File.OpenRead(path); Span<byte> b = stackalloc byte[4]; var n = f.Read(b); if (n >= 2 && b[0] == 0xff && b[1] == 0xfe) return Encoding.Unicode; if (n >= 2 && b[0] == 0xfe && b[1] == 0xff) return Encoding.BigEndianUnicode; if (n >= 3 && b[0] == 0xef && b[1] == 0xbb && b[2] == 0xbf) return Encoding.UTF8; return new UTF8Encoding(false, true); }
     private void ShowMessage(string message) { ContentHost.Children.Clear(); var text = new TextBlock { Text = message, Margin = new Thickness(24), TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Foreground = (Brush)FindResource("MutedForegroundBrush") }; AutomationProperties.SetAutomationId(text, "PreviewLoadError"); ContentHost.Children.Add(text); }
     private static bool IsImage(string e) => new[] { ".bmp", ".cr2", ".cur", ".dds", ".dng", ".erf", ".exr", ".fts", ".gif", ".hdr", ".heic", ".heif", ".ico", ".jfif", ".jp2", ".jpe", ".jpeg", ".jpg", ".jps", ".mng", ".nef", ".nrw", ".orf", ".pam", ".pbm", ".pcd", ".pcx", ".pef", ".pes", ".pfm", ".pgm", ".picon", ".pict", ".png", ".pnm", ".ppm", ".psd", ".raf", ".ras", ".rw2", ".sfw", ".sgi", ".svg", ".tga", ".tif", ".tiff", ".wbmp", ".webp", ".wpg", ".x3f", ".xbm", ".xcf", ".xpm", ".xwd", ".wdp", ".jxr" }.Contains(e);

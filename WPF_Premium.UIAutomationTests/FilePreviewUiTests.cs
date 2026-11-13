@@ -4,6 +4,7 @@ using System.Text;
 using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
 using FlaUI.UIA3;
+using DotnetPoi.HSSF.UserModel;
 using FlaApplication = FlaUI.Core.Application;
 
 namespace WPF_Premium.UIAutomationTests;
@@ -62,22 +63,21 @@ public sealed class FilePreviewUiTests
         new(".log", PreviewKind.Text),
         new(".json", PreviewKind.Text),
         new(".eml", PreviewKind.Text),
-        new(".pdf", PreviewKind.Text),
-        new(".docx", PreviewKind.Text),
-        new(".docm", PreviewKind.Text),
-        new(".xlsx", PreviewKind.Text),
-        new(".xlsm", PreviewKind.Text),
-        new(".pptx", PreviewKind.Text),
-        new(".odt", PreviewKind.Text),
-        new(".ods", PreviewKind.Text),
-        new(".odp", PreviewKind.Text),
+        new(".pdf", PreviewKind.Document),
+        new(".docx", PreviewKind.Document),
+        new(".docm", PreviewKind.Document),
+        new(".xlsx", PreviewKind.Document),
+        new(".xlsm", PreviewKind.Document),
+        new(".pptx", PreviewKind.Document),
+        new(".odt", PreviewKind.Document),
+        new(".ods", PreviewKind.Document),
+        new(".odp", PreviewKind.Document),
         new(".html", PreviewKind.Text),
         new(".rtf", PreviewKind.Text),
         new(".yaml", PreviewKind.Text),
         new(".doc", PreviewKind.Text),
-        new(".xls", PreviewKind.Text),
+        new(".xls", PreviewKind.Document),
         new(".ppt", PreviewKind.Text),
-        new(".pptx", PreviewKind.Text),
         new(".zip", PreviewKind.Text),
         new(".azw3", PreviewKind.Text),
         new(".epub", PreviewKind.Text),
@@ -179,12 +179,13 @@ public sealed class FilePreviewUiTests
                 Assert.AreEqual("Video", elementsByAutomationId["PreviewZoomText"].Name);
                 WaitForVideoReady(window);
             }
-            else if (scenario.Extension == ".pdf")
+            else if (scenario.Kind == PreviewKind.Document)
             {
-                Assert.IsTrue(elementsByAutomationId.ContainsKey("PreviewTextContent"), elementsByAutomationId.TryGetValue("PreviewLoadError", out var pdfError) ? $"PDF preview failed: {pdfError.Name}" : "PDF phải hiển thị nội dung trích xuất trong trình xem văn bản.");
-                var pdfText = elementsByAutomationId["PreviewTextContent"].Patterns.Value.PatternOrDefault?.Value;
-                Assert.IsNotNull(pdfText);
-                if (scenario.ExpectedTextSnippet is not null) StringAssert.Contains(pdfText, scenario.ExpectedTextSnippet);
+                Assert.IsTrue(
+                    elementsByAutomationId.ContainsKey("PreviewDocumentBrowser"),
+                    elementsByAutomationId.TryGetValue("PreviewLoadError", out var documentError)
+                        ? $"Document preview failed: {documentError.Name}"
+                        : $"{scenario.Extension} phải dùng trình xem tài liệu trực quan.");
             }
             else
             {
@@ -383,22 +384,40 @@ public sealed class FilePreviewUiTests
             case ".xlsm":
                 WriteZip(
                     path,
+                    ("xl/workbook.xml", "<workbook xmlns:r=\"urn:r\"><sheets><sheet name=\"Sample data\" sheetId=\"1\" r:id=\"rId1\"/></sheets></workbook>"),
+                    ("xl/_rels/workbook.xml.rels", "<Relationships><Relationship Id=\"rId1\" Target=\"worksheets/sheet1.xml\"/></Relationships>"),
                     ("xl/sharedStrings.xml", "<sst><si><t>WPF preview sample</t></si></sst>"),
                     ("xl/worksheets/sheet1.xml", "<worksheet><sheetData><row r=\"1\"><c r=\"A1\" t=\"s\"><v>0</v></c></row></sheetData></worksheet>"));
                 break;
             case ".pptx":
-                WriteZip(path, ("ppt/slides/slide1.xml", "<p:sld xmlns:p=\"urn:p\" xmlns:a=\"urn:a\"><a:t>WPF preview sample</a:t></p:sld>"));
+                WriteZip(
+                    path,
+                    ("ppt/presentation.xml", "<p:presentation xmlns:p=\"urn:p\"><p:sldSz cx=\"12192000\" cy=\"6858000\"/></p:presentation>"),
+                    ("ppt/slides/slide1.xml", "<p:sld xmlns:p=\"urn:p\" xmlns:a=\"urn:a\"><p:sp><p:txBody><a:p><a:r><a:t>WPF preview sample</a:t></a:r></a:p></p:txBody></p:sp></p:sld>"));
                 break;
             case ".odt":
+                WriteZip(path, ("content.xml", "<office:document-content xmlns:office=\"urn:office\" xmlns:text=\"urn:text\"><office:body><office:text><text:p>WPF preview sample</text:p></office:text></office:body></office:document-content>"));
+                break;
             case ".ods":
+                WriteZip(path, ("content.xml", "<office:document-content xmlns:office=\"urn:office\" xmlns:table=\"urn:table\" xmlns:text=\"urn:text\"><office:body><office:spreadsheet><table:table table:name=\"Sheet1\"><table:table-row><table:table-cell><text:p>WPF preview sample</text:p></table:table-cell></table:table-row></table:table></office:spreadsheet></office:body></office:document-content>"));
+                break;
             case ".odp":
-                WriteZip(path, ("content.xml", "<document xmlns:text=\"urn:text\"><text:p>WPF preview sample</text:p></document>"));
+                WriteZip(path, ("content.xml", "<office:document-content xmlns:office=\"urn:office\" xmlns:presentation=\"urn:presentation\" xmlns:draw=\"urn:draw\" xmlns:text=\"urn:text\"><office:body><presentation:presentation><draw:page><draw:frame><draw:text-box><text:p>WPF preview sample</text:p></draw:text-box></draw:frame></draw:page></presentation:presentation></office:body></office:document-content>"));
                 break;
             case ".zip":
                 WriteZip(path, ("sample.txt", "WPF preview sample"));
                 break;
             case ".pdf":
                 WritePdf(path);
+                break;
+            case ".xls":
+                using (var workbook = new HSSFWorkbook())
+                {
+                    var sheet = workbook.createSheet("Sheet1");
+                    sheet.createRow(0).createCell(0).setCellValue("WPF preview sample");
+                    using var stream = File.Create(path);
+                    workbook.write(stream);
+                }
                 break;
             case ".eml":
                 File.WriteAllText(path, "Subject: WPF preview sample\r\nFrom: test@example.com\r\n\r\nPreview body", Encoding.UTF8);
@@ -500,8 +519,9 @@ public sealed class FilePreviewUiTests
         public string? ExpectedTextSnippet => FilePath is not null ? null : Extension switch
         {
             ".eml" => "Subject: WPF preview sample",
-            ".pdf" => "PDF",
-            ".doc" or ".xls" or ".ppt" => "Không đọc được tệp Office cũ",
+            ".pdf" => null,
+            ".doc" => "Không thể đọc tài liệu Office cũ",
+            ".ppt" => "Không thể trích xuất văn bản từ định dạng Office cũ này",
             ".azw3" => "Định dạng sách điện tử này chưa có bộ giải mã tích hợp",
             ".epub" => "Không đọc được EPUB",
             ".fb2" => "Không đọc được FB2",
@@ -510,11 +530,12 @@ public sealed class FilePreviewUiTests
             _ => "WPF preview sample"
         };
 
-        public IReadOnlyList<string> RequiredAutomationIds => Extension == ".pdf" ? [] : Kind switch
+        public IReadOnlyList<string> RequiredAutomationIds => Kind switch
         {
             PreviewKind.Image => ["PreviewImage", "ImageZoomInButton", "ImageZoomOutButton", "ImageZoomResetButton", "ImageMagnifierToggle"],
             PreviewKind.Audio => ["AudioWaveform", "AudioPlayButton", "AudioStopButton", "AudioSeekSlider", "AudioPlaybackTimeText"],
             PreviewKind.Video => ["VideoPlayButton", "VideoSeekSlider", "VideoVolumeSlider"],
+            PreviewKind.Document => ["PreviewDocumentBrowser"],
             _ => ["PreviewTextContent", "PreviewSearchBox", "PreviewFindNextButton", "PreviewWordWrapToggle", "PreviewCopyButton"]
         };
     }
@@ -524,6 +545,7 @@ public sealed class FilePreviewUiTests
         Image,
         Audio,
         Video,
+        Document,
         Text
     }
 }

@@ -1252,6 +1252,184 @@
         <Setter Property="StaysOpen" Value="False" />
     </Style>
 
+    <Style x:Key="Badge" TargetType="{x:Type controls:Badge}">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="8,3" />
+        <Setter Property="FontSize" Value="{DynamicResource WpfPremium.SmallFontSize}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:Badge}">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="999"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          RecognizesAccessKey="True" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Variant, RelativeSource={RelativeSource Self}}"
+                         Value="{x:Static controls:BadgeVariant.Secondary}">
+                <Setter Property="Background" Value="{DynamicResource SecondaryBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Variant, RelativeSource={RelativeSource Self}}"
+                         Value="{x:Static controls:BadgeVariant.Success}">
+                <Setter Property="Background" Value="{DynamicResource SuccessBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Variant, RelativeSource={RelativeSource Self}}"
+                         Value="{x:Static controls:BadgeVariant.Warning}">
+                <Setter Property="Background" Value="{DynamicResource WarningBrush}" />
+                <Setter Property="Foreground" Value="#FF18181B" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Variant, RelativeSource={RelativeSource Self}}"
+                         Value="{x:Static controls:BadgeVariant.Destructive}">
+                <Setter Property="Background" Value="{DynamicResource DestructiveBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource DestructiveForegroundBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Variant, RelativeSource={RelativeSource Self}}"
+                         Value="{x:Static controls:BadgeVariant.Outline}">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    <Style TargetType="{x:Type controls:Badge}" BasedOn="{StaticResource Badge}" />
+
+    <Style x:Key="Divider" TargetType="{x:Type controls:Divider}">
+        <Setter Property="Orientation" Value="Horizontal" />
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Margin" Value="0,8" />
+        <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:Divider}">
+                    <Border x:Name="DividerLine"
+                            Height="1"
+                            Background="{TemplateBinding Background}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Orientation" Value="Vertical">
+                            <Setter TargetName="DividerLine" Property="Height" Value="Auto" />
+                            <Setter TargetName="DividerLine" Property="Width" Value="1" />
+                            <Setter TargetName="DividerLine" Property="HorizontalAlignment" Value="Center" />
+                            <Setter TargetName="DividerLine" Property="VerticalAlignment" Value="Stretch" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Vertical">
+                <Setter Property="Width" Value="1" />
+                <Setter Property="Height" Value="Auto" />
+                <Setter Property="Margin" Value="8,0" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    <Style TargetType="{x:Type controls:Divider}" BasedOn="{StaticResource Divider}" />
+
+    <Style x:Key="StepBar" TargetType="{x:Type controls:StepBar}">
+        <Setter Property="Foreground" Value="{DynamicResource MutedForegroundBrush}" />
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="1" />
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="{x:Type controls:StepBar}" BasedOn="{StaticResource StepBar}" />
+    <Style x:Key="StepBarItem" TargetType="{x:Type controls:StepBarItem}">
+        <Setter Property="Foreground" Value="{DynamicResource MutedForegroundBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:StepBarItem}">
+                    <Grid MinHeight="58">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="28" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border x:Name="LeftConnector"
+                                Grid.Column="0"
+                                Height="2"
+                                Margin="0,13,0,0"
+                                VerticalAlignment="Top"
+                                Background="{DynamicResource BorderBrush}" />
+                        <Border x:Name="RightConnector"
+                                Grid.Column="2"
+                                Height="2"
+                                Margin="0,13,0,0"
+                                VerticalAlignment="Top"
+                                Background="{DynamicResource BorderBrush}" />
+                        <Border x:Name="Marker"
+                                Grid.Column="1"
+                                Width="28"
+                                Height="28"
+                                CornerRadius="14"
+                                BorderThickness="1"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                Background="{DynamicResource MutedBrush}">
+                            <TextBlock x:Name="MarkerLabel"
+                                       Text="{TemplateBinding MarkerText}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       FontSize="{DynamicResource WpfPremium.SmallFontSize}"
+                                       FontWeight="SemiBold" />
+                        </Border>
+                        <ContentPresenter Grid.Row="1"
+                                          Grid.ColumnSpan="3"
+                                          Margin="0,6,0,0"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Top"
+                                          TextBlock.TextAlignment="Center"
+                                          RecognizesAccessKey="True" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsFirst" Value="True">
+                            <Setter TargetName="LeftConnector" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="IsLast" Value="True">
+                            <Setter TargetName="RightConnector" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="State" Value="{x:Static controls:StepState.Current}">
+                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
+                            <Setter TargetName="Marker" Property="Background" Value="{DynamicResource PrimaryBrush}" />
+                            <Setter TargetName="Marker" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                            <Setter TargetName="LeftConnector" Property="Background" Value="{DynamicResource SuccessBrush}" />
+                            <Setter TargetName="MarkerLabel" Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
+                        </Trigger>
+                        <Trigger Property="State" Value="{x:Static controls:StepState.Complete}">
+                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+                            <Setter TargetName="Marker" Property="Background" Value="{DynamicResource SuccessBrush}" />
+                            <Setter TargetName="Marker" Property="BorderBrush" Value="{DynamicResource SuccessBrush}" />
+                            <Setter TargetName="RightConnector" Property="Background" Value="{DynamicResource SuccessBrush}" />
+                            <Setter TargetName="MarkerLabel" Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="{x:Type controls:StepBarItem}" BasedOn="{StaticResource StepBarItem}" />
+
     <Style x:Key="Progress" TargetType="{x:Type ProgressBar}">
         <Setter Property="Height" Value="8" />
         <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
