@@ -21,6 +21,13 @@ public sealed class FilePreviewUiTests
         new(".gif", PreviewKind.Image),
         new(".tif", PreviewKind.Image),
         new(".tiff", PreviewKind.Image),
+        new(".ico", PreviewKind.Image),
+        new(".webp", PreviewKind.Image),
+        new(".svg", PreviewKind.Image),
+        new(".psd", PreviewKind.Image),
+        new(".jp2", PreviewKind.Image),
+        new(".cr2", PreviewKind.Image),
+        new(".heif", PreviewKind.Image),
         new(".mp3", PreviewKind.Audio),
         new(".wav", PreviewKind.Audio),
         new(".wma", PreviewKind.Audio),
@@ -28,14 +35,28 @@ public sealed class FilePreviewUiTests
         new(".aac", PreviewKind.Audio),
         new(".mid", PreviewKind.Audio),
         new(".midi", PreviewKind.Audio),
+        new(".flac", PreviewKind.Audio),
+        new(".ogg", PreviewKind.Audio),
+        new(".opus", PreviewKind.Audio),
+        new(".ac3", PreviewKind.Audio),
+        new(".sph", PreviewKind.Audio),
+        new(".8svx", PreviewKind.Audio),
+        new(".wv", PreviewKind.Audio),
         new(".mp4", PreviewKind.Video),
         new(".wmv", PreviewKind.Video),
         new(".avi", PreviewKind.Video),
         new(".mpeg", PreviewKind.Video),
         new(".mpg", PreviewKind.Video),
         new(".mov", PreviewKind.Video),
+        new(".mkv", PreviewKind.Video),
+        new(".webm", PreviewKind.Video),
+        new(".m4v", PreviewKind.Video),
+        new(".rm", PreviewKind.Video),
+        new(".swf", PreviewKind.Video),
+        new(".mxf", PreviewKind.Video),
         new(".txt", PreviewKind.Text),
         new(".csv", PreviewKind.Text),
+        new(".tsv", PreviewKind.Text),
         new(".xml", PreviewKind.Text),
         new(".md", PreviewKind.Text),
         new(".log", PreviewKind.Text),
@@ -43,19 +64,44 @@ public sealed class FilePreviewUiTests
         new(".eml", PreviewKind.Text),
         new(".pdf", PreviewKind.Text),
         new(".docx", PreviewKind.Text),
+        new(".docm", PreviewKind.Text),
         new(".xlsx", PreviewKind.Text),
         new(".xlsm", PreviewKind.Text),
+        new(".pptx", PreviewKind.Text),
+        new(".odt", PreviewKind.Text),
+        new(".ods", PreviewKind.Text),
+        new(".odp", PreviewKind.Text),
+        new(".html", PreviewKind.Text),
+        new(".rtf", PreviewKind.Text),
+        new(".yaml", PreviewKind.Text),
         new(".doc", PreviewKind.Text),
         new(".xls", PreviewKind.Text),
         new(".ppt", PreviewKind.Text),
         new(".pptx", PreviewKind.Text),
-        new(".zip", PreviewKind.Text)
+        new(".zip", PreviewKind.Text),
+        new(".azw3", PreviewKind.Text),
+        new(".epub", PreviewKind.Text),
+        new(".fb2", PreviewKind.Text),
+        new(".ps1", PreviewKind.Text),
+        new(".htaccess", PreviewKind.Text),
+        new(".ttf", PreviewKind.Text)
     ];
 
     public static IEnumerable<object[]> PreviewCases
     {
         get
         {
+            var testDirectory = Environment.GetEnvironmentVariable("WPF_PREVIEW_TEST_DIRECTORY");
+            if (!string.IsNullOrWhiteSpace(testDirectory) && Directory.Exists(testDirectory))
+            {
+                var files = Directory.EnumerateFiles(testDirectory);
+                var selectedFiles = Environment.GetEnvironmentVariable("WPF_PREVIEW_TEST_FILES")?
+                    .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                if (selectedFiles is { Length: > 0 }) files = files.Where(path => selectedFiles.Contains(Path.GetFileName(path), StringComparer.OrdinalIgnoreCase));
+                return files
+                    .Select(path => new PreviewScenario(Path.GetExtension(path).ToLowerInvariant(), GetPreviewKind(Path.GetExtension(path)), path))
+                    .Select(scenario => new object[] { scenario });
+            }
             var requestedExtensions = Environment.GetEnvironmentVariable("WPF_PREVIEW_TEST_EXTENSIONS")?
                 .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             var scenarios = requestedExtensions is { Length: > 0 }
@@ -72,8 +118,8 @@ public sealed class FilePreviewUiTests
     {
         var fixtureDirectory = Path.Combine(Path.GetTempPath(), "WpfPremiumPreviewTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(fixtureDirectory);
-        var fixturePath = Path.Combine(fixtureDirectory, $"preview{scenario.Extension}");
-        WriteFixture(fixturePath, scenario.Extension);
+        var fixturePath = scenario.FilePath ?? Path.Combine(fixtureDirectory, $"preview{scenario.Extension}");
+        if (scenario.FilePath is null) WriteFixture(fixturePath, scenario.Extension);
 
         using var process = StartDemo(fixturePath);
         try
@@ -101,7 +147,8 @@ public sealed class FilePreviewUiTests
             Assert.IsTrue(elementsByAutomationId.ContainsKey("FileNameText"), "The selected file name should be present.");
             Assert.IsTrue(elementsByAutomationId.ContainsKey("OpenWithDefaultAppButton"), "Every preview must offer opening the file in its default application.");
             Assert.IsTrue(elementsByAutomationId.ContainsKey("OpenContainingFolderButton"), "Every preview must offer opening its containing folder.");
-            Assert.AreEqual($"preview{scenario.Extension}", elementsByAutomationId["FileNameText"].Name);
+            var expectedFileName = scenario.FilePath is null ? $"preview{scenario.Extension}" : Path.GetFileName(scenario.FilePath);
+            Assert.AreEqual(expectedFileName, elementsByAutomationId["FileNameText"].Name);
 
             foreach (var automationId in scenario.RequiredAutomationIds)
             {
@@ -113,26 +160,38 @@ public sealed class FilePreviewUiTests
             if (scenario.Kind == PreviewKind.Image)
             {
                 Assert.IsTrue(elementsByAutomationId.ContainsKey("PreviewZoomText"));
+                WaitForImageDecode(window);
             }
             else if (scenario.Kind == PreviewKind.Audio)
             {
                 Assert.AreEqual("Dạng sóng trực quan", elementsByAutomationId["PreviewZoomText"].Name);
-                if (scenario.Extension == ".wav")
+                if (scenario.Extension == ".wav" || scenario.FilePath is not null)
                 {
                     WaitForEnabled(window, "AudioSeekSlider");
+                    var initialTime = elementsByAutomationId["AudioPlaybackTimeText"].Name;
+                    elementsByAutomationId["AudioPlayButton"].Patterns.Invoke.Pattern?.Invoke();
+                    WaitForPlaybackProgress(window, initialTime);
                 }
                 Assert.IsTrue(elementsByAutomationId.ContainsKey("AudioPlaybackTimeText"));
             }
             else if (scenario.Kind == PreviewKind.Video)
             {
                 Assert.AreEqual("Video", elementsByAutomationId["PreviewZoomText"].Name);
+                WaitForVideoReady(window);
+            }
+            else if (scenario.Extension == ".pdf")
+            {
+                Assert.IsTrue(elementsByAutomationId.ContainsKey("PreviewTextContent"), elementsByAutomationId.TryGetValue("PreviewLoadError", out var pdfError) ? $"PDF preview failed: {pdfError.Name}" : "PDF phải hiển thị nội dung trích xuất trong trình xem văn bản.");
+                var pdfText = elementsByAutomationId["PreviewTextContent"].Patterns.Value.PatternOrDefault?.Value;
+                Assert.IsNotNull(pdfText);
+                if (scenario.ExpectedTextSnippet is not null) StringAssert.Contains(pdfText, scenario.ExpectedTextSnippet);
             }
             else
             {
                 var expectedSnippet = scenario.ExpectedTextSnippet;
                 var previewText = elementsByAutomationId["PreviewTextContent"].Patterns.Value.PatternOrDefault?.Value;
                 Assert.IsNotNull(previewText, "The text preview should expose its contents through UI Automation.");
-                StringAssert.Contains(previewText, expectedSnippet);
+                if (expectedSnippet is not null) StringAssert.Contains(previewText, expectedSnippet);
             }
         }
         finally
@@ -171,6 +230,15 @@ public sealed class FilePreviewUiTests
 
         return Process.Start(startInfo)
             ?? throw new InvalidOperationException("Could not start the WPF Premium demo process.");
+    }
+
+    private static PreviewKind GetPreviewKind(string extension)
+    {
+        var normalized = extension.ToLowerInvariant();
+        if (new[] { ".bmp", ".cr2", ".cur", ".dds", ".dng", ".erf", ".exr", ".fts", ".gif", ".hdr", ".heic", ".heif", ".ico", ".jfif", ".jp2", ".jpe", ".jpeg", ".jpg", ".jps", ".mng", ".nef", ".nrw", ".orf", ".pam", ".pbm", ".pcd", ".pcx", ".pef", ".pes", ".pfm", ".pgm", ".picon", ".pict", ".png", ".pnm", ".ppm", ".psd", ".raf", ".ras", ".rw2", ".sfw", ".sgi", ".svg", ".tga", ".tif", ".tiff", ".wbmp", ".webp", ".wpg", ".x3f", ".xbm", ".xcf", ".xpm", ".xwd", ".wdp", ".jxr" }.Contains(normalized)) return PreviewKind.Image;
+        if (new[] { ".8svx", ".aac", ".ac3", ".aif", ".aiff", ".aifc", ".amb", ".au", ".avr", ".caf", ".cdda", ".cvs", ".cvsd", ".cvu", ".dts", ".dvms", ".fap", ".flac", ".fssd", ".gsrt", ".hcom", ".htk", ".ima", ".ircam", ".m4a", ".m4r", ".maud", ".mid", ".midi", ".mp2", ".mp3", ".nist", ".oga", ".ogg", ".opus", ".paf", ".prc", ".pvf", ".ra", ".sd2", ".sln", ".smp", ".snd", ".sndr", ".sndt", ".sou", ".sph", ".spx", ".tta", ".txw", ".vms", ".voc", ".vox", ".w64", ".wav", ".wma", ".wv", ".wve", ".amr", ".3ga", ".mka" }.Contains(normalized)) return PreviewKind.Audio;
+        if (new[] { ".3gp", ".asf", ".avi", ".f4v", ".flv", ".hevc", ".m2ts", ".m2v", ".m4v", ".mjpeg", ".mkv", ".mov", ".mp4", ".mpeg", ".mpg", ".mts", ".mxf", ".ogv", ".rm", ".swf", ".ts", ".vob", ".webm", ".wmv", ".wtv" }.Contains(normalized)) return PreviewKind.Video;
+        return PreviewKind.Text;
     }
 
     private static string FindRepositoryRoot()
@@ -246,6 +314,46 @@ public sealed class FilePreviewUiTests
         Assert.Fail($"UI Automation element '{automationId}' did not become enabled within 10 seconds.");
     }
 
+    private static void WaitForImageDecode(AutomationElement root)
+    {
+        var timeout = Stopwatch.StartNew();
+        while (timeout.Elapsed < TimeSpan.FromSeconds(45))
+        {
+            var status = root.FindFirstDescendant(condition => condition.ByAutomationId("PreviewImageStatus"));
+            if (status is null || status.IsOffscreen) return;
+            if (!status.Name.Contains("Đang giải mã", StringComparison.Ordinal)) return;
+            Thread.Sleep(150);
+        }
+
+        Assert.Fail("The image preview did not finish decoding within 45 seconds.");
+    }
+
+    private static void WaitForPlaybackProgress(AutomationElement root, string initialTime)
+    {
+        var timeout = Stopwatch.StartNew();
+        while (timeout.Elapsed < TimeSpan.FromSeconds(8))
+        {
+            var time = root.FindFirstDescendant(condition => condition.ByAutomationId("AudioPlaybackTimeText"));
+            if (time is not null && time.Name != initialTime && time.Name != "00:00") return;
+            Thread.Sleep(200);
+        }
+
+        Assert.Fail("Audio playback did not advance the timeline after pressing Play.");
+    }
+
+    private static void WaitForVideoReady(AutomationElement root)
+    {
+        var timeout = Stopwatch.StartNew();
+        while (timeout.Elapsed < TimeSpan.FromSeconds(20))
+        {
+            var status = root.FindFirstDescendant(condition => condition.ByAutomationId("VideoPreviewStatus"));
+            if (status is null || status.IsOffscreen || !status.Name.Contains("Äang táº£i", StringComparison.Ordinal)) return;
+            Thread.Sleep(200);
+        }
+
+        Assert.Fail("The video preview remained in its loading state for 20 seconds.");
+    }
+
     private static void WriteFixture(string path, string extension)
     {
         switch (extension)
@@ -257,10 +365,18 @@ public sealed class FilePreviewUiTests
             case ".gif":
             case ".tif":
             case ".tiff":
+            case ".ico":
+            case ".webp":
+            case ".svg":
+            case ".psd":
+            case ".jp2":
+            case ".cr2":
+            case ".heif":
                 File.WriteAllBytes(path, Convert.FromBase64String(
                     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a9k8AAAAASUVORK5CYII="));
                 break;
             case ".docx":
+            case ".docm":
                 WriteZip(path, ("word/document.xml", "<w:document xmlns:w=\"urn:w\"><w:body><w:p><w:r><w:t>WPF preview sample</w:t></w:r></w:p></w:body></w:document>"));
                 break;
             case ".xlsx":
@@ -270,17 +386,31 @@ public sealed class FilePreviewUiTests
                     ("xl/sharedStrings.xml", "<sst><si><t>WPF preview sample</t></si></sst>"),
                     ("xl/worksheets/sheet1.xml", "<worksheet><sheetData><row r=\"1\"><c r=\"A1\" t=\"s\"><v>0</v></c></row></sheetData></worksheet>"));
                 break;
+            case ".pptx":
+                WriteZip(path, ("ppt/slides/slide1.xml", "<p:sld xmlns:p=\"urn:p\" xmlns:a=\"urn:a\"><a:t>WPF preview sample</a:t></p:sld>"));
+                break;
+            case ".odt":
+            case ".ods":
+            case ".odp":
+                WriteZip(path, ("content.xml", "<document xmlns:text=\"urn:text\"><text:p>WPF preview sample</text:p></document>"));
+                break;
             case ".zip":
                 WriteZip(path, ("sample.txt", "WPF preview sample"));
                 break;
             case ".pdf":
-                File.WriteAllText(path, "%PDF-1.4\nBT (WPF preview sample) Tj ET\n%%EOF", Encoding.Latin1);
+                WritePdf(path);
                 break;
             case ".eml":
                 File.WriteAllText(path, "Subject: WPF preview sample\r\nFrom: test@example.com\r\n\r\nPreview body", Encoding.UTF8);
                 break;
             case ".json":
                 File.WriteAllText(path, "{\"message\":\"WPF preview sample\"}", Encoding.UTF8);
+                break;
+            case ".html":
+                File.WriteAllText(path, "<html><body><h1>WPF preview sample</h1></body></html>", Encoding.UTF8);
+                break;
+            case ".rtf":
+                File.WriteAllText(path, @"{\rtf1\ansi WPF preview sample}", Encoding.ASCII);
                 break;
             case ".wav":
                 WriteWave(path);
@@ -302,6 +432,39 @@ public sealed class FilePreviewUiTests
             using var writer = new StreamWriter(archive.CreateEntry(entryName).Open(), Encoding.UTF8);
             writer.Write(content);
         }
+    }
+
+    private static void WritePdf(string path)
+    {
+        var content = "BT /F1 16 Tf 20 90 Td (WPF preview sample) Tj ET";
+        var objects = new[]
+        {
+            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 144] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+            $"<< /Length {Encoding.ASCII.GetByteCount(content)} >>\nstream\n{content}\nendstream"
+        };
+        using var stream = new MemoryStream();
+        using var writer = new StreamWriter(stream, Encoding.ASCII, leaveOpen: true);
+        writer.NewLine = "\n";
+        writer.WriteLine("%PDF-1.4");
+        var offsets = new List<long> { 0 };
+        foreach (var (body, index) in objects.Select((body, index) => (body, index)))
+        {
+            writer.Flush();
+            offsets.Add(stream.Position);
+            writer.WriteLine($"{index + 1} 0 obj");
+            writer.WriteLine(body);
+            writer.WriteLine("endobj");
+        }
+        writer.Flush();
+        var xrefOffset = stream.Position;
+        writer.WriteLine($"xref\n0 {offsets.Count}\n0000000000 65535 f ");
+        foreach (var offset in offsets.Skip(1)) writer.WriteLine($"{offset:0000000000} 00000 n ");
+        writer.WriteLine($"trailer\n<< /Size {offsets.Count} /Root 1 0 R >>\nstartxref\n{xrefOffset}\n%%EOF");
+        writer.Flush();
+        File.WriteAllBytes(path, stream.ToArray());
     }
 
     private static void WriteWave(string path)
@@ -332,18 +495,22 @@ public sealed class FilePreviewUiTests
         }
     }
 
-    public sealed record PreviewScenario(string Extension, PreviewKind Kind)
+    public sealed record PreviewScenario(string Extension, PreviewKind Kind, string? FilePath = null)
     {
-        public string ExpectedTextSnippet => Extension switch
+        public string? ExpectedTextSnippet => FilePath is not null ? null : Extension switch
         {
             ".eml" => "Subject: WPF preview sample",
-            ".pdf" => "PDF cần bộ đọc PDF",
-            ".doc" or ".xls" or ".ppt" or ".pptx" => "Định dạng Office này cần",
+            ".pdf" => "PDF",
+            ".doc" or ".xls" or ".ppt" => "Không đọc được tệp Office cũ",
+            ".azw3" => "Định dạng sách điện tử này chưa có bộ giải mã tích hợp",
+            ".epub" => "Không đọc được EPUB",
+            ".fb2" => "Không đọc được FB2",
+            ".ttf" => "Tệp phông chữ: preview.ttf",
             ".zip" => "sample.txt",
             _ => "WPF preview sample"
         };
 
-        public IReadOnlyList<string> RequiredAutomationIds => Kind switch
+        public IReadOnlyList<string> RequiredAutomationIds => Extension == ".pdf" ? [] : Kind switch
         {
             PreviewKind.Image => ["PreviewImage", "ImageZoomInButton", "ImageZoomOutButton", "ImageZoomResetButton", "ImageMagnifierToggle"],
             PreviewKind.Audio => ["AudioWaveform", "AudioPlayButton", "AudioStopButton", "AudioSeekSlider", "AudioPlaybackTimeText"],

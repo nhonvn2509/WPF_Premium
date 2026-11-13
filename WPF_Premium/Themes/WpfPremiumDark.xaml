@@ -27,4 +27,6 @@
     <SolidColorBrush x:Key="ChartColor3Brush" Color="#FF4ADE80" />
     <SolidColorBrush x:Key="ChartColor4Brush" Color="#FFFACC15" />
     <SolidColorBrush x:Key="ChartColor5Brush" Color="#FFF87171" />
+    <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="#FF3F3F46" />
+    <SolidColorBrush x:Key="ScrollBarThumbHoverBrush" Color="#FF71717A" />
 </ResourceDictionary>

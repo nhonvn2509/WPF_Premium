@@ -254,3 +254,22 @@ Cùng thành phần `Field` có thể bao quanh nhóm hộp kiểm, nhóm nút c
 ## Theme tokens
 
 Colors are exposed as dynamic resources, including `BackgroundBrush`, `ForegroundBrush`, `CardBrush`, `MutedBrush`, `MutedForegroundBrush`, `BorderBrush`, `PrimaryBrush`, `SecondaryBrush`, `DestructiveBrush`, `SuccessBrush`, `WarningBrush`, `TraceActiveBrush`, and `ChartColor1Brush` through `ChartColor5Brush`. Override a token in application resources to customize the theme.
+
+## Bản đồ ngoại tuyến
+
+`OfflineMapControl` hiển thị dữ liệu bản đồ từ tệp MBTiles cục bộ, không gọi dịch vụ tile trên mạng. Ứng dụng sử dụng control cần cung cấp dữ liệu bản đồ phù hợp với phạm vi và giấy phép của mình, sau đó truyền các vị trí WGS84 (vĩ độ, kinh độ):
+
+```xml
+<controls:OfflineMapControl x:Name="MapView" Height="420" />
+```
+
+```csharp
+MapView.MapFilePath = @"D:\Maps\vietnam.mbtiles";
+MapView.Locations = new[]
+{
+    new OfflineMapLocation(21.0285, 105.8542, "Hồ Gươm", "ho-guom"),
+    new OfflineMapLocation(21.0368, 105.8342, "Lăng Chủ tịch Hồ Chí Minh")
+};
+```
+
+Có thể gán một `ObservableCollection<OfflineMapLocation>` để tự cập nhật các điểm khi danh sách thay đổi. Tọa độ sai phạm vi được bỏ qua. Điều khiển có nút phóng to, thu nhỏ và đưa tất cả vị trí vào khung nhìn; `Attribution` có thể dùng để hiển thị thông tin nguồn dữ liệu bản đồ.

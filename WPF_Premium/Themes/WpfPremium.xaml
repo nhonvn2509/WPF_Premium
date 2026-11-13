@@ -2,6 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib"
                     xmlns:controls="clr-namespace:WPF_Premium.Controls"
+                    xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
                     xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks">
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/WPF_Premium;component/Themes/WpfPremiumAvalonDock.xaml" />
@@ -30,6 +31,8 @@
     <SolidColorBrush x:Key="ChartColor3Brush" Color="#FF16A34A" />
     <SolidColorBrush x:Key="ChartColor4Brush" Color="#FFCA8A04" />
     <SolidColorBrush x:Key="ChartColor5Brush" Color="#FFDC2626" />
+    <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="#FFD4D4D8" />
+    <SolidColorBrush x:Key="ScrollBarThumbHoverBrush" Color="#FFA1A1AA" />
     <BooleanToVisibilityConverter x:Key="WpfPremiumBooleanToVisibilityConverter" />
 
     <FontFamily x:Key="WpfPremium.FontFamily">Segoe UI</FontFamily>
@@ -60,6 +63,206 @@
         <Setter Property="Width" Value="{DynamicResource WpfPremium.IconSize}" />
         <Setter Property="Height" Value="{DynamicResource WpfPremium.IconSize}" />
     </Style>
+
+    <Style TargetType="{x:Type ScrollBar}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Width" Value="10" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ScrollBar}">
+                    <Grid Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                        <Track x:Name="PART_Track"
+                               Orientation="{TemplateBinding Orientation}"
+                               Minimum="{TemplateBinding Minimum}"
+                               Maximum="{TemplateBinding Maximum}"
+                               Value="{TemplateBinding Value}"
+                               ViewportSize="{TemplateBinding ViewportSize}"
+                               IsDirectionReversed="True">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton x:Name="PART_DecreaseRepeatButton" Command="{x:Static ScrollBar.PageUpCommand}"
+                                              CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                              Focusable="False" IsTabStop="False">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="{x:Type RepeatButton}">
+                                            <Border Background="Transparent" />
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.DecreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb x:Name="PART_Thumb" MinHeight="24" MinWidth="24">
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="{x:Type Thumb}">
+                                            <Border x:Name="ThumbBorder"
+                                                    Margin="2"
+                                                    Background="{DynamicResource ScrollBarThumbBrush}"
+                                                    CornerRadius="4" />
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="ThumbBorder" Property="Background" Value="{DynamicResource ScrollBarThumbHoverBrush}" />
+                                                </Trigger>
+                                                <Trigger Property="IsDragging" Value="True">
+                                                    <Setter TargetName="ThumbBorder" Property="Background" Value="{DynamicResource PrimaryBrush}" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton x:Name="PART_IncreaseRepeatButton" Command="{x:Static ScrollBar.PageDownCommand}"
+                                              CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                              Focusable="False" IsTabStop="False">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="{x:Type RepeatButton}">
+                                            <Border Background="Transparent" />
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.IncreaseRepeatButton>
+                        </Track>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Orientation" Value="Horizontal">
+                            <Setter Property="Width" Value="Auto" />
+                            <Setter Property="Height" Value="10" />
+                            <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False" />
+                            <Setter TargetName="PART_DecreaseRepeatButton" Property="Command" Value="{x:Static ScrollBar.PageLeftCommand}" />
+                            <Setter TargetName="PART_IncreaseRepeatButton" Property="Command" Value="{x:Static ScrollBar.PageRightCommand}" />
+                        </Trigger>
+                        <Trigger Property="Orientation" Value="Vertical">
+                            <Setter Property="Width" Value="10" />
+                            <Setter Property="Height" Value="Auto" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="WindowCaptionButton" TargetType="{x:Type Button}">
+        <Setter Property="Width" Value="44" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Height" Value="38" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource MutedForegroundBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="shell:WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="CaptionButtonBorder" Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="CaptionButtonBorder" Property="Background" Value="{DynamicResource MutedBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="CaptionButtonBorder" Property="Opacity" Value="0.72" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="Tag" Value="WindowCloseButton" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="CaptionButtonBorder" Property="Background" Value="{DynamicResource DestructiveBrush}" />
+                        </MultiTrigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="CaptionButtonBorder" Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    <Style x:Key="WindowCloseCaptionButton" TargetType="{x:Type Button}" BasedOn="{StaticResource WindowCaptionButton}">
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource DestructiveBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource DestructiveForegroundBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="{x:Type controls:PremiumWindow}">
+        <Setter Property="WindowStyle" Value="None" />
+        <Setter Property="ResizeMode" Value="CanResize" />
+        <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="FontFamily" Value="{DynamicResource WpfPremium.FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource WpfPremium.FontSize}" />
+        <Setter Property="shell:WindowChrome.WindowChrome">
+            <Setter.Value>
+                <shell:WindowChrome CaptionHeight="38" ResizeBorderThickness="6"
+                                    GlassFrameThickness="0" UseAeroCaptionButtons="False" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:PremiumWindow}">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                            SnapsToDevicePixels="True">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="38" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid x:Name="PART_TitleBar" Grid.Row="0"
+                                  Background="{DynamicResource CardBrush}"
+                                  shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,8,0">
+                                    <Border Width="20" Height="20" CornerRadius="5"
+                                            Background="{DynamicResource PrimaryBrush}" Margin="0,0,9,0">
+                                        <iconPacks:PackIconMaterial Kind="ApplicationOutline" Width="13" Height="13"
+                                                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="{TemplateBinding Title}" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource ForegroundBrush}"
+                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Stretch">
+                                    <Button x:Name="PART_MinimizeButton" Style="{StaticResource WindowCaptionButton}"
+                                            AutomationProperties.Name="Thu nhỏ" ToolTip="Thu nhỏ">
+                                        <iconPacks:PackIconMaterial Kind="WindowMinimize" Width="13" Height="13" />
+                                    </Button>
+                                    <Button x:Name="PART_MaximizeButton" Style="{StaticResource WindowCaptionButton}"
+                                            AutomationProperties.Name="Phóng to hoặc khôi phục" ToolTip="Phóng to hoặc khôi phục">
+                                        <iconPacks:PackIconMaterial x:Name="PART_MaximizeIcon" Kind="WindowMaximize" Width="13" Height="13" />
+                                    </Button>
+                                    <Button x:Name="PART_CloseButton" Style="{StaticResource WindowCloseCaptionButton}"
+                                            Tag="WindowCloseButton"
+                                            AutomationProperties.Name="Đóng cửa sổ" ToolTip="Đóng">
+                                        <iconPacks:PackIconMaterial Kind="Close" Width="14" Height="14" />
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                            <ContentPresenter Grid.Row="1" ContentSource="Content"
+                                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 
     <Style x:Key="ButtonBaseStyle" TargetType="{x:Type Button}">
         <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />

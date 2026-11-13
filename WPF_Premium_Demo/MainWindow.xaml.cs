@@ -5,7 +5,7 @@ using WPF_Premium.Themes;
 
 namespace WPF_Premium_Demo;
 
-public partial class MainWindow : Window
+public partial class MainWindow : PremiumWindow
 {
     public MainWindow()
     {

@@ -45,7 +45,7 @@ internal static class AppearanceSettingsDialog
             .OrderBy(name => name, StringComparer.CurrentCultureIgnoreCase)
             .ToArray();
 
-        var dialog = new Window
+        var dialog = new PremiumWindow
         {
             Title = "Tùy chỉnh giao diện",
             Owner = owner,

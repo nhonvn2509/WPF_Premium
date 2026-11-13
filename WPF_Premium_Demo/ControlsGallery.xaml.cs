@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Globalization;
+using Microsoft.Win32;
 using WPF_Premium.Controls;
 
 namespace WPF_Premium_Demo;
@@ -11,6 +12,12 @@ public partial class ControlsGallery : UserControl
     public ControlsGallery()
     {
         InitializeComponent();
+        OfflineMapPreview.Locations = new[]
+        {
+            new OfflineMapLocation(21.0285, 105.8542, "Hồ Gươm", "ho-guom"),
+            new OfflineMapLocation(21.0368, 105.8342, "Lăng Chủ tịch Hồ Chí Minh", "lang-bac"),
+            new OfflineMapLocation(21.0245, 105.8412, "Nhà hát Lớn Hà Nội", "nha-hat-lon")
+        };
         Table.ItemsSource = new[]
         {
             new { Name = "Ngăn xếp", Status = "Sẵn sàng" },
@@ -57,6 +64,20 @@ public partial class ControlsGallery : UserControl
             new ChartSeries("Giới thiệu", new[] { 18d }),
             new ChartSeries("Mạng xã hội", new[] { 12d })
         ];
+    }
+
+    private void ChooseOfflineMap_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Title = "Chọn dữ liệu bản đồ ngoại tuyến",
+            Filter = "Cơ sở dữ liệu bản đồ MBTiles (*.mbtiles)|*.mbtiles|Tất cả các tệp (*.*)|*.*",
+            CheckFileExists = true
+        };
+        if (dialog.ShowDialog(Window.GetWindow(this)) == true)
+        {
+            OfflineMapPreview.MapFilePath = dialog.FileName;
+        }
     }
 
     private void ValidateForm_Click(object sender, RoutedEventArgs e)

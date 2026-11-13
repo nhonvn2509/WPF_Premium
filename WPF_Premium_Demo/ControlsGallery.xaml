@@ -592,5 +592,19 @@
                 </StackPanel>
             </Border>
         </WrapPanel>
+        <Border Padding="14" Margin="0,0,0,24" CornerRadius="8"
+                Background="{DynamicResource CardBrush}"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+            <StackPanel>
+                <DockPanel Margin="0,0,0,10">
+                    <Button Content="Chọn bản đồ ngoại tuyến" Click="ChooseOfflineMap_Click"
+                            Style="{StaticResource ButtonSecondary}" DockPanel.Dock="Right" />
+                    <TextBlock Text="Bản đồ ngoại tuyến" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </DockPanel>
+                <TextBlock Text="Bản đồ chỉ đọc từ tệp MBTiles trên thiết bị. Các điểm mẫu dùng tọa độ WGS84."
+                           Foreground="{DynamicResource MutedForegroundBrush}" Margin="0,0,0,10" />
+                <controls:OfflineMapControl x:Name="OfflineMapPreview" Height="360" />
+            </StackPanel>
+        </Border>
     </StackPanel>
 </UserControl>

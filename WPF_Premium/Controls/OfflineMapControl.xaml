@@ -1,0 +1,49 @@
+<UserControl x:Class="WPF_Premium.Controls.OfflineMapControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             MinHeight="240">
+    <Border Background="{DynamicResource CardBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+        <Grid>
+            <Grid x:Name="MapHost" Background="{DynamicResource BackgroundBrush}" />
+            <TextBlock x:Name="OfflineStatusText"
+                       Text="B&#7843;n &#273;&#7891; ngo&#7841;i tuy&#7871;n kh&#244;ng kh&#7843; d&#7909;ng."
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       MaxWidth="460" Margin="24" Padding="10"
+                       TextAlignment="Center" TextWrapping="Wrap"
+                       Foreground="{DynamicResource MutedForegroundBrush}"
+                       Background="{DynamicResource CardBrush}" Visibility="Collapsed" />
+            <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="8"
+                    Padding="4" CornerRadius="8"
+                    Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                <StackPanel Orientation="Horizontal">
+                    <Button Click="ZoomIn_Click" Width="32" Height="30" MinHeight="30" Padding="4"
+                            ToolTip="Ph&#243;ng to b&#7843;n &#273;&#7891;" AutomationProperties.Name="Ph&#243;ng to b&#7843;n &#273;&#7891;"
+                            AutomationProperties.AutomationId="OfflineMapZoomInButton">
+                        <iconPacks:PackIconMaterial Kind="Plus" />
+                    </Button>
+                    <Button Click="ZoomOut_Click" Width="32" Height="30" MinHeight="30" Padding="4" Margin="4,0,0,0"
+                            ToolTip="Thu nh&#7887; b&#7843;n &#273;&#7891;" AutomationProperties.Name="Thu nh&#7887; b&#7843;n &#273;&#7891;"
+                            AutomationProperties.AutomationId="OfflineMapZoomOutButton">
+                        <iconPacks:PackIconMaterial Kind="Minus" />
+                    </Button>
+                    <Button Click="ZoomToLocations_Click" Width="32" Height="30" MinHeight="30" Padding="4" Margin="4,0,0,0"
+                            ToolTip="Hi&#7875;n th&#7883; t&#7845;t c&#7843; v&#7883; tr&#237;" AutomationProperties.Name="Hi&#7875;n th&#7883; t&#7845;t c&#7843; v&#7883; tr&#237;"
+                            AutomationProperties.AutomationId="OfflineMapZoomToLocationsButton">
+                        <iconPacks:PackIconMaterial Kind="FitToScreenOutline" />
+                    </Button>
+                </StackPanel>
+            </Border>
+            <Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="8"
+                    Padding="7,4" CornerRadius="6"
+                    Background="{DynamicResource CardBrush}" Opacity="0.94">
+                <TextBlock x:Name="LocationCountText" Text="0 v&#7883; tr&#237;" FontSize="12"
+                           Foreground="{DynamicResource MutedForegroundBrush}"
+                           AutomationProperties.AutomationId="OfflineMapLocationCountText" />
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

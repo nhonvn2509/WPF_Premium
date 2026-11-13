@@ -1,4 +1,4 @@
-<Window x:Class="WPF_Premium_Demo.MainWindow"
+<premium:PremiumWindow x:Class="WPF_Premium_Demo.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:demo="clr-namespace:WPF_Premium_Demo"
@@ -143,4 +143,4 @@
             </StackPanel>
         </ScrollViewer>
     </Grid>
-</Window>
+</premium:PremiumWindow>
