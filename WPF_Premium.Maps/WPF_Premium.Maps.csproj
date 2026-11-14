@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0-windows10.0.19041</TargetFramework><Nullable>enable</Nullable><UseWPF>true</UseWPF><ImplicitUsings>enable</ImplicitUsings><AssemblyName>WPF_Premium.Maps</AssemblyName><RootNamespace>WPF_Premium.Maps</RootNamespace><EnableDefaultItems>false</EnableDefaultItems></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WPF_Premium.Core\WPF_Premium.Core.csproj" />
+    <Compile Include="..\WPF_Premium\Controls\OfflineMapControl.xaml.cs" Link="Controls\OfflineMapControl.xaml.cs" />
+    <Compile Include="..\WPF_Premium\Controls\OfflineMapLocation.cs" Link="Controls\OfflineMapLocation.cs" />
+    <Compile Include="InternalsVisibleTo.cs" />
+    <Page Include="..\WPF_Premium\Controls\OfflineMapControl.xaml" Link="Controls\OfflineMapControl.xaml" />
+    <EmbeddedResource Include="..\WPF_Premium\Assets\WorldMap\**\*" Link="Assets\WorldMap\%(RecursiveDir)%(Filename)%(Extension)" />
+    <PackageReference Include="BruTile.MbTiles" Version="6.0.0" />
+    <PackageReference Include="Mapsui.Wpf" Version="5.1.0" />
+    <PackageReference Include="Mapsui.Nts" Version="5.1.0" />
+    <PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
+  </ItemGroup>
+</Project>

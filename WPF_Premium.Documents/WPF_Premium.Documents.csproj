@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0-windows10.0.19041</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><AssemblyName>WPF_Premium.Documents</AssemblyName><RootNamespace>WPF_Premium</RootNamespace><EnableDefaultItems>false</EnableDefaultItems></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\WPF_Premium\Controls\OfficePreviewHtmlRenderer.cs" Link="Controls\OfficePreviewHtmlRenderer.cs" />
+    <Compile Include="InternalsVisibleTo.cs" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
+    <PackageReference Include="DotnetPoi.Legacy" Version="0.5.0" />
+  </ItemGroup>
+</Project>

@@ -38,7 +38,7 @@ public sealed class OfflineMapLabelTests
     [TestMethod]
     public void EmbeddedMarineLabelDataContainsValidRows()
     {
-        const string resourceName = "WPF_Premium.Assets.WorldMap.islands.geonames_marine_features.tsv";
+        var resourceName = $"{typeof(OfflineMapControl).Assembly.GetName().Name}.Assets.WorldMap.islands.geonames_marine_features.tsv";
         using var resource = typeof(OfflineMapControl).Assembly.GetManifestResourceStream(resourceName)
             ?? throw new InvalidOperationException($"Missing embedded resource: {resourceName}");
         using var reader = new System.IO.StreamReader(resource);

@@ -8,11 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WPF_Premium\WPF_Premium.csproj" />
     <ProjectReference Include="..\WPF_Premium_Demo\WPF_Premium_Demo.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\WPF_Premium\WPF_Premium.csproj" />
+    <ProjectReference Include="..\WPF_Premium.Core\WPF_Premium.Core.csproj" />
+    <ProjectReference Include="..\WPF_Premium.Charts\WPF_Premium.Charts.csproj" />
+    <ProjectReference Include="..\WPF_Premium.Media\WPF_Premium.Media.csproj" />
+    <ProjectReference Include="..\WPF_Premium.Documents\WPF_Premium.Documents.csproj" />
+    <ProjectReference Include="..\WPF_Premium.Maps\WPF_Premium.Maps.csproj" />
     <PackageReference Include="FlaUI.Core" Version="5.0.0" />
     <PackageReference Include="FlaUI.UIA3" Version="5.0.0" />
     <PackageReference Include="MSTest" Version="4.0.2" />
+    <PackageReference Include="DotnetPoi.Legacy" Version="0.5.0" />
   </ItemGroup>
 
   <ItemGroup>

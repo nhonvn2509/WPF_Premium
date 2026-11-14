@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net10.0-windows10.0.19041</TargetFramework>
     <Nullable>enable</Nullable>
@@ -11,35 +10,20 @@
     <Description>Thư viện điều khiển, biểu đồ và giao diện WPF có thể tái sử dụng và tùy biến.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>wpf;ui;controls;theme;avalondock;docking;charts;dataviz</PackageTags>
+    <EnableDefaultItems>false</EnableDefaultItems>
   </PropertyGroup>
-
   <ItemGroup>
-    <EmbeddedResource Include="Assets/WorldMap/countries/ne_10m_admin_0_countries.zip" />
-    <EmbeddedResource Include="Assets/WorldMap/regions/ne_10m_admin_1_states_provinces.zip" />
-    <EmbeddedResource Include="Assets/WorldMap/cities/ne_10m_populated_places.zip" />
-    <EmbeddedResource Include="Assets/WorldMap/bathymetry/ne_10m_bathymetry_all.zip" />
-    <EmbeddedResource Include="Assets/WorldMap/reefs/ne_10m_reefs.zip" />
-    <EmbeddedResource Include="Assets/WorldMap/seas/ne_10m_geography_marine_polys.zip" />
-    <EmbeddedResource Include="Assets/WorldMap/geography/ne_10m_geography_regions_points.zip" />
-    <EmbeddedResource Include="Assets/WorldMap/islands/ne_10m_minor_islands.zip" />
-    <EmbeddedResource Include="Assets/WorldMap/islands/ne_10m_minor_islands_coastline.zip" />
-    <EmbeddedResource Include="Assets/WorldMap/islands/geonames_marine_features.tsv" />
-    <PackageReference Include="BruTile.MbTiles" Version="6.0.0" />
-    <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
-    <PackageReference Include="DotnetPoi.Legacy" Version="0.5.0" />
-    <PackageReference Include="EpubCore" Version="1.6.2" />
-    <PackageReference Include="LibVLCSharp.WPF" Version="3.10.2" />
-    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.5" />
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="15.0.0" />
-    <PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3179.45" />
-    <PackageReference Include="Dirkster.AvalonDock" Version="5.0.2" />
-    <None Update="README.md" Pack="true" PackagePath="/" />
-    <PackageReference Include="Mapsui.Wpf" Version="5.1.0" />
-    <PackageReference Include="Mapsui.Nts" Version="5.1.0" />
-    <PackageReference Include="Sdcb.LibRaw" Version="0.21.1.7" />
-    <PackageReference Include="Sdcb.LibRaw.runtime.win64" Version="0.21.1" />
-    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.24" />
+    <ProjectReference Include="..\WPF_Premium.Core\WPF_Premium.Core.csproj" />
+    <ProjectReference Include="..\WPF_Premium.Charts\WPF_Premium.Charts.csproj" />
+    <ProjectReference Include="..\WPF_Premium.Media\WPF_Premium.Media.csproj" />
+    <ProjectReference Include="..\WPF_Premium.Documents\WPF_Premium.Documents.csproj" />
+    <ProjectReference Include="..\WPF_Premium.Maps\WPF_Premium.Maps.csproj" />
+    <Compile Include="TypeForwarders.cs" />
+    <Page Include="..\WPF_Premium\Themes\WpfPremium.xaml" Link="Themes\WpfPremium.xaml" />
+    <Page Include="..\WPF_Premium\Themes\WpfPremiumAvalonDock.xaml" Link="Themes\WpfPremiumAvalonDock.xaml" />
+    <Page Include="..\WPF_Premium\Themes\WpfPremiumDark.xaml" Link="Themes\WpfPremiumDark.xaml" />
+    <Page Include="..\WPF_Premium\Resources\AvalonDock.en.xaml" Link="Resources\AvalonDock.en.xaml" />
+    <Page Include="..\WPF_Premium\Resources\AvalonDock.vi.xaml" Link="Resources\AvalonDock.vi.xaml" />
+    <None Include="README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
-
 </Project>

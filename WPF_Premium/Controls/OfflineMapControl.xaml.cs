@@ -597,7 +597,7 @@ public partial class OfflineMapControl : UserControl, IDisposable
 
     private static void AddIslandLabels(ICollection<IFeature> target)
     {
-        const string resourceName = "WPF_Premium.Assets.WorldMap.islands.geonames_marine_features.tsv";
+        var resourceName = $"{typeof(OfflineMapControl).Assembly.GetName().Name}.Assets.WorldMap.islands.geonames_marine_features.tsv";
         using var resource = typeof(OfflineMapControl).Assembly.GetManifestResourceStream(resourceName)
             ?? throw new FileNotFoundException($"Thiếu dữ liệu tên đảo tích hợp: {resourceName}");
         using var reader = new StreamReader(resource, Encoding.UTF8, true);
@@ -857,7 +857,7 @@ public partial class OfflineMapControl : UserControl, IDisposable
         if (extensions.All(extension => File.Exists(Path.Combine(directory, $"{fileName}.{extension}"))))
             return shapePath;
 
-        var resourceName = $"WPF_Premium.Assets.WorldMap.{folder}.{archiveName ?? fileName}.zip";
+        var resourceName = $"{typeof(OfflineMapControl).Assembly.GetName().Name}.Assets.WorldMap.{folder}.{archiveName ?? fileName}.zip";
         using var resource = typeof(OfflineMapControl).Assembly.GetManifestResourceStream(resourceName)
             ?? throw new FileNotFoundException($"Thiếu dữ liệu bản đồ tích hợp: {resourceName}");
         using var archive = new ZipArchive(resource, ZipArchiveMode.Read);

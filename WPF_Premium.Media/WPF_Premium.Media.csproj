@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0-windows10.0.19041</TargetFramework><Nullable>enable</Nullable><UseWPF>true</UseWPF><ImplicitUsings>enable</ImplicitUsings><AssemblyName>WPF_Premium.Media</AssemblyName><RootNamespace>WPF_Premium</RootNamespace><EnableDefaultItems>false</EnableDefaultItems></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WPF_Premium.Core\WPF_Premium.Core.csproj" />
+    <ProjectReference Include="..\WPF_Premium.Documents\WPF_Premium.Documents.csproj" />
+    <Compile Include="..\WPF_Premium\Controls\FilePreviewControl.xaml.cs" Link="Controls\FilePreviewControl.xaml.cs" />
+    <Page Include="..\WPF_Premium\Controls\FilePreviewControl.xaml" Link="Controls\FilePreviewControl.xaml" />
+    <PackageReference Include="LibVLCSharp.WPF" Version="3.10.2" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="15.0.0" />
+    <PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3179.45" />
+    <PackageReference Include="Sdcb.LibRaw" Version="0.21.1.7" />
+    <PackageReference Include="Sdcb.LibRaw.runtime.win64" Version="0.21.1" />
+    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.24" />
+  </ItemGroup>
+</Project>

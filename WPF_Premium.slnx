@@ -1,5 +1,10 @@
 <Solution>
   <Project Path="WPF_Premium.UIAutomationTests/WPF_Premium.UIAutomationTests.csproj" />
   <Project Path="WPF_Premium/WPF_Premium.csproj" />
+  <Project Path="WPF_Premium.Core/WPF_Premium.Core.csproj" />
+  <Project Path="WPF_Premium.Charts/WPF_Premium.Charts.csproj" />
+  <Project Path="WPF_Premium.Media/WPF_Premium.Media.csproj" />
+  <Project Path="WPF_Premium.Documents/WPF_Premium.Documents.csproj" />
+  <Project Path="WPF_Premium.Maps/WPF_Premium.Maps.csproj" />
   <Project Path="WPF_Premium_Demo/WPF_Premium_Demo.csproj" />
 </Solution>

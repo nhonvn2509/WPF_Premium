@@ -9,7 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WPF_Premium.Core\WPF_Premium.Core.csproj" />
     <ProjectReference Include="..\WPF_Premium\WPF_Premium.csproj" />
+    <ProjectReference Include="..\WPF_Premium.Charts\WPF_Premium.Charts.csproj" />
+    <ProjectReference Include="..\WPF_Premium.Media\WPF_Premium.Media.csproj" />
+    <ProjectReference Include="..\WPF_Premium.Maps\WPF_Premium.Maps.csproj" />
+    <PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
   </ItemGroup>
 
 </Project>

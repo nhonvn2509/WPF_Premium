@@ -5,7 +5,7 @@
                     xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
                     xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks">
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="/WPF_Premium;component/Themes/WpfPremiumAvalonDock.xaml" />
+        <ResourceDictionary Source="/WPF_Premium.Core;component/Themes/WpfPremiumAvalonDock.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <SolidColorBrush x:Key="BackgroundBrush" Color="#FFFFFFFF" />

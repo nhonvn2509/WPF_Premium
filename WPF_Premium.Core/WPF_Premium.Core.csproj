@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>WPF_Premium.Core</AssemblyName>
+    <RootNamespace>WPF_Premium</RootNamespace>
+    <EnableDefaultItems>false</EnableDefaultItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\WPF_Premium\Controls\AppearanceSettingsControl.xaml.cs" Link="Controls\AppearanceSettingsControl.xaml.cs" />
+    <Compile Include="..\WPF_Premium\Controls\AttachmentControl.cs" Link="Controls\AttachmentControl.cs" />
+    <Compile Include="..\WPF_Premium\Controls\Badge.cs" Link="Controls\Badge.cs" />
+    <Compile Include="..\WPF_Premium\Controls\CalendarControl.cs" Link="Controls\CalendarControl.cs" />
+    <Compile Include="..\WPF_Premium\Controls\ComboBoxControl.xaml.cs" Link="Controls\ComboBoxControl.xaml.cs" />
+    <Compile Include="..\WPF_Premium\Controls\DateTimeCalendar.xaml.cs" Link="Controls\DateTimeCalendar.xaml.cs" />
+    <Compile Include="..\WPF_Premium\Controls\DateTimeRangeCalendar.xaml.cs" Link="Controls\DateTimeRangeCalendar.xaml.cs" />
+    <Compile Include="..\WPF_Premium\Controls\DialogService.cs" Link="Controls\DialogService.cs" />
+    <Compile Include="..\WPF_Premium\Controls\Divider.cs" Link="Controls\Divider.cs" />
+    <Compile Include="..\WPF_Premium\Controls\Field.cs" Link="Controls\Field.cs" />
+    <Compile Include="..\WPF_Premium\Controls\FormattedInputControl.xaml.cs" Link="Controls\FormattedInputControl.xaml.cs" />
+    <Compile Include="..\WPF_Premium\Controls\MultiSelectControl.xaml.cs" Link="Controls\MultiSelectControl.xaml.cs" />
+    <Compile Include="..\WPF_Premium\Controls\Pagination.cs" Link="Controls\Pagination.cs" />
+    <Compile Include="..\WPF_Premium\Controls\PremiumWindow.cs" Link="Controls\PremiumWindow.cs" />
+    <Compile Include="..\WPF_Premium\Controls\SplitButton.cs" Link="Controls\SplitButton.cs" />
+    <Compile Include="..\WPF_Premium\Controls\StepBar.cs" Link="Controls\StepBar.cs" />
+    <Compile Include="..\WPF_Premium\Controls\Table.cs" Link="Controls\Table.cs" />
+    <Compile Include="..\WPF_Premium\Controls\ToastService.cs" Link="Controls\ToastService.cs" />
+    <Compile Include="..\WPF_Premium\Controls\Toolbar.cs" Link="Controls\Toolbar.cs" />
+    <Compile Include="..\WPF_Premium\Controls\TraceEntry.cs" Link="Controls\TraceEntry.cs" />
+    <Compile Include="..\WPF_Premium\Controls\WaterfallPanel.cs" Link="Controls\WaterfallPanel.cs" />
+    <Compile Include="..\WPF_Premium\Themes\AppearanceSettings.cs" Link="Themes\AppearanceSettings.cs" />
+    <Compile Include="..\WPF_Premium\Themes\ThemeManager.cs" Link="Themes\ThemeManager.cs" />
+    <Page Include="..\WPF_Premium\Controls\AppearanceSettingsControl.xaml" Link="Controls\AppearanceSettingsControl.xaml" />
+    <Page Include="..\WPF_Premium\Controls\ComboBoxControl.xaml" Link="Controls\ComboBoxControl.xaml" />
+    <Page Include="..\WPF_Premium\Controls\DateTimeCalendar.xaml" Link="Controls\DateTimeCalendar.xaml" />
+    <Page Include="..\WPF_Premium\Controls\DateTimeRangeCalendar.xaml" Link="Controls\DateTimeRangeCalendar.xaml" />
+    <Page Include="..\WPF_Premium\Controls\FormattedInputControl.xaml" Link="Controls\FormattedInputControl.xaml" />
+    <Page Include="..\WPF_Premium\Controls\MultiSelectControl.xaml" Link="Controls\MultiSelectControl.xaml" />
+    <Page Include="..\WPF_Premium\Themes\WpfPremium.xaml" Link="Themes\WpfPremium.xaml" />
+    <Page Include="..\WPF_Premium\Themes\WpfPremiumAvalonDock.xaml" Link="Themes\WpfPremiumAvalonDock.xaml" />
+    <Page Include="..\WPF_Premium\Themes\WpfPremiumDark.xaml" Link="Themes\WpfPremiumDark.xaml" />
+    <Page Include="..\WPF_Premium\Resources\AvalonDock.en.xaml" Link="Resources\AvalonDock.en.xaml" />
+    <Page Include="..\WPF_Premium\Resources\AvalonDock.vi.xaml" Link="Resources\AvalonDock.vi.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Dirkster.AvalonDock" Version="5.0.2" />
+    <PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
+  </ItemGroup>
+</Project>
