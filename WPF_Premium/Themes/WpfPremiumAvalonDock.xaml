@@ -10,6 +10,33 @@
 
     <avalonDockThemes:GenericTheme x:Key="WpfPremiumDockingTheme" />
 
+    <!-- AvalonDock creates this menu internally, so the application ContextMenu style is not inherited reliably. -->
+    <Style TargetType="{x:Type avalonDockControls:DropDownButton}"
+           BasedOn="{StaticResource {x:Type avalonDockControls:DropDownButton}}">
+        <Style.Resources>
+            <Style TargetType="{x:Type ContextMenu}">
+                <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Padding" Value="4" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ContextMenu}">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="6"
+                                    Padding="{TemplateBinding Padding}">
+                                <ItemsPresenter />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Style.Resources>
+    </Style>
+
     <Style x:Key="WpfPremiumDocumentPaneControl"
            TargetType="{x:Type avalonDockControls:LayoutDocumentPaneControl}"
            BasedOn="{StaticResource DocumentPaneControlStyle}">
