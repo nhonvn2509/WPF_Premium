@@ -26,7 +26,7 @@
                             <Border Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="6"
+                                    CornerRadius="0"
                                     Padding="{TemplateBinding Padding}">
                                 <ItemsPresenter />
                             </Border>
@@ -245,6 +245,16 @@
                 <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
             </DataTrigger>
         </Style.Triggers>
+    </Style>
+    <Style TargetType="{x:Type avalonDockControls:LayoutDocumentControl}">
+        <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    </Style>
+    <Style TargetType="{x:Type avalonDockControls:LayoutAnchorableControl}">
+        <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
     </Style>
     <Style TargetType="{x:Type avalonDockControls:AnchorablePaneTitle}">
         <Setter Property="Background" Value="{DynamicResource MutedBrush}" />

@@ -4,7 +4,7 @@
              xmlns:controls="clr-namespace:WPF_Premium.Controls"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              MinWidth="160"
-             Height="34">
+             Height="28">
     <Grid>
         <ToggleButton x:Name="DropDownToggle"
                       IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource AncestorType={x:Type controls:ComboBoxControl}}, Mode=TwoWay}"
@@ -48,8 +48,8 @@
                     <TextBox x:Name="SearchBox"
                              DockPanel.Dock="Top"
                              Margin="2,2,2,6"
-                             Padding="8,4"
-                             MinHeight="30"
+                             Padding="6,3"
+                             MinHeight="28"
                              Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                              Visibility="{Binding SearchEnabled, Converter={StaticResource WpfPremiumBooleanToVisibilityConverter}}"
                              ToolTip="Nhập để lọc các lựa chọn" />

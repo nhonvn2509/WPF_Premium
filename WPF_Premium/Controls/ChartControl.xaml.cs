@@ -229,8 +229,20 @@ public partial class ChartControl : UserControl
             ? CreatePieChart(series, palette, foreground, background)
             : CreateCartesianChart(series, palette, foreground, mutedForeground, border, background);
 
+        var layout = new Grid();
+        layout.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        Grid.SetRow(chart, 0);
+        layout.Children.Add(chart);
+        if (ShowLegend && series.Count > 0)
+        {
+            var legend = CreateLegend(series, palette, mutedForeground);
+            Grid.SetRow(legend, 1);
+            layout.Children.Add(legend);
+        }
+
         ChartSurface.Children.Clear();
-        ChartSurface.Children.Add(chart);
+        ChartSurface.Children.Add(layout);
     }
 
     private CartesianChart CreateCartesianChart(
@@ -254,7 +266,7 @@ public partial class ChartControl : UserControl
             [
                 CreateAxis(horizontalBar ? labels : Array.Empty<string>(), mutedForeground, border)
             ],
-            LegendPosition = ShowLegend ? LegendPosition.Bottom : LegendPosition.Hidden,
+            LegendPosition = LegendPosition.Hidden,
             Background = CreateWpfBrush(background),
             LegendTextPaint = new SolidColorPaint(foreground),
             LegendBackgroundPaint = new SolidColorPaint(background),
@@ -282,7 +294,7 @@ public partial class ChartControl : UserControl
                 InnerRadius = innerRadius,
                 HoverPushout = 5
             }).ToArray(),
-            LegendPosition = ShowLegend ? LegendPosition.Right : LegendPosition.Hidden,
+            LegendPosition = LegendPosition.Hidden,
             Background = CreateWpfBrush(background),
             LegendTextPaint = new SolidColorPaint(foreground),
             LegendBackgroundPaint = new SolidColorPaint(background),
@@ -290,6 +302,49 @@ public partial class ChartControl : UserControl
             TooltipBackgroundPaint = new SolidColorPaint(background),
             AnimationsSpeed = TimeSpan.FromMilliseconds(350)
         };
+    }
+
+    private static FrameworkElement CreateLegend(
+        IReadOnlyList<ChartSeries> series,
+        IReadOnlyList<SKColor> palette,
+        SKColor mutedForeground)
+    {
+        var panel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(0, 6, 0, 0)
+        };
+        for (var index = 0; index < series.Count; index++)
+        {
+            var color = palette[index % palette.Count];
+            var item = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Margin = new Thickness(0, 0, 12, 0)
+            };
+            var swatch = new Border
+            {
+                Width = 10,
+                Height = 10,
+                CornerRadius = new CornerRadius(2),
+                Background = CreateWpfBrush(color),
+                Margin = new Thickness(0, 0, 5, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            var text = new TextBlock
+            {
+                Text = series[index].Name,
+                FontSize = 11,
+                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = CreateWpfBrush(mutedForeground)
+            };
+            item.Children.Add(swatch);
+            item.Children.Add(text);
+            panel.Children.Add(item);
+        }
+
+        return panel;
     }
 
     private ISeries CreateCartesianSeries(ChartSeries series, SKColor color)

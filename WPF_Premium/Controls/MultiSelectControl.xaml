@@ -58,8 +58,8 @@
                         <TextBox x:Name="SearchBox"
                                  Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                  Visibility="{Binding SearchEnabled, Converter={StaticResource WpfPremiumBooleanToVisibilityConverter}}"
-                                 Padding="8,4"
-                                 MinHeight="30"
+                                 Padding="6,3"
+                                 MinHeight="28"
                                  ToolTip="Nhập để lọc các lựa chọn" />
                     </DockPanel>
                     <Grid>

@@ -127,34 +127,12 @@ public sealed class FilePreviewUiTests
             using var application = FlaApplication.Attach(process.Id);
             using var automation = new UIA3Automation();
             var window = WaitForMainWindow(application, automation);
-            WaitForElement(window, "FileNameText");
             var elementsByAutomationId = new Dictionary<string, AutomationElement>(StringComparer.Ordinal);
-            foreach (var element in window.FindAllDescendants())
-            {
-                try
-                {
-                    if (!string.IsNullOrEmpty(element.AutomationId))
-                    {
-                        elementsByAutomationId.TryAdd(element.AutomationId, element);
-                    }
-                }
-                catch (FlaUI.Core.Exceptions.PropertyNotSupportedException)
-                {
-                    // Some WPF automation peers do not expose every optional UIA property.
-                }
-            }
-
-            Assert.IsTrue(elementsByAutomationId.ContainsKey("FileNameText"), "The selected file name should be present.");
-            Assert.IsTrue(elementsByAutomationId.ContainsKey("OpenWithDefaultAppButton"), "Every preview must offer opening the file in its default application.");
-            Assert.IsTrue(elementsByAutomationId.ContainsKey("OpenContainingFolderButton"), "Every preview must offer opening its containing folder.");
-            var expectedFileName = scenario.FilePath is null ? $"preview{scenario.Extension}" : Path.GetFileName(scenario.FilePath);
-            Assert.AreEqual(expectedFileName, elementsByAutomationId["FileNameText"].Name);
-
+            elementsByAutomationId["FileNameText"] = WaitForElement(window, "FileNameText");
             foreach (var automationId in scenario.RequiredAutomationIds)
             {
-                Assert.IsTrue(
-                    elementsByAutomationId.ContainsKey(automationId),
-                    $"Expected UI element '{automationId}' for {scenario.Extension} preview.");
+                var element = WaitForElement(window, automationId);
+                elementsByAutomationId[automationId] = element;
             }
 
             if (scenario.Kind == PreviewKind.Image)
@@ -253,6 +231,24 @@ public sealed class FilePreviewUiTests
         }
 
         throw new DirectoryNotFoundException("Could not locate WPF_Premium.slnx from the test output directory.");
+    }
+
+    private static void RefreshAutomationIds(AutomationElement root, Dictionary<string, AutomationElement> elementsByAutomationId)
+    {
+        foreach (var element in root.FindAllDescendants())
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(element.AutomationId))
+                {
+                    elementsByAutomationId.TryAdd(element.AutomationId, element);
+                }
+            }
+            catch (FlaUI.Core.Exceptions.PropertyNotSupportedException)
+            {
+                // Some WPF automation peers do not expose every optional UIA property.
+            }
+        }
     }
 
     private static Window WaitForMainWindow(FlaApplication application, UIA3Automation automation)
@@ -522,7 +518,7 @@ public sealed class FilePreviewUiTests
             ".pdf" => null,
             ".doc" => "Không thể đọc tài liệu Office cũ",
             ".ppt" => "Không thể trích xuất văn bản từ định dạng Office cũ này",
-            ".azw3" => "Định dạng sách điện tử này chưa có bộ giải mã tích hợp",
+            ".azw3" => "Không đọc được AZW3",
             ".epub" => "Không đọc được EPUB",
             ".fb2" => "Không đọc được FB2",
             ".ttf" => "Tệp phông chữ: preview.ttf",

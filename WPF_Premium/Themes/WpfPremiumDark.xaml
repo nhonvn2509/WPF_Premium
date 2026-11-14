@@ -22,6 +22,7 @@
     <SolidColorBrush x:Key="WarningBrush" Color="#FFEAB308" />
     <SolidColorBrush x:Key="FocusBrush" Color="#FFD4D4D8" />
     <SolidColorBrush x:Key="TraceActiveBrush" Color="#FF60A5FA" />
+    <SolidColorBrush x:Key="SelectedTabBrush" Color="#FF1E3A8A" />
     <SolidColorBrush x:Key="ChartColor1Brush" Color="#FFFAFAFA" />
     <SolidColorBrush x:Key="ChartColor2Brush" Color="#FF60A5FA" />
     <SolidColorBrush x:Key="ChartColor3Brush" Color="#FF4ADE80" />

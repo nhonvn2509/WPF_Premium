@@ -26,6 +26,7 @@
     <SolidColorBrush x:Key="WarningBrush" Color="#FFCA8A04" />
     <SolidColorBrush x:Key="FocusBrush" Color="#FF18181B" />
     <SolidColorBrush x:Key="TraceActiveBrush" Color="#FF2563EB" />
+    <SolidColorBrush x:Key="SelectedTabBrush" Color="#FFE0E7FF" />
     <SolidColorBrush x:Key="ChartColor1Brush" Color="#FF18181B" />
     <SolidColorBrush x:Key="ChartColor2Brush" Color="#FF2563EB" />
     <SolidColorBrush x:Key="ChartColor3Brush" Color="#FF16A34A" />
@@ -36,23 +37,23 @@
     <BooleanToVisibilityConverter x:Key="WpfPremiumBooleanToVisibilityConverter" />
 
     <FontFamily x:Key="WpfPremium.FontFamily">Segoe UI</FontFamily>
-    <sys:Double x:Key="WpfPremium.FontSize">14</sys:Double>
-    <sys:Double x:Key="WpfPremium.SmallFontSize">12</sys:Double>
-    <sys:Double x:Key="WpfPremium.Heading1FontSize">30</sys:Double>
-    <sys:Double x:Key="WpfPremium.Heading2FontSize">24</sys:Double>
-    <sys:Double x:Key="WpfPremium.Heading3FontSize">20</sys:Double>
-    <sys:Double x:Key="WpfPremium.ControlMinHeight">34</sys:Double>
-    <Thickness x:Key="WpfPremium.ControlPadding">10,6</Thickness>
-    <CornerRadius x:Key="WpfPremium.ControlCornerRadius">6</CornerRadius>
-    <CornerRadius x:Key="WpfPremium.SplitButtonMainCornerRadius">6,0,0,6</CornerRadius>
-    <CornerRadius x:Key="WpfPremium.SplitButtonArrowCornerRadius">0,6,6,0</CornerRadius>
-    <sys:Double x:Key="WpfPremium.IconSize">14</sys:Double>
-    <sys:Double x:Key="WpfPremium.CheckBoxSize">16</sys:Double>
-    <sys:Double x:Key="WpfPremium.SwitchWidth">44</sys:Double>
-    <sys:Double x:Key="WpfPremium.SwitchHeight">24</sys:Double>
-    <CornerRadius x:Key="WpfPremium.SwitchCornerRadius">12</CornerRadius>
-    <sys:Double x:Key="WpfPremium.SwitchThumbSize">18</sys:Double>
-    <sys:Double x:Key="WpfPremium.TableRowHeight">36</sys:Double>
+    <sys:Double x:Key="WpfPremium.FontSize">13</sys:Double>
+    <sys:Double x:Key="WpfPremium.SmallFontSize">11</sys:Double>
+    <sys:Double x:Key="WpfPremium.Heading1FontSize">26</sys:Double>
+    <sys:Double x:Key="WpfPremium.Heading2FontSize">22</sys:Double>
+    <sys:Double x:Key="WpfPremium.Heading3FontSize">18</sys:Double>
+    <sys:Double x:Key="WpfPremium.ControlMinHeight">28</sys:Double>
+    <Thickness x:Key="WpfPremium.ControlPadding">7,4</Thickness>
+    <CornerRadius x:Key="WpfPremium.ControlCornerRadius">4</CornerRadius>
+    <CornerRadius x:Key="WpfPremium.SplitButtonMainCornerRadius">4,0,0,4</CornerRadius>
+    <CornerRadius x:Key="WpfPremium.SplitButtonArrowCornerRadius">0,4,4,0</CornerRadius>
+    <sys:Double x:Key="WpfPremium.IconSize">12</sys:Double>
+    <sys:Double x:Key="WpfPremium.CheckBoxSize">14</sys:Double>
+    <sys:Double x:Key="WpfPremium.SwitchWidth">38</sys:Double>
+    <sys:Double x:Key="WpfPremium.SwitchHeight">20</sys:Double>
+    <CornerRadius x:Key="WpfPremium.SwitchCornerRadius">10</CornerRadius>
+    <sys:Double x:Key="WpfPremium.SwitchThumbSize">14</sys:Double>
+    <sys:Double x:Key="WpfPremium.TableRowHeight">30</sys:Double>
 
     <Style TargetType="{x:Type TextBlock}">
         <Setter Property="FontFamily" Value="{DynamicResource WpfPremium.FontFamily}" />
@@ -144,9 +145,9 @@
     </Style>
 
     <Style x:Key="WindowCaptionButton" TargetType="{x:Type Button}">
-        <Setter Property="Width" Value="44" />
+        <Setter Property="Width" Value="40" />
         <Setter Property="MinHeight" Value="0" />
-        <Setter Property="Height" Value="38" />
+        <Setter Property="Height" Value="32" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource MutedForegroundBrush}" />
@@ -204,7 +205,7 @@
         <Setter Property="FontSize" Value="{DynamicResource WpfPremium.FontSize}" />
         <Setter Property="shell:WindowChrome.WindowChrome">
             <Setter.Value>
-                <shell:WindowChrome CaptionHeight="38" ResizeBorderThickness="6"
+                <shell:WindowChrome CaptionHeight="32" ResizeBorderThickness="0"
                                     GlassFrameThickness="0" UseAeroCaptionButtons="False" />
             </Setter.Value>
         </Setter>
@@ -212,12 +213,12 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:PremiumWindow}">
                     <Border Background="{TemplateBinding Background}"
-                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0"
                             SnapsToDevicePixels="True">
                         <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="38" />
-                                <RowDefinition Height="*" />
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="32" />
+                            <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid x:Name="PART_TitleBar" Grid.Row="0"
                                   Background="{DynamicResource CardBrush}"
@@ -363,11 +364,12 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TextBox}">
-                    <Border x:Name="InputBorder"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{DynamicResource WpfPremium.ControlCornerRadius}">
+                                <Border x:Name="InputBorder"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="{DynamicResource WpfPremium.ControlCornerRadius}"
+                                        ClipToBounds="True">
                         <Grid>
                             <ScrollViewer x:Name="PART_ContentHost"
                                           Margin="{TemplateBinding Padding}"
@@ -575,12 +577,12 @@
                         <TabPanel IsItemsHost="True"
                                   DockPanel.Dock="Top"
                                   KeyboardNavigation.TabIndex="1"
-                                  Margin="0,0,0,12" />
+                                  Margin="0,0,0,8" />
                         <Border Background="{TemplateBinding Background}"
                                 BorderBrush="{DynamicResource BorderBrush}"
                                 BorderThickness="1"
-                                CornerRadius="8"
-                                Padding="20">
+                                CornerRadius="6"
+                                Padding="12">
                             <ContentPresenter x:Name="PART_SelectedContentHost"
                                               ContentSource="SelectedContent"
                                               SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
@@ -592,7 +594,7 @@
     </Style>
     <Style TargetType="{x:Type TabItem}">
         <Setter Property="Foreground" Value="{DynamicResource MutedForegroundBrush}" />
-        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="Padding" Value="8,5" />
         <Setter Property="FontSize" Value="13" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Template">
@@ -601,7 +603,8 @@
                     <Border x:Name="TabBorder"
                             Background="Transparent"
                             BorderBrush="Transparent"
-                            BorderThickness="0,0,0,2"
+                            BorderThickness="0"
+                            CornerRadius="4"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter ContentSource="Header"
                                           HorizontalAlignment="Center"
@@ -609,10 +612,11 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource SelectedTabBrush}" />
                             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-                            <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource MutedBrush}" />
                             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
@@ -699,39 +703,39 @@
         <Setter Property="Margin" Value="3,0" />
     </Style>
     <Style x:Key="ToolbarButton" TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonGhost}">
-        <Setter Property="Padding" Value="6,4" />
-        <Setter Property="MinHeight" Value="30" />
+        <Setter Property="Padding" Value="5,3" />
+        <Setter Property="MinHeight" Value="26" />
         <Setter Property="FontSize" Value="11" />
     </Style>
     <Style x:Key="ToolbarIconButton" TargetType="{x:Type Button}" BasedOn="{StaticResource ToolbarButton}">
-        <Setter Property="Width" Value="30" />
-        <Setter Property="Height" Value="30" />
+        <Setter Property="Width" Value="26" />
+        <Setter Property="Height" Value="26" />
         <Setter Property="Padding" Value="0" />
     </Style>
     <Style x:Key="ToolbarSeparator" TargetType="{x:Type Separator}">
         <Setter Property="Width" Value="1" />
-        <Setter Property="Height" Value="38" />
+        <Setter Property="Height" Value="30" />
         <Setter Property="Margin" Value="6,0" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Separator}">
                     <Border Width="1"
-                            Height="32"
+                            Height="26"
                             Background="{DynamicResource BorderBrush}" />
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
     <Style x:Key="ToolbarStyleButton" TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonOutline}">
-        <Setter Property="MinWidth" Value="82" />
-        <Setter Property="MinHeight" Value="48" />
-        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="MinWidth" Value="70" />
+        <Setter Property="MinHeight" Value="38" />
+        <Setter Property="Padding" Value="6,3" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
     <Style x:Key="SplitButton" TargetType="{x:Type controls:SplitButton}">
         <Setter Property="ButtonStyle" Value="{StaticResource ButtonPrimary}" />
-        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="MinHeight" Value="28" />
         <Setter Property="Focusable" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
@@ -739,7 +743,7 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="34" />
+                            <ColumnDefinition Width="30" />
                         </Grid.ColumnDefinitions>
                         <Button x:Name="PART_MainButton"
                                 Content="{TemplateBinding Content}"
@@ -754,12 +758,12 @@
                                 Grid.Column="1"
                                 Style="{TemplateBinding ButtonStyle}"
                                 Tag="SplitButtonArrow"
-                                Width="34"
+                                Width="30"
                                 MinHeight="{TemplateBinding MinHeight}"
                                 Padding="0">
                             <iconPacks:PackIconMaterial Kind="ChevronDown"
-                                                        Width="14"
-                                                        Height="14"
+                                                        Width="12"
+                                                        Height="12"
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center" />
                         </Button>
@@ -789,7 +793,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="6">
+                            CornerRadius="4">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
@@ -934,7 +938,7 @@
                     <Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="8"
+                            CornerRadius="0"
                             Padding="{TemplateBinding Padding}">
                         <ItemsPresenter />
                     </Border>
@@ -953,7 +957,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type MenuItem}">
                     <Grid SnapsToDevicePixels="True">
-                        <Border x:Name="ItemBackground" Background="{TemplateBinding Background}" CornerRadius="4" />
+                        <Border x:Name="ItemBackground" Background="{TemplateBinding Background}" CornerRadius="0" />
                         <Grid x:Name="ItemContent" Margin="{TemplateBinding Padding}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -1005,11 +1009,11 @@
                                AllowsTransparency="True"
                                Focusable="False"
                                PopupAnimation="Fade">
-                            <Border Background="{DynamicResource CardBrush}"
-                                    BorderBrush="{DynamicResource BorderBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="8"
-                                    Padding="4">
+                                            <Border Background="{DynamicResource CardBrush}"
+                                                    BorderBrush="{DynamicResource BorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="0"
+                                                    Padding="4">
                                 <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Cycle" />
                             </Border>
                         </Popup>
@@ -1106,7 +1110,7 @@
         </Setter>
     </Style>
     <Style x:Key="Field" TargetType="{x:Type controls:Field}">
-        <Setter Property="Margin" Value="0,0,0,16" />
+        <Setter Property="Margin" Value="0,0,0,12" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:Field}">
@@ -1114,11 +1118,11 @@
                         <Grid Margin="0,4,0,0">
                             <Border x:Name="FieldFrame"
                                     Margin="0,6,0,0"
-                                    Padding="10,12"
+                                    Padding="8,8"
                                     Background="{DynamicResource CardBrush}"
                                     BorderBrush="{DynamicResource BorderBrush}"
                                     BorderThickness="1"
-                                    CornerRadius="6">
+                                    CornerRadius="4">
                                 <ContentPresenter ContentSource="Content" />
                             </Border>
                             <Border x:Name="FieldLegend"
@@ -1257,7 +1261,11 @@
         <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Padding" Value="8,3" />
+        <Setter Property="Padding" Value="7,2" />
+        <Setter Property="MinHeight" Value="18" />
+        <Setter Property="MinWidth" Value="18" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="FontSize" Value="{DynamicResource WpfPremium.SmallFontSize}" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Template">

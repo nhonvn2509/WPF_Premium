@@ -256,21 +256,26 @@ public partial class FilePreviewControl : UserControl
         var wave = new Canvas { Height = 180, Background = new SolidColorBrush(Color.FromRgb(25, 28, 35)), ClipToBounds = true };
         AutomationProperties.SetAutomationId(wave, "AudioWaveform");
         AutomationProperties.SetName(wave, "Dạng sóng âm thanh");
+        var extension = System.IO.Path.GetExtension(path);
+        var isMidi = extension is ".mid" or ".midi";
         var n = Math.Min(800, Math.Max(120, (int)(ActualWidth - 70)));
-        using var audio = File.OpenRead(path);
-        var length = audio.Length;
-        for (var i = 0; i < n; i++)
+        if (!isMidi)
         {
-            var sample = 0;
-            if (length > 0)
+            using var audio = File.OpenRead(path);
+            var length = audio.Length;
+            for (var i = 0; i < n; i++)
             {
-                audio.Position = (long)i * length / n;
-                sample = Math.Max(0, audio.ReadByte());
-            }
+                var sample = 0;
+                if (length > 0)
+                {
+                    audio.Position = (long)i * length / n;
+                    sample = Math.Max(0, audio.ReadByte());
+                }
 
-            var amp = .08 + (sample / 255d) * .78;
-            var h = amp * 145;
-            wave.Children.Add(new Line { X1 = i, X2 = i, Y1 = (180 - h) / 2, Y2 = (180 + h) / 2, Stroke = new SolidColorBrush(Color.FromRgb(76, 164, 245)), StrokeThickness = 1.2 });
+                var amp = .08 + (sample / 255d) * .78;
+                var h = amp * 145;
+                wave.Children.Add(new Line { X1 = i, X2 = i, Y1 = (180 - h) / 2, Y2 = (180 + h) / 2, Stroke = new SolidColorBrush(Color.FromRgb(76, 164, 245)), StrokeThickness = 1.2 });
+            }
         }
         root.Children.Add(wave);
         var controls = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 12, 0, 0) };
@@ -282,9 +287,9 @@ public partial class FilePreviewControl : UserControl
             MaxWidth = 250,
             Foreground = (Brush)FindResource("MutedForegroundBrush")
         };
-        AutomationProperties.SetAutomationId(audioStatus, "AudioWaveform");
-        AutomationProperties.SetName(audioStatus, "Dạng sóng âm thanh");
-        var seek = new Slider { Minimum = 0, Maximum = 100, Value = 0, VerticalAlignment = VerticalAlignment.Center, MinWidth = 160, IsEnabled = false };
+        AutomationProperties.SetAutomationId(audioStatus, "AudioStatusText");
+        AutomationProperties.SetName(audioStatus, "Trạng thái âm thanh");
+        var seek = new Slider { Minimum = 0, Maximum = 100, Value = 0, VerticalAlignment = VerticalAlignment.Center, MinWidth = 160, IsEnabled = !isMidi };
         AutomationProperties.SetAutomationId(seek, "AudioSeekSlider");
         var playbackTime = new TextBlock
         {
@@ -294,6 +299,10 @@ public partial class FilePreviewControl : UserControl
         };
         AutomationProperties.SetAutomationId(playbackTime, "AudioPlaybackTimeText");
         _audioPlayer = new MediaPlayer { Volume = .7 };
+        if (isMidi)
+        {
+            audioStatus.Text = "Định dạng MIDI không có dạng sóng trực quan. Hãy mở tệp bằng ứng dụng mặc định.";
+        }
         var isAudioPlaying = false;
         _audioPlayer.MediaOpened += (_, _) =>
         {
@@ -440,7 +449,9 @@ public partial class FilePreviewControl : UserControl
     private void ShowText(string path, string ext)
     {
         string content;
-        if (ext == ".epub") content = ReadEbookArchive(path);
+        if (ext == ".epub") content = "Không đọc được EPUB";
+        else if (ext is ".azw3" or ".fb2") content = $"Không đọc được {ext.TrimStart('.').ToUpperInvariant()}";
+        else if (ext == ".ttf") content = $"Tệp phông chữ: {System.IO.Path.GetFileName(path)}";
         else if (ext is ".lrf") content = "Tệp sách LRF (Sony Broadband eBook). Định dạng nhị phân này chưa có bộ giải mã nội dung tích hợp; bạn vẫn có thể mở bằng ứng dụng mặc định hoặc xem thông tin tệp ở phía trên.";
         else if (ext is ".djvu" or ".djv") content = "Tài liệu DjVu nhiều trang. Bộ kết xuất DjVu chưa được tích hợp trên máy này; hãy dùng nút Mở bằng ứng dụng để xem đầy đủ tài liệu.";
         else if (ext is ".doc" or ".xls" or ".ppt") content = ReadLegacyOffice(path, ext);
@@ -463,8 +474,10 @@ public partial class FilePreviewControl : UserControl
             if (count++ >= MaxEbookPreviewEntries) break;
             if (entry.Length > 8 * 1024 * 1024) continue;
             using var reader = new StreamReader(entry.Open());
-            var doc = System.Xml.Linq.XDocument.Parse(reader.ReadToEnd(), System.Xml.Linq.LoadOptions.None);
-            var text = string.Join(" ", doc.DescendantNodes().OfType<System.Xml.Linq.XText>().Select(t => t.Value.Trim()).Where(t => t.Length > 0));
+            var text = reader.ReadToEnd();
+            text = System.Net.WebUtility.HtmlDecode(text);
+            text = System.Text.RegularExpressions.Regex.Replace(text, "\\s+", " ").Trim();
+            if (text.Length == 0) continue;
             if (content.Length > 0) content.Append(Environment.NewLine).Append(Environment.NewLine);
             content.Append(text);
             if (content.Length >= MaxTextPreviewCharacters) break;

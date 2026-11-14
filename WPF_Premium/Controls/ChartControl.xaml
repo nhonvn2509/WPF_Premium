@@ -5,7 +5,7 @@
             BorderBrush="{DynamicResource BorderBrush}"
             BorderThickness="1"
             CornerRadius="8"
-            Padding="16">
+            Padding="12">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -22,7 +22,7 @@
                        FontSize="12"
                        Foreground="{DynamicResource MutedForegroundBrush}"
                        TextWrapping="Wrap" />
-            <Grid x:Name="ChartSurface" Grid.Row="2" MinHeight="220" />
+            <Grid x:Name="ChartSurface" Grid.Row="2" MinHeight="200" />
         </Grid>
     </Border>
 </UserControl>
