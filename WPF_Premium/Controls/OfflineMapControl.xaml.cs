@@ -30,6 +30,14 @@ public partial class OfflineMapControl : UserControl, IDisposable
     private INotifyCollectionChanged? _notifyingLocations;
     private bool _usesWebMercator;
     private bool _isDisposed;
+    private int _mapBuildVersion;
+
+    private sealed class MapBuildResult(Map Map, List<ShapeFile> ShapeFiles, bool UsesWebMercator)
+    {
+        public Map Map { get; } = Map;
+        public List<ShapeFile> ShapeFiles { get; } = ShapeFiles;
+        public bool UsesWebMercator { get; } = UsesWebMercator;
+    }
 
     public OfflineMapControl()
     {
@@ -39,7 +47,11 @@ public partial class OfflineMapControl : UserControl, IDisposable
         _mapControl.MapPointerMoved += MapControl_MapPointerMoved;
         _mapControl.MouseLeave += (_, _) => CoordinateText.Text = "—";
         Loaded += (_, _) => RebuildMap();
-        Unloaded += (_, _) => DisposeMap();
+        Unloaded += (_, _) =>
+        {
+            _mapBuildVersion++;
+            DisposeMap();
+        };
     }
 
     /// <summary>Optional full path to a local MBTiles file. When empty, the built-in world map is shown.</summary>
@@ -86,32 +98,28 @@ public partial class OfflineMapControl : UserControl, IDisposable
 
     private void Locations_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => UpdateLocations();
 
-    private void RebuildMap()
+    private async void RebuildMap()
     {
         if (_isDisposed || !IsLoaded) return;
+        var buildVersion = ++_mapBuildVersion;
+        var path = MapFilePath;
+        DisposeMap();
+        MarineLegend.Visibility = string.IsNullOrWhiteSpace(path) ? Visibility.Visible : Visibility.Collapsed;
+        OfflineStatusText.Text = "Đang tải bản đồ ngoại tuyến…";
+        OfflineStatusText.Visibility = Visibility.Visible;
+
         try
         {
-            DisposeMap();
-            var map = new Map();
-            var path = MapFilePath;
-            if (!string.IsNullOrWhiteSpace(path))
+            var result = await Task.Run(() => BuildMap(path));
+            if (_isDisposed || buildVersion != _mapBuildVersion || !IsLoaded)
             {
-                MarineLegend.Visibility = Visibility.Collapsed;
-                if (!File.Exists(path)) throw new FileNotFoundException("Không tìm thấy tệp MBTiles ngoại tuyến.", path);
-                _usesWebMercator = true;
-                map.CRS = "EPSG:3857";
-                var source = new MbTilesTileSource(new SQLiteConnectionString(Path.GetFullPath(path), storeDateTimeAsTicks: true));
-                map.Layers.Add(new TileLayer(source) { Name = "Bản đồ ngoại tuyến" });
-            }
-            else
-            {
-                MarineLegend.Visibility = Visibility.Visible;
-                _usesWebMercator = false;
-                map.CRS = "EPSG:4326";
-                map.BackColor = new Color(214, 234, 248, 255);
-                BuildWorldMap(map);
+                DisposeMapBuildResult(result);
+                return;
             }
 
+            _shapeFiles.AddRange(result.ShapeFiles);
+            _usesWebMercator = result.UsesWebMercator;
+            var map = result.Map;
             OfflineStatusText.Visibility = Visibility.Collapsed;
             _locationsLayer = new MemoryLayer { Name = "Vị trí" };
             map.Layers.Add(_locationsLayer);
@@ -124,6 +132,7 @@ public partial class OfflineMapControl : UserControl, IDisposable
         }
         catch (Exception ex)
         {
+            if (_isDisposed || buildVersion != _mapBuildVersion || !IsLoaded) return;
             MarineLegend.Visibility = Visibility.Collapsed;
             DisposeShapeFiles();
             _mapControl.Map = new Map();
@@ -135,13 +144,41 @@ public partial class OfflineMapControl : UserControl, IDisposable
         }
     }
 
-    private void BuildWorldMap(Map map)
+    private static MapBuildResult BuildMap(string? path)
+    {
+        var map = new Map();
+        var shapeFiles = new List<ShapeFile>();
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                if (!File.Exists(path)) throw new FileNotFoundException("Không tìm thấy tệp MBTiles ngoại tuyến.", path);
+                map.CRS = "EPSG:3857";
+                var source = new MbTilesTileSource(new SQLiteConnectionString(Path.GetFullPath(path), storeDateTimeAsTicks: true));
+                map.Layers.Add(new TileLayer(source) { Name = "Bản đồ ngoại tuyến" });
+                return new MapBuildResult(map, shapeFiles, true);
+            }
+
+            map.CRS = "EPSG:4326";
+            map.BackColor = new Color(214, 234, 248, 255);
+            BuildWorldMap(map, shapeFiles);
+            return new MapBuildResult(map, shapeFiles, false);
+        }
+        catch
+        {
+            foreach (var shapeFile in shapeFiles) shapeFile.Dispose();
+            map.Dispose();
+            throw;
+        }
+    }
+
+    private static void BuildWorldMap(Map map, List<ShapeFile> shapeFiles)
     {
         foreach (var band in BathymetryBands)
         {
             map.Layers.Add(new Layer($"Độ sâu đáy biển {band.Depth:N0} m")
             {
-                DataSource = CreateShapeFile("bathymetry", $"ne_10m_bathymetry_{band.Suffix}", "ne_10m_bathymetry_all"),
+                DataSource = CreateShapeFile(shapeFiles, "bathymetry", $"ne_10m_bathymetry_{band.Suffix}", "ne_10m_bathymetry_all"),
                 Style = new VectorStyle
                 {
                     Fill = new Brush(band.Color),
@@ -150,35 +187,35 @@ public partial class OfflineMapControl : UserControl, IDisposable
             });
         }
 
-        var seasSource = CreateShapeFile("seas", "ne_10m_geography_marine_polys");
+        var seasSource = CreateShapeFile(shapeFiles, "seas", "ne_10m_geography_marine_polys");
         map.Layers.Add(new Layer("Biển và đại dương")
         {
             DataSource = seasSource,
             Style = MarineStyle
         });
 
-        var reefsSource = CreateShapeFile("reefs", "ne_10m_reefs");
+        var reefsSource = CreateShapeFile(shapeFiles, "reefs", "ne_10m_reefs");
         map.Layers.Add(new Layer("Rạn san hô và đảo san hô")
         {
             DataSource = reefsSource,
             Style = ReefStyle
         });
 
-        var countriesSource = CreateShapeFile("countries", "ne_10m_admin_0_countries");
+        var countriesSource = CreateShapeFile(shapeFiles, "countries", "ne_10m_admin_0_countries");
         map.Layers.Add(new Layer("Quốc gia")
         {
             DataSource = countriesSource,
             Style = new ThemeStyle(GetCountryStyle)
         });
 
-        var islandsSource = CreateShapeFile("islands", "ne_10m_minor_islands");
+        var islandsSource = CreateShapeFile(shapeFiles, "islands", "ne_10m_minor_islands");
         map.Layers.Add(new Layer("Đảo nhỏ")
         {
             DataSource = islandsSource,
             Style = DefaultCountryStyle
         });
 
-        var islandCoastlineSource = CreateShapeFile("islands", "ne_10m_minor_islands_coastline");
+        var islandCoastlineSource = CreateShapeFile(shapeFiles, "islands", "ne_10m_minor_islands_coastline");
         map.Layers.Add(new Layer("Đường bờ đảo nhỏ")
         {
             DataSource = islandCoastlineSource,
@@ -186,7 +223,7 @@ public partial class OfflineMapControl : UserControl, IDisposable
             MaxVisible = 0.25
         });
 
-        var regionsSource = CreateShapeFile("regions", "ne_10m_admin_1_states_provinces");
+        var regionsSource = CreateShapeFile(shapeFiles, "regions", "ne_10m_admin_1_states_provinces");
         map.Layers.Add(new Layer("Tỉnh và vùng")
         {
             DataSource = regionsSource,
@@ -196,8 +233,8 @@ public partial class OfflineMapControl : UserControl, IDisposable
 
         map.Layers.Add(BuildIslandLabelsLayer());
 
-        var citiesSource = CreateShapeFile("cities", "ne_10m_populated_places");
-        var geographySource = CreateShapeFile("geography", "ne_10m_geography_regions_points");
+        var citiesSource = CreateShapeFile(shapeFiles, "cities", "ne_10m_populated_places");
+        var geographySource = CreateShapeFile(shapeFiles, "geography", "ne_10m_geography_regions_points");
 
         map.Layers.Add(BuildLabelsLayer(countriesSource, regionsSource, citiesSource, seasSource, geographySource));
     }
@@ -798,14 +835,14 @@ public partial class OfflineMapControl : UserControl, IDisposable
         return int.TryParse(value.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var result) ? result : fallback;
     }
 
-    private ShapeFile CreateShapeFile(string folder, string fileName, string? archiveName = null)
+    private static ShapeFile CreateShapeFile(List<ShapeFile> shapeFiles, string folder, string fileName, string? archiveName = null)
     {
         var path = ExtractShapeFile(folder, fileName, archiveName);
         var source = new ShapeFile(path, fileBasedIndex: true, readPrjFile: true)
         {
             Encoding = Encoding.UTF8
         };
-        _shapeFiles.Add(source);
+        shapeFiles.Add(source);
         return source;
     }
 
@@ -856,10 +893,18 @@ public partial class OfflineMapControl : UserControl, IDisposable
         _locationsLayer = null;
     }
 
+    private static void DisposeMapBuildResult(MapBuildResult result)
+    {
+        foreach (var shapeFile in result.ShapeFiles) shapeFile.Dispose();
+        foreach (var layer in result.Map.Layers.OfType<IDisposable>()) layer.Dispose();
+        result.Map.Dispose();
+    }
+
     public void Dispose()
     {
         if (_isDisposed) return;
         _isDisposed = true;
+        _mapBuildVersion++;
         if (_notifyingLocations is not null) _notifyingLocations.CollectionChanged -= Locations_CollectionChanged;
         DisposeMap();
     }

@@ -196,14 +196,9 @@ public partial class ComboBoxControl : UserControl
 
         var filter = SearchText?.Trim();
         var items = ItemsSource?.Cast<object>() ?? Enumerable.Empty<object>();
-        var filtered = items.Where(item => string.IsNullOrEmpty(filter) ||
-            GetDisplayText(item).Contains(filter, StringComparison.CurrentCultureIgnoreCase)).ToArray();
-
-        FilteredItems.Clear();
-        foreach (var item in filtered)
-        {
-            FilteredItems.Add(item);
-        }
+        var filtered = new ObservableCollection<object>(items.Where(item => string.IsNullOrEmpty(filter) ||
+            GetDisplayText(item).Contains(filter, StringComparison.CurrentCultureIgnoreCase)));
+        SetValue(FilteredItemsPropertyKey, filtered);
     }
 
     private void UpdateDisplayText()

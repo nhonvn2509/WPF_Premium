@@ -9,14 +9,17 @@ using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 using WPF_Premium.Themes;
 
 namespace WPF_Premium.Controls;
 
 public partial class ChartControl : UserControl
 {
+    private static readonly TimeSpan RefreshDelay = TimeSpan.FromMilliseconds(50);
     private INotifyCollectionChanged? _seriesCollection;
     private INotifyCollectionChanged? _labelsCollection;
+    private readonly DispatcherTimer _refreshTimer;
 
     private static readonly string[] PaletteResourceKeys =
     [
@@ -72,6 +75,8 @@ public partial class ChartControl : UserControl
     public ChartControl()
     {
         InitializeComponent();
+        _refreshTimer = new DispatcherTimer { Interval = RefreshDelay };
+        _refreshTimer.Tick += RefreshTimer_Tick;
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
     }
@@ -122,7 +127,7 @@ public partial class ChartControl : UserControl
                 chart.AttachCollectionNotifications();
             }
 
-            chart.RefreshChart();
+            chart.RequestRefreshChart();
         }
     }
 
@@ -141,6 +146,7 @@ public partial class ChartControl : UserControl
     {
         ThemeManager.ThemeChanged -= OnThemeChanged;
         DetachCollectionNotifications();
+        _refreshTimer.Stop();
     }
 
     private void AttachCollectionNotifications()
@@ -174,9 +180,32 @@ public partial class ChartControl : UserControl
         }
     }
 
-    private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshChart();
+    private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => RequestRefreshChart();
 
-    private void OnThemeChanged(object? sender, EventArgs e) => RefreshChart();
+    private void OnThemeChanged(object? sender, EventArgs e) => RequestRefreshChart();
+
+    private void RequestRefreshChart()
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.BeginInvoke(RequestRefreshChart);
+            return;
+        }
+
+        if (!IsLoaded)
+        {
+            return;
+        }
+
+        _refreshTimer.Stop();
+        _refreshTimer.Start();
+    }
+
+    private void RefreshTimer_Tick(object? sender, EventArgs e)
+    {
+        _refreshTimer.Stop();
+        RefreshChart();
+    }
 
     private void UpdateHeader()
     {

@@ -22,6 +22,10 @@ namespace WPF_Premium.Controls;
 
 public partial class FilePreviewControl : UserControl
 {
+    private const int MaxTextPreviewCharacters = 1_000_000;
+    private const int MaxArchivePreviewEntries = 10_000;
+    private const int MaxEbookPreviewEntries = 1_000;
+    private const long MaxJsonPreviewBytes = 8 * 1024 * 1024;
     private static readonly Lazy<LibVLCSharp.Shared.LibVLC> SharedVlc = new(() => { LibVLCSharp.Shared.Core.Initialize(); return new LibVLCSharp.Shared.LibVLC(enableDebugLogs: false); });
     private string? _filePath;
     private Image? _image;
@@ -37,6 +41,7 @@ public partial class FilePreviewControl : UserControl
     private TextBox? _textView;
     private double _zoom = 1;
     private bool _magnifier;
+    private long _previewGeneration;
     private ToolTip? _magnifierToolTip;
     private Image? _magnifierPreview;
 
@@ -63,11 +68,16 @@ public partial class FilePreviewControl : UserControl
     public void LoadFile(string path)
     {
         if (!File.Exists(path)) { ShowMessage("Không tìm thấy tệp."); return; }
-        _filePath = System.IO.Path.GetFullPath(path); _zoom = 1; _magnifier = false;
-        FileNameText.Text = System.IO.Path.GetFileName(_filePath);
-        var info = new FileInfo(_filePath);
-        FileInfoText.Text = $"{System.IO.Path.GetExtension(path).TrimStart('.').ToUpperInvariant()} · {FormatSize(info.Length)} · {info.LastWriteTime:g}";
         StopCurrentMedia();
+        var generation = _previewGeneration;
+        _filePath = System.IO.Path.GetFullPath(path); _zoom = 1; _magnifier = false;
+        var fileName = System.IO.Path.GetFileName(_filePath);
+        var extension = System.IO.Path.GetExtension(_filePath);
+        FileNameText.Text = System.IO.Path.GetFileNameWithoutExtension(_filePath);
+        FileExtensionText.Text = extension.ToUpperInvariant();
+        var info = new FileInfo(_filePath);
+        FileSizeText.Text = FormatSize(info.Length);
+        AutomationProperties.SetName(FileNameText, fileName);
         CloseDocumentBrowser();
         CloseMagnifier();
         ContentHost.Children.Clear(); _image = null; _media = null; _textView = null;
@@ -161,18 +171,20 @@ public partial class FilePreviewControl : UserControl
     private void ShowImage(string path)
     {
         var viewer = new ScrollViewer { HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, CanContentScroll = false };
-        _image = new Image { Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, RenderTransformOrigin = new Point(.5, .5) };
+        var image = new Image { Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, RenderTransformOrigin = new Point(.5, .5) };
+        _image = image;
         AutomationProperties.SetAutomationId(_image, "PreviewImage");
         _image.RenderTransform = new ScaleTransform(1, 1); _image.MouseMove += Image_MouseMove; _image.MouseLeave += Image_MouseLeave;
         var status = new TextBlock { Text = "Đang giải mã hình ảnh…", Foreground = (Brush)FindResource("MutedForegroundBrush"), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
         AutomationProperties.SetAutomationId(status, "PreviewImageStatus");
-        var imageHost = new Grid(); imageHost.Children.Add(_image); imageHost.Children.Add(status);
+        var imageHost = new Grid(); imageHost.Children.Add(image); imageHost.Children.Add(status);
         viewer.Content = imageHost; ContentHost.Children.Add(viewer); ImageTools.Visibility = Visibility.Visible; ZoomText.Text = "100%";
         _ = Task.Run(() => DecodeImage(path)).ContinueWith(task => Dispatcher.BeginInvoke(() =>
         {
+            if (!ReferenceEquals(_image, image)) return;
             if (task.IsCompletedSuccessfully)
             {
-                _image!.Source = task.Result;
+                image.Source = task.Result;
                 status.Visibility = Visibility.Collapsed;
             }
             else
@@ -244,8 +256,22 @@ public partial class FilePreviewControl : UserControl
         var wave = new Canvas { Height = 180, Background = new SolidColorBrush(Color.FromRgb(25, 28, 35)), ClipToBounds = true };
         AutomationProperties.SetAutomationId(wave, "AudioWaveform");
         AutomationProperties.SetName(wave, "Dạng sóng âm thanh");
-        var bytes = File.ReadAllBytes(path); var n = Math.Min(800, Math.Max(120, (int)(ActualWidth - 70))); var stride = Math.Max(1, bytes.Length / n);
-        for (var i = 0; i < n; i++) { var amp = .08 + (bytes[Math.Min(i * stride, bytes.Length - 1)] / 255d) * .78; var h = amp * 145; wave.Children.Add(new Line { X1 = i, X2 = i, Y1 = (180 - h) / 2, Y2 = (180 + h) / 2, Stroke = new SolidColorBrush(Color.FromRgb(76, 164, 245)), StrokeThickness = 1.2 }); }
+        var n = Math.Min(800, Math.Max(120, (int)(ActualWidth - 70)));
+        using var audio = File.OpenRead(path);
+        var length = audio.Length;
+        for (var i = 0; i < n; i++)
+        {
+            var sample = 0;
+            if (length > 0)
+            {
+                audio.Position = (long)i * length / n;
+                sample = Math.Max(0, audio.ReadByte());
+            }
+
+            var amp = .08 + (sample / 255d) * .78;
+            var h = amp * 145;
+            wave.Children.Add(new Line { X1 = i, X2 = i, Y1 = (180 - h) / 2, Y2 = (180 + h) / 2, Stroke = new SolidColorBrush(Color.FromRgb(76, 164, 245)), StrokeThickness = 1.2 });
+        }
         root.Children.Add(wave);
         var controls = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 12, 0, 0) };
         var audioStatus = new TextBlock
@@ -387,8 +413,10 @@ public partial class FilePreviewControl : UserControl
         _videoPositionTimer.Tick += (_, _) => { if (_vlcVideoPlayer is { Length: > 0 } player && !seek.IsMouseCaptureWithin) { seek.Maximum = Math.Max(1, player.Length / 1000d); seek.Value = Math.Clamp(player.Time / 1000d, 0, seek.Maximum); } };
         _videoPositionTimer.Start();
         DockPanel.SetDock(play, Dock.Left); DockPanel.SetDock(vol, Dock.Right); bar.Children.Add(play); bar.Children.Add(vol); bar.Children.Add(seek); grid.Children.Add(bar); ContentHost.Children.Add(grid); ZoomText.Text = "Video";
+        var generation = _previewGeneration;
         _ = Task.Run(() => SharedVlc.Value).ContinueWith(task => Dispatcher.BeginInvoke(() =>
         {
+            if (generation != _previewGeneration) return;
             try
             {
                 if (!task.IsCompletedSuccessfully) throw new InvalidOperationException("Không thể khởi tạo bộ giải mã.", task.Exception);
@@ -417,9 +445,9 @@ public partial class FilePreviewControl : UserControl
         else if (ext is ".djvu" or ".djv") content = "Tài liệu DjVu nhiều trang. Bộ kết xuất DjVu chưa được tích hợp trên máy này; hãy dùng nút Mở bằng ứng dụng để xem đầy đủ tài liệu.";
         else if (ext is ".doc" or ".xls" or ".ppt") content = ReadLegacyOffice(path, ext);
         else if (ext == ".eml") content = ReadEml(path);
-        else if (ext == ".json") { using var doc = JsonDocument.Parse(File.ReadAllText(path)); content = JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true }); }
-        else if (ext == ".zip") content = string.Join(Environment.NewLine, ZipFile.OpenRead(path).Entries.Select(e => $"{e.FullName}    {FormatSize(e.Length)}"));
-        else content = File.ReadAllText(path, DetectEncoding(path));
+        else if (ext == ".json") content = ReadJsonPreview(path);
+        else if (ext == ".zip") content = ReadZipArchive(path);
+        else content = ReadTextPreview(path, DetectEncoding(path));
         _textView = new TextBox { Text = content, IsReadOnly = true, AcceptsReturn = true, AcceptsTab = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, FontFamily = new FontFamily("Consolas"), FontSize = 13, Padding = new Thickness(16), BorderThickness = new Thickness(0), Background = Brushes.Transparent };
         AutomationProperties.SetAutomationId(_textView, "PreviewTextContent");
         ContentHost.Children.Add(_textView); TextTools.Visibility = Visibility.Visible; ZoomText.Visibility = Visibility.Collapsed;
@@ -428,8 +456,69 @@ public partial class FilePreviewControl : UserControl
     private static string ReadEbookArchive(string path)
     {
         using var archive = ZipFile.OpenRead(path);
-        return string.Join(Environment.NewLine + Environment.NewLine, archive.Entries.Where(e => e.FullName.EndsWith(".xhtml", StringComparison.OrdinalIgnoreCase) || e.FullName.EndsWith(".html", StringComparison.OrdinalIgnoreCase)).Select(e => { using var reader = new StreamReader(e.Open()); var doc = System.Xml.Linq.XDocument.Parse(reader.ReadToEnd(), System.Xml.Linq.LoadOptions.None); return string.Join(" ", doc.DescendantNodes().OfType<System.Xml.Linq.XText>().Select(t => t.Value.Trim()).Where(t => t.Length > 0)); }));
+        var content = new StringBuilder();
+        var count = 0;
+        foreach (var entry in archive.Entries.Where(e => e.FullName.EndsWith(".xhtml", StringComparison.OrdinalIgnoreCase) || e.FullName.EndsWith(".html", StringComparison.OrdinalIgnoreCase)))
+        {
+            if (count++ >= MaxEbookPreviewEntries) break;
+            if (entry.Length > 8 * 1024 * 1024) continue;
+            using var reader = new StreamReader(entry.Open());
+            var doc = System.Xml.Linq.XDocument.Parse(reader.ReadToEnd(), System.Xml.Linq.LoadOptions.None);
+            var text = string.Join(" ", doc.DescendantNodes().OfType<System.Xml.Linq.XText>().Select(t => t.Value.Trim()).Where(t => t.Length > 0));
+            if (content.Length > 0) content.Append(Environment.NewLine).Append(Environment.NewLine);
+            content.Append(text);
+            if (content.Length >= MaxTextPreviewCharacters) break;
+        }
+
+        return LimitPreview(content.ToString(), MaxTextPreviewCharacters, "EPUB");
     }
+    private static string ReadZipArchive(string path)
+    {
+        using var archive = ZipFile.OpenRead(path);
+        var content = new StringBuilder();
+        var count = 0;
+        var truncated = false;
+        foreach (var entry in archive.Entries)
+        {
+            if (count++ >= MaxArchivePreviewEntries)
+            {
+                truncated = true;
+                break;
+            }
+            if (content.Length > 0) content.AppendLine();
+            content.Append(entry.FullName).Append("    ").Append(FormatSize(entry.Length));
+        }
+
+        return truncated
+            ? content.AppendLine().Append("… [đã giới hạn 10.000 mục]").ToString()
+            : content.ToString();
+    }
+    private static string ReadJsonPreview(string path)
+    {
+        if (new FileInfo(path).Length > MaxJsonPreviewBytes)
+            return "Tệp JSON quá lớn để xem trước (giới hạn 8 MB). Hãy mở bằng ứng dụng mặc định.";
+
+        using var doc = JsonDocument.Parse(File.ReadAllText(path));
+        return LimitPreview(JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true }), MaxTextPreviewCharacters, "JSON");
+    }
+    private static string ReadTextPreview(string path, Encoding encoding)
+    {
+        using var reader = new StreamReader(path, encoding, detectEncodingFromByteOrderMarks: true);
+        var buffer = new char[8192];
+        var content = new StringBuilder();
+        while (content.Length < MaxTextPreviewCharacters)
+        {
+            var read = reader.ReadBlock(buffer, 0, Math.Min(buffer.Length, MaxTextPreviewCharacters - content.Length));
+            if (read == 0) break;
+            content.Append(buffer, 0, read);
+        }
+
+        return content.Length == MaxTextPreviewCharacters && reader.Read() != -1
+            ? content.Append($"{Environment.NewLine}{Environment.NewLine}… [đã giới hạn phần xem trước văn bản ở {MaxTextPreviewCharacters:N0} ký tự]").ToString()
+            : content.ToString();
+    }
+    private static string LimitPreview(string content, int limit, string kind) =>
+        content.Length <= limit ? content : content[..limit] + $"{Environment.NewLine}{Environment.NewLine}… [đã giới hạn phần xem trước {kind} ở {limit:N0} ký tự]";
     private static string ReadLegacyOffice(string path, string extension)
     {
         try
@@ -450,6 +539,7 @@ public partial class FilePreviewControl : UserControl
     private static string FormatSize(long n) => n < 1024 ? $"{n} B" : n < 1048576 ? $"{n / 1024d:0.0} KB" : $"{n / 1048576d:0.0} MB";
     private void StopCurrentMedia()
     {
+        _previewGeneration++;
         _videoPositionTimer?.Stop();
         _videoPositionTimer = null;
         _audioPositionTimer?.Stop();
@@ -458,6 +548,13 @@ public partial class FilePreviewControl : UserControl
         _audioPlayer = null;
         _media?.Stop();
         _media = null;
+        _vlcVideoPlayer?.Stop();
+        _vlcVideoPlayer?.Dispose();
+        _vlcVideoPlayer = null;
+        _vlcMedia?.Dispose();
+        _vlcMedia = null;
+        _vlcVideoView?.Dispose();
+        _vlcVideoView = null;
     }
     private void OnDrop(object sender, DragEventArgs e) { if (e.Data.GetData(DataFormats.FileDrop) is string[] files && files.Length > 0) LoadFile(files[0]); }
     private void ZoomIn_Click(object s, RoutedEventArgs e) => SetZoom(Math.Min(6, _zoom * 1.2)); private void ZoomOut_Click(object s, RoutedEventArgs e) => SetZoom(Math.Max(.15, _zoom / 1.2)); private void ZoomReset_Click(object s, RoutedEventArgs e) => SetZoom(1);

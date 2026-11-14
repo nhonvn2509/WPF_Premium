@@ -243,21 +243,15 @@ public partial class MultiSelectControl : UserControl
         }
 
         var filter = SearchText?.Trim();
-        var filtered = (ItemsSource?.Cast<object>() ?? Enumerable.Empty<object>())
+        var filtered = new ObservableCollection<object>((ItemsSource?.Cast<object>() ?? Enumerable.Empty<object>())
             .Where(item => string.IsNullOrEmpty(filter) ||
-                GetDisplayText(item).Contains(filter, StringComparison.CurrentCultureIgnoreCase))
-            .ToArray();
+                GetDisplayText(item).Contains(filter, StringComparison.CurrentCultureIgnoreCase)));
 
         var wasSyncingSelection = _syncingSelection;
         _syncingSelection = true;
         try
         {
-            FilteredItems.Clear();
-            foreach (var item in filtered)
-            {
-                FilteredItems.Add(item);
-            }
-
+            SetValue(FilteredItemsPropertyKey, filtered);
             UpdateListSelection();
         }
         finally

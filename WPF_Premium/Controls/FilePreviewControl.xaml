@@ -15,10 +15,16 @@
                         <iconPacks:PackIconMaterial Kind="FolderOpen" />
                     </Button>
                 </StackPanel>
-                <StackPanel>
-                    <TextBlock x:Name="FileNameText" AutomationProperties.AutomationId="FileNameText" Text="Chưa chọn tệp" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
-                    <TextBlock x:Name="FileInfoText" Text="Chọn tệp để xem trước" FontSize="12" Foreground="{DynamicResource MutedForegroundBrush}" Margin="0,3,0,0"/>
-                </StackPanel>
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="FileNameText" AutomationProperties.AutomationId="FileNameText" Text="Chưa chọn tệp" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="FileExtensionText" Grid.Column="1" FontSize="12" Foreground="{DynamicResource MutedForegroundBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="FileSizeText" Grid.Column="2" FontSize="12" Foreground="{DynamicResource MutedForegroundBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                </Grid>
             </DockPanel>
             <Border Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,1" Padding="5">
                 <DockPanel LastChildFill="True">
