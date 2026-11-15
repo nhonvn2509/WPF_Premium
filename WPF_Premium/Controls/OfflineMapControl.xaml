@@ -5,12 +5,13 @@
              MinHeight="220">
     <Border Background="{DynamicResource CardBrush}"
             BorderBrush="{DynamicResource BorderBrush}"
-            BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+            BorderThickness="{DynamicResource WpfPremium.SurfaceBorderThickness}"
+            CornerRadius="{DynamicResource WpfPremium.SurfaceCornerRadius}" ClipToBounds="True">
         <Grid>
             <Grid x:Name="MapHost" Background="{DynamicResource BackgroundBrush}" />
             <Border x:Name="MarineLegend" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8"
-                    Padding="8" CornerRadius="6" Background="{DynamicResource CardBrush}"
-                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    Padding="8" CornerRadius="{DynamicResource WpfPremium.SurfaceCornerRadius}" Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="{DynamicResource WpfPremium.SurfaceBorderThickness}"
                     Opacity="0.94" IsHitTestVisible="False">
                 <StackPanel>
                     <TextBlock Text="Địa hình đáy biển (tham khảo)" FontSize="11" FontWeight="SemiBold"
@@ -42,9 +43,9 @@
                        Foreground="{DynamicResource MutedForegroundBrush}"
                        Background="{DynamicResource CardBrush}" Visibility="Collapsed" />
             <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="8"
-                    Padding="4" CornerRadius="8"
+                    Padding="4" CornerRadius="{DynamicResource WpfPremium.SurfaceCornerRadius}"
                     Background="{DynamicResource CardBrush}"
-                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="{DynamicResource WpfPremium.SurfaceBorderThickness}">
                 <StackPanel Orientation="Horizontal">
                     <Button Click="ZoomIn_Click" Width="28" Height="26" MinHeight="26" Padding="3"
                             ToolTip="Ph&#243;ng to b&#7843;n &#273;&#7891;" AutomationProperties.Name="Ph&#243;ng to b&#7843;n &#273;&#7891;"
@@ -64,16 +65,16 @@
                 </StackPanel>
             </Border>
             <Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="8"
-                    Padding="6,3" CornerRadius="5"
+                    Padding="6,3" CornerRadius="{DynamicResource WpfPremium.ControlCornerRadius}"
                     Background="{DynamicResource CardBrush}" Opacity="0.94">
                 <TextBlock x:Name="LocationCountText" Text="0 v&#7883; tr&#237;" FontSize="12"
                            Foreground="{DynamicResource MutedForegroundBrush}"
                            AutomationProperties.AutomationId="OfflineMapLocationCountText" />
             </Border>
             <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8"
-                    Padding="6,3" CornerRadius="5"
+                    Padding="6,3" CornerRadius="{DynamicResource WpfPremium.ControlCornerRadius}"
                     Background="{DynamicResource CardBrush}"
-                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="{DynamicResource WpfPremium.SurfaceBorderThickness}"
                     Opacity="0.94" IsHitTestVisible="False">
                 <TextBlock x:Name="CoordinateText" Text="&#8212;" FontSize="12"
                            Foreground="{DynamicResource MutedForegroundBrush}"

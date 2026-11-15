@@ -27,6 +27,8 @@ public sealed class DemoUiTests
         "Nút / Nhóm nút / Công tắc / Nhóm công tắc",
         "Phân trang / Cửa sổ bật lên / Tiến trình / Thanh trượt",
         "Bảng / Chú giải / Khung chờ",
+        "DataTable / ADO.NET SQL",
+        "StatCard / Đánh giá",
         "Badge / Nhãn trạng thái",
         "Divider / Đường phân cách",
         "StepBar / Tiến trình nhiều bước",
@@ -51,6 +53,8 @@ public sealed class DemoUiTests
         "Nút / Công tắc",
         "Phân trang / Tiến trình",
         "Bảng / Chú giải",
+        "DataTable / SQL",
+        "Thống kê / Đánh giá",
         "Badge",
         "Divider",
         "StepBar",
@@ -67,7 +71,9 @@ public sealed class DemoUiTests
     public void EveryDemoSectionIsAccessibleAndVisuallyPlaced()
     {
         var screenshotDirectory = Path.Combine(Path.GetTempPath(), "WpfPremiumUiScreenshots");
+        var darkScreenshotDirectory = Path.Combine(screenshotDirectory, "Dark");
         Directory.CreateDirectory(screenshotDirectory);
+        Directory.CreateDirectory(darkScreenshotDirectory);
 
         using var process = StartDemo();
         try
@@ -82,23 +88,13 @@ public sealed class DemoUiTests
             Assert.IsTrue(windowBounds.Width >= 1000, "The demo window should open at a desktop-friendly width.");
             Assert.IsTrue(windowBounds.Height >= 700, "The demo window should open at a desktop-friendly height.");
 
-            for (var index = 0; index < SectionTitles.Length; index++)
-            {
-                SelectNavigationItem(navigation, SectionNavigationItems[index]);
-                WaitForSection(window, SectionTitles[index]);
-                DrainUi();
-                var screenshotPath = Path.Combine(
-                    screenshotDirectory,
-                    $"{index + 1:00}-{SanitizeFileName(SectionTitles[index])}.png");
-                CaptureWindow(window, screenshotPath);
-                Assert.IsTrue(new FileInfo(screenshotPath).Length > 12_000, $"The {SectionTitles[index]} screenshot is suspiciously small.");
-                AssertVisibleBoundsInside(window, windowBounds, SectionTitles[index]);
-                AssertNoUnexpectedPopupStillOpen(automation, SectionTitles[index]);
-            }
+            ScanDemoSections(window, navigation, automation, screenshotDirectory, windowBounds);
 
+            AssertSidebarCanCollapseAndExpand(window);
             AssertDemoControls(window);
             SwitchTheme(window, "Tối");
             AssertThemeSwitch(window);
+            ScanDemoSections(window, navigation, automation, darkScreenshotDirectory, windowBounds);
             SwitchTheme(window, "Sáng");
         }
         finally
@@ -111,8 +107,39 @@ public sealed class DemoUiTests
         }
 
         Assert.IsTrue(Directory.Exists(screenshotDirectory), "The screenshot directory should exist.");
-        var screenshots = Directory.GetFiles(screenshotDirectory, "*.png");
-        Assert.HasCount(SectionTitles.Length, screenshots, "Every demo section must produce a screenshot.");
+        Assert.IsTrue(Directory.Exists(darkScreenshotDirectory), "The dark-theme screenshot directory should exist.");
+    }
+
+    private static void ScanDemoSections(
+        Window window,
+        AutomationElement navigation,
+        UIA3Automation automation,
+        string screenshotDirectory,
+        Rectangle windowBounds)
+    {
+        for (var index = 0; index < SectionTitles.Length; index++)
+        {
+            SelectNavigationItem(navigation, SectionNavigationItems[index]);
+            WaitForSection(window, SectionNavigationItems[index], SectionTitles[index]);
+            DrainUi();
+            if (SectionTitles[index] == "DataTable / ADO.NET SQL")
+            {
+                AssertDataTableSearchAndPaging(window);
+            }
+            if (index == 1)
+            {
+                AssertToolbarFitsPage(window);
+                AssertCodeSampleCanExpand(window);
+            }
+
+            var screenshotPath = Path.Combine(
+                screenshotDirectory,
+                $"{index + 1:00}-{SanitizeFileName(SectionTitles[index])}.png");
+            CaptureWindow(window, screenshotPath);
+            Assert.IsTrue(new FileInfo(screenshotPath).Length > 12_000, $"The {SectionTitles[index]} screenshot is suspiciously small.");
+            AssertVisibleBoundsInside(window, windowBounds, SectionTitles[index]);
+            AssertNoUnexpectedPopupStillOpen(automation, SectionTitles[index]);
+        }
     }
 
     private static Process StartDemo()
@@ -194,16 +221,17 @@ public sealed class DemoUiTests
         throw new AssertFailedException("Unreachable after Assert.Fail.");
     }
 
-    private static void WaitForSection(AutomationElement window, string sectionTitle)
+    private static void WaitForSection(AutomationElement window, string navigationTitle, string sectionTitle)
     {
+        var pageTitle = WaitForElement(window, "DemoPageTitle");
         var timeout = Stopwatch.StartNew();
         while (timeout.Elapsed < TimeSpan.FromSeconds(5))
         {
-            var matches = window.FindAllDescendants(condition =>
-                condition.ByControlType(ControlType.Text))
-                .Where(element => element.Name.Trim().Equals(sectionTitle, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-            if (matches.Count > 0)
+            var visibleText = string.Join(" | ", window.FindAllDescendants(condition =>
+                    condition.ByControlType(ControlType.Text))
+                .Select(SafeName));
+            if (SafeName(pageTitle).Trim().Equals(navigationTitle, StringComparison.OrdinalIgnoreCase) &&
+                visibleText.Contains(sectionTitle, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
@@ -211,20 +239,32 @@ public sealed class DemoUiTests
             Thread.Sleep(100);
         }
 
-        Assert.Fail($"Demo section '{sectionTitle}' was not visible within 5 seconds.");
+        var availableText = string.Join(" | ", window.FindAllDescendants(condition =>
+                condition.ByControlType(ControlType.Text))
+            .Select(SafeName));
+        Assert.Fail($"Demo section '{sectionTitle}' was not visible within 5 seconds. Visible text: {availableText}");
     }
 
     private static void SelectNavigationItem(AutomationElement navigation, string itemName)
     {
         var item = navigation.FindFirstDescendant(condition =>
-            condition.ByControlType(ControlType.ListItem)
+            condition.ByControlType(ControlType.Text)
                 .And(condition.ByName(itemName)));
         if (item is null)
         {
             Assert.Fail($"Navigation item '{itemName}' was not found.");
         }
 
-        item.Click();
+        var treeItem = item.Parent;
+        while (treeItem is not null && treeItem.ControlType != ControlType.TreeItem)
+        {
+            treeItem = treeItem.Parent;
+        }
+
+        Assert.IsNotNull(treeItem, $"Navigation text '{itemName}' must belong to a tree item.");
+        var selectionPattern = treeItem.Patterns.SelectionItem.Pattern;
+        Assert.IsNotNull(selectionPattern, $"Navigation item '{itemName}' should support selection.");
+        selectionPattern.Select();
         Thread.Sleep(120);
     }
 
@@ -306,17 +346,96 @@ public sealed class DemoUiTests
     private static void AssertDemoControls(AutomationElement window)
     {
         var ids = CollectAutomationIds(window);
-        foreach (var id in new[] { "DemoNavigation", "CodeSampleTitle", "CodeSampleText" })
+        foreach (var id in new[] { "DemoNavigation", "CodeSampleToggle", "ToggleSidebarButton" })
         {
             Assert.Contains(id, ids);
         }
 
+        AssertCodeSampleCanExpand(window);
+
         var text = string.Join(' ', window.FindAllDescendants(condition => condition.ByControlType(ControlType.Text))
             .Select(SafeName));
-        foreach (var expected in new[] { "Doanh thu", "Người dùng hoạt động", "Mới", "Hoàn tất", "Bản đồ ngoại tuyến" })
+        StringAssert.Contains(text, "Bản đồ ngoại tuyến");
+    }
+
+    private static void AssertCodeSampleCanExpand(AutomationElement window)
+    {
+        var codePanel = WaitForElement(window, "CodeSampleToggle").Patterns.ExpandCollapse.Pattern;
+        Assert.IsNotNull(codePanel, "The code sample expander should expose the UI Automation expand pattern.");
+        codePanel.Expand();
+        WaitForElement(window, "CodeSampleTitle");
+        WaitForElement(window, "CodeSampleText");
+        Invoke(WaitForElement(window, "CopyCodeButton"));
+    }
+
+    private static void AssertSidebarCanCollapseAndExpand(AutomationElement window)
+    {
+        var toggleButton = WaitForElement(window, "ToggleSidebarButton");
+        Invoke(toggleButton);
+        Thread.Sleep(100);
+        Invoke(toggleButton);
+    }
+
+    private static void AssertToolbarFitsPage(AutomationElement window)
+    {
+        var windowBounds = window.BoundingRectangle;
+        var controls = window.FindAllDescendants(condition =>
+                condition.ByControlType(ControlType.Text))
+            .Where(element => new[] { "Bình thường", "Tiêu đề 1", "Tiêu đề 2" }
+                .Contains(SafeName(element), StringComparer.Ordinal))
+            .ToList();
+        Assert.HasCount(3, controls, "Every toolbar text style should be visible in the demo.");
+        foreach (var control in controls)
         {
-            StringAssert.Contains(text, expected);
+            var bounds = control.BoundingRectangle;
+            Assert.IsTrue(bounds.Left >= windowBounds.Left - 1 &&
+                          bounds.Right <= windowBounds.Right + 1,
+                $"Toolbar control '{SafeName(control)}' should fit inside the window.");
         }
+    }
+
+    private static void AssertDataTableSearchAndPaging(AutomationElement window)
+    {
+        var summary = WaitForElement(window, "DataTableSummary");
+        var search = WaitForElement(window, "SearchBoxInput");
+        var valuePattern = search.Patterns.Value.Pattern;
+        Assert.IsNotNull(valuePattern, "The data table search box should expose a value pattern.");
+        valuePattern.SetValue(string.Empty);
+        WaitUntil(() => SafeName(summary).Contains("24 bản ghi", StringComparison.Ordinal),
+            "The ADO.NET demo should load the initial SQL result set.");
+
+        var pageTwo = window.FindFirstDescendant(condition =>
+            condition.ByControlType(ControlType.Button).And(condition.ByName("Trang 2")));
+        Assert.IsNotNull(pageTwo, "The data table should expose the second page.");
+        Invoke(pageTwo);
+        WaitUntil(() => SafeName(summary).Contains("trang 2/4", StringComparison.Ordinal),
+            "Selecting a page should issue a paged SQL query.");
+
+        valuePattern.SetValue("Adapter");
+        WaitUntil(() => SafeName(summary).Contains("3 bản ghi", StringComparison.Ordinal),
+            "Search should filter the SQL result set.");
+        var visibleText = string.Join(' ', window.FindAllDescendants(condition =>
+                condition.ByControlType(ControlType.Text))
+            .Select(SafeName));
+        StringAssert.Contains(visibleText, "Adapter USB-C 7-in-1");
+        Assert.IsFalse(visibleText.Contains("Bàn phím cơ K87", StringComparison.Ordinal),
+            "Search results should not show non-matching rows.");
+    }
+
+    private static void WaitUntil(Func<bool> condition, string failureMessage)
+    {
+        var timeout = Stopwatch.StartNew();
+        while (timeout.Elapsed < TimeSpan.FromSeconds(10))
+        {
+            if (condition())
+            {
+                return;
+            }
+
+            Thread.Sleep(100);
+        }
+
+        Assert.Fail(failureMessage);
     }
 
     private static void SwitchTheme(AutomationElement window, string themeName)
@@ -325,8 +444,15 @@ public sealed class DemoUiTests
             condition.ByControlType(ControlType.Button)
                 .And(condition.ByName(themeName)));
         Assert.IsNotNull(button, $"Theme button '{themeName}' should be available.");
-        button.Click();
+        Invoke(button);
         Thread.Sleep(350);
+    }
+
+    private static void Invoke(AutomationElement element)
+    {
+        var invokePattern = element.Patterns.Invoke.Pattern;
+        Assert.IsNotNull(invokePattern, $"UI Automation element '{SafeName(element)}' should expose Invoke.");
+        invokePattern.Invoke();
     }
 
     private static void AssertThemeSwitch(AutomationElement window)

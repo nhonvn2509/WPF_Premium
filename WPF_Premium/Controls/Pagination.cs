@@ -129,7 +129,7 @@ public sealed class Pagination : UserControl
             var button = CreateButton(token.Value.ToString(), token.Value, $"Trang {token.Value}", true);
             if (token.Value == CurrentPage)
             {
-                button.SetResourceReference(FrameworkElement.StyleProperty, "Button");
+                button.SetResourceReference(FrameworkElement.StyleProperty, "ButtonSecondary");
                 AutomationProperties.SetItemStatus(button, "Trang hiện tại");
             }
             _pages.Children.Add(button);

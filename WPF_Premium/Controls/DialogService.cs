@@ -136,6 +136,9 @@ public static class DialogService
         var root = new Grid { Background = new SolidColorBrush(Color.FromArgb(112, 0, 0, 0)) };
         var isEdgeOverlay = kind is OverlayKind.Drawer or OverlayKind.Sheet;
         var isSideOverlay = direction is OverlayDirection.Left or OverlayDirection.Right;
+        var cornerRadius = owner.TryFindResource("WpfPremium.SurfaceCornerRadius") is CornerRadius surfaceRadius
+            ? surfaceRadius.TopLeft
+            : 10;
         var panel = new Border
         {
             Width = !isEdgeOverlay ? 440 : isSideOverlay ? Math.Min(400, owner.ActualWidth) : double.NaN,
@@ -153,16 +156,15 @@ public static class DialogService
                     ? VerticalAlignment.Stretch
                     : direction == OverlayDirection.Top ? VerticalAlignment.Top : VerticalAlignment.Bottom,
             CornerRadius = !isEdgeOverlay
-                ? new CornerRadius(10)
+                ? new CornerRadius(cornerRadius)
                 : direction switch
                 {
-                    OverlayDirection.Left => new CornerRadius(0, 10, 10, 0),
-                    OverlayDirection.Top => new CornerRadius(0, 0, 10, 10),
-                    OverlayDirection.Right => new CornerRadius(10, 0, 0, 10),
-                    OverlayDirection.Bottom => new CornerRadius(10, 10, 0, 0),
-                    _ => new CornerRadius(10)
-                },
-            BorderThickness = new Thickness(1)
+                    OverlayDirection.Left => new CornerRadius(0, cornerRadius, cornerRadius, 0),
+                    OverlayDirection.Top => new CornerRadius(0, 0, cornerRadius, cornerRadius),
+                    OverlayDirection.Right => new CornerRadius(cornerRadius, 0, 0, cornerRadius),
+                    OverlayDirection.Bottom => new CornerRadius(cornerRadius, cornerRadius, 0, 0),
+                    _ => new CornerRadius(cornerRadius)
+                }
         };
         var styleKey = kind switch
         {

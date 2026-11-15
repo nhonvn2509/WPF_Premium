@@ -42,6 +42,13 @@ internal static class AppearanceSettingsDialog
             new ComponentSizeOption("Vừa (md)", ComponentSize.Medium),
             new ComponentSizeOption("Lớn (lg)", ComponentSize.Large)
         };
+        var styles = new[]
+        {
+            new StyleOption("Mặc định", WpfPremiumStyle.Default),
+            new StyleOption("Hiện đại", WpfPremiumStyle.Modern),
+            new StyleOption("Đơn giản", WpfPremiumStyle.Simple),
+            new StyleOption("Cổ điển", WpfPremiumStyle.Classic)
+        };
 
         var dialog = new PremiumWindow
         {
@@ -103,6 +110,17 @@ internal static class AppearanceSettingsDialog
         };
         AutomationProperties.SetAutomationId(componentSizeSelector, "AppearanceComponentSizeSelector");
 
+        var styleSelector = new ComboBoxControl
+        {
+            ItemsSource = styles,
+            DisplayMemberPath = nameof(StyleOption.Label),
+            SelectedItem = styles.First(option => option.Style == current.Style),
+            Placeholder = "Phong cách giao diện",
+            SearchEnabled = false,
+            HorizontalAlignment = HorizontalAlignment.Stretch
+        };
+        AutomationProperties.SetAutomationId(styleSelector, "AppearanceStyleSelector");
+
         var previewText = new TextBlock
         {
             Text = "Văn bản xem trước · WPF Premium",
@@ -130,18 +148,22 @@ internal static class AppearanceSettingsDialog
             var dimensions = componentSizeSelector.SelectedItem is ComponentSizeOption selectedOption
                 ? selectedOption.Size
                 : current.ComponentSize;
-            var (height, padding) = dimensions switch
-            {
-                ComponentSize.Small => (30d, new Thickness(8, 4, 8, 4)),
-                ComponentSize.Large => (42d, new Thickness(14, 8, 14, 8)),
-                _ => (34d, new Thickness(10, 6, 10, 6))
-            };
-            previewButton.MinHeight = height;
-            previewButton.Padding = padding;
+            var selectedStyle = styleSelector.SelectedItem is StyleOption styleOption
+                ? styleOption.Style
+                : current.Style;
+            var metrics = ThemeStyleManager.GetControlMetrics(selectedStyle, dimensions);
+            previewButton.MinHeight = metrics.ControlMinHeight;
+            previewButton.Padding = metrics.ControlPadding;
+            previewText.Foreground = ThemeStyleManager.GetPreviewBrush(application, selectedStyle, "ForegroundBrush");
+            previewButton.Background = ThemeStyleManager.GetPreviewBrush(application, selectedStyle, "PrimaryBrush");
+            previewButton.Foreground = ThemeStyleManager.GetPreviewBrush(application, selectedStyle, "PrimaryForegroundBrush");
+            previewButton.BorderBrush = ThemeStyleManager.GetPreviewBrush(application, selectedStyle, "PrimaryBrush");
+            previewButton.Resources[AppearanceSettingsManager.ControlCornerRadiusResourceKey] = metrics.ControlCornerRadius;
         }
 
         fontFamilySelector.SelectionChanged += (_, _) => UpdatePreview();
         componentSizeSelector.SelectionChanged += (_, _) => UpdatePreview();
+        styleSelector.SelectionChanged += (_, _) => UpdatePreview();
 
         var body = new StackPanel { Margin = new Thickness(24) };
         body.Children.Add(new TextBlock
@@ -154,6 +176,7 @@ internal static class AppearanceSettingsDialog
         body.Children.Add(CreateSettingRow("Phông chữ", fontFamilySelector));
         body.Children.Add(CreateSettingRow("Cỡ chữ", CreateSliderRow(fontSizeSlider, fontSizeLabel)));
         body.Children.Add(CreateSettingRow("Kích thước thành phần", componentSizeSelector));
+        body.Children.Add(CreateSettingRow("Phong cách", styleSelector));
         body.Children.Add(new Separator { Margin = new Thickness(0, 14, 0, 14) });
         body.Children.Add(previewText);
         body.Children.Add(previewButton);
@@ -205,14 +228,15 @@ internal static class AppearanceSettingsDialog
         applyButton.Click += (_, _) =>
         {
             if (fontFamilySelector.SelectedItem is not string selectedFont ||
-                componentSizeSelector.SelectedItem is not ComponentSizeOption selectedOption)
+                componentSizeSelector.SelectedItem is not ComponentSizeOption selectedOption ||
+                styleSelector.SelectedItem is not StyleOption selectedStyle)
             {
                 return;
             }
 
             AppearanceSettingsManager.Apply(
                 application,
-                new AppearanceSettings(selectedFont, fontSizeSlider.Value, selectedOption.Size));
+                new AppearanceSettings(selectedFont, fontSizeSlider.Value, selectedOption.Size, selectedStyle.Style));
             dialog.DialogResult = true;
         };
         actions.Children.Add(resetButton);
@@ -220,14 +244,15 @@ internal static class AppearanceSettingsDialog
         actions.Children.Add(applyButton);
         body.Children.Add(actions);
 
-        dialog.Content = new Border
+        var dialogSurface = new Border
         {
             Background = GetBrush(application, "CardBrush", Colors.White),
             BorderBrush = GetBrush(application, "BorderBrush", Colors.LightGray),
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(10),
             Child = body
         };
+        dialogSurface.SetResourceReference(Border.BorderThicknessProperty, "WpfPremium.SurfaceBorderThickness");
+        dialogSurface.SetResourceReference(Border.CornerRadiusProperty, "WpfPremium.SurfaceCornerRadius");
+        dialog.Content = dialogSurface;
 
         UpdatePreview();
         dialog.ShowDialog();
@@ -261,4 +286,5 @@ internal static class AppearanceSettingsDialog
         application.TryFindResource(key) as Brush ?? new SolidColorBrush(fallback);
 
     private sealed record ComponentSizeOption(string Label, ComponentSize Size);
+    private sealed record StyleOption(string Label, WpfPremiumStyle Style);
 }

@@ -62,7 +62,8 @@
                                 <Border Padding="{TemplateBinding Padding}"
                                         Background="{TemplateBinding Background}"
                                         BorderBrush="{TemplateBinding BorderBrush}"
-                                        BorderThickness="1,1,1,0">
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="5">
                                     <ContentPresenter
                                         HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
                                         VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
@@ -72,11 +73,12 @@
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="Selector.IsSelected" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+                                        <Setter Property="Background" Value="{DynamicResource SelectedTabBrush}" />
                                         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-                                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                                        <Setter Property="BorderBrush" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="0" />
                                         <Setter Property="Panel.ZIndex" Value="1" />
-                                        <Setter Property="Margin" Value="0,0,0,-2" />
+                                        <Setter Property="Margin" Value="0,0,0,-1" />
                                     </Trigger>
                                     <MultiTrigger>
                                         <MultiTrigger.Conditions>
@@ -122,7 +124,8 @@
                                 <Border Padding="{TemplateBinding Padding}"
                                         Background="{TemplateBinding Background}"
                                         BorderBrush="{TemplateBinding BorderBrush}"
-                                        BorderThickness="1,0,1,1">
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="5">
                                     <ContentPresenter
                                         HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
                                         VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
@@ -132,11 +135,12 @@
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="Selector.IsSelected" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+                                        <Setter Property="Background" Value="{DynamicResource SelectedTabBrush}" />
                                         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-                                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                                        <Setter Property="BorderBrush" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="0" />
                                         <Setter Property="Panel.ZIndex" Value="1" />
-                                        <Setter Property="Margin" Value="0,-1,-1,-2" />
+                                        <Setter Property="Margin" Value="0,0,0,-1" />
                                     </Trigger>
                                     <MultiTrigger>
                                         <MultiTrigger.Conditions>
@@ -199,6 +203,7 @@
         <Setter Property="Foreground" Value="{DynamicResource MutedForegroundBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="Padding" Value="10,6" />
+        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="ContextMenu">
             <Setter.Value>
                 <ContextMenu Style="{DynamicResource DropdownMenu}"
@@ -212,9 +217,10 @@
                 <Setter Property="Background" Value="{DynamicResource MutedBrush}" />
             </Trigger>
             <DataTrigger Binding="{Binding LayoutItem.IsSelected, RelativeSource={RelativeSource Self}}" Value="True">
-                <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+                <Setter Property="Background" Value="{DynamicResource SelectedTabBrush}" />
                 <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -223,6 +229,7 @@
         <Setter Property="Foreground" Value="{DynamicResource MutedForegroundBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="Padding" Value="10,6" />
+        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="ContextMenu">
             <Setter.Value>
                 <ContextMenu Style="{DynamicResource DropdownMenu}"
@@ -240,9 +247,10 @@
                 <Setter Property="Background" Value="{DynamicResource MutedBrush}" />
             </Trigger>
             <DataTrigger Binding="{Binding LayoutItem.IsSelected, RelativeSource={RelativeSource Self}}" Value="True">
-                <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+                <Setter Property="Background" Value="{DynamicResource SelectedTabBrush}" />
                 <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
             </DataTrigger>
         </Style.Triggers>
     </Style>

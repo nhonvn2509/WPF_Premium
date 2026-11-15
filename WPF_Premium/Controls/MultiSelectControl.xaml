@@ -39,14 +39,15 @@
                Placement="Bottom"
                PlacementTarget="{Binding ElementName=MultiSelectToggle}"
                StaysOpen="False"
+               PopupAnimation="Fade"
                Opened="MultiSelectPopup_Opened"
                Closed="MultiSelectPopup_Closed">
             <Border Width="{Binding ActualWidth, ElementName=MultiSelectToggle}"
                     MaxHeight="300"
                     Background="{DynamicResource PopoverBrush}"
                     BorderBrush="{DynamicResource BorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="7"
+                    BorderThickness="{DynamicResource WpfPremium.SurfaceBorderThickness}"
+                    CornerRadius="{DynamicResource WpfPremium.SurfaceCornerRadius}"
                     Padding="4">
                 <DockPanel>
                     <DockPanel DockPanel.Dock="Top" Margin="2,2,2,6">

@@ -84,12 +84,12 @@ public sealed class AttachmentControl : UserControl
         var border = new Border
         {
             Padding = new Thickness(10),
-            CornerRadius = new CornerRadius(4),
-            BorderThickness = new Thickness(1),
             Child = panel
         };
         border.SetResourceReference(Border.BackgroundProperty, "CardBrush");
         border.SetResourceReference(Border.BorderBrushProperty, "BorderBrush");
+        border.SetResourceReference(Border.BorderThicknessProperty, "WpfPremium.SurfaceBorderThickness");
+        border.SetResourceReference(Border.CornerRadiusProperty, "WpfPremium.SurfaceCornerRadius");
         Content = border;
     }
 

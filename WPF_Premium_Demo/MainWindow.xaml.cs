@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using MahApps.Metro.IconPacks;
 using WPF_Premium.Controls;
 using WPF_Premium.Themes;
@@ -35,6 +37,8 @@ public partial class MainWindow : PremiumWindow
         ["Page.ButtonsGallery"] = new("Page.ButtonsGallery", "Nút / Công tắc", "GestureTapButton", typeof(ButtonsGalleryPage), true),
         ["Page.Pagination"] = new("Page.Pagination", "Phân trang / Tiến trình", "Pagination", typeof(PaginationPage), true),
         ["Page.Table"] = new("Page.Table", "Bảng / Chú giải", "TableOutline", typeof(TablePage), true),
+        ["Page.DataTable"] = new("Page.DataTable", "DataTable / SQL", "DatabaseSearch", typeof(ControlsGallery), true),
+        ["Page.DataInsights"] = new("Page.DataInsights", "Thống kê / Đánh giá", "ChartBoxOutline", typeof(ControlsGallery), true),
         ["Page.Badge"] = new("Page.Badge", "Badge", "BadgeOutline", typeof(BadgePage), true),
         ["Page.Divider"] = new("Page.Divider", "Divider", "MinusBoxOutline", typeof(DividerPage), true),
         ["Page.StepBar"] = new("Page.StepBar", "StepBar", "ProgressHelper", typeof(StepBarPage), true),
@@ -55,6 +59,7 @@ public partial class MainWindow : PremiumWindow
 
             // Code-behind
             ThemeManager.SetTheme(Application.Current!, WpfPremiumTheme.Dark);
+            ThemeStyleManager.SetStyle(Application.Current!, WpfPremiumStyle.Modern);
             """),
         ["Page.Buttons"] = new("Nút", """
             <Button Content="Chính" />
@@ -217,6 +222,37 @@ public partial class MainWindow : PremiumWindow
             <Button Content="Xem chú giải" ToolTip="Nội dung chú giải" />
             <Border Style="{StaticResource Skeleton}" Height="14" Width="220" />
             """),
+        ["Page.DataTable"] = new("DataTable / ADO.NET SQL", """
+            <controls:DataTableControl x:Name="Products" PageSize="10"
+                                       SqlDialect="Sqlite">
+                <controls:DataTableControl.Columns>
+                    <DataGridTextColumn Header="Sản phẩm" Binding="{Binding Name}"
+                                        SortMemberPath="Name" />
+                    <DataGridTextColumn Header="Danh mục" Binding="{Binding Category}"
+                                        SortMemberPath="Category" />
+                </controls:DataTableControl.Columns>
+            </controls:DataTableControl>
+
+            // Code-behind
+            Products.Query = "SELECT Id, Name, Category FROM Products";
+            Products.ConnectionFactory = () => new SqliteConnection(connectionString);
+            Products.SearchableColumns.Add("Name");
+            Products.SearchableColumns.Add("Category");
+            Products.SortableColumns.Add("Name");
+            Products.SortableColumns.Add("Category");
+            await Products.RefreshAsync();
+            """),
+        ["Page.DataInsights"] = new("StatCard / Đánh giá", """
+            <UniformGrid Columns="3">
+                <controls:StatCard Title="Doanh thu" Value="128,4 triệu"
+                                   Trend="+12,8%" Description="So với tháng trước" />
+                <controls:StatCard Title="Đơn hàng" Value="1.284"
+                                   Trend="+8,2%" Description="42 đơn đang xử lý" />
+                <controls:StatCard Title="Hoàn tất" Value="96,4%"
+                                   Trend="-1,1%" IsPositiveTrend="False" />
+            </UniformGrid>
+            <controls:RatingControl Value="{Binding Rating, Mode=TwoWay}" Maximum="5" />
+            """),
         ["Page.Badge"] = new("Badge", """
             <controls:Badge Content="Mới" />
             <controls:Badge Content="Hoàn tất" Variant="Success" />
@@ -317,8 +353,10 @@ public partial class MainWindow : PremiumWindow
     };
 
     private bool _isSidebarCollapsed;
-    private string _currentPageKey = "Page.Appearance";
     private Dictionary<TreeViewItem, string> _navItemVisibility = new();
+    private readonly Dictionary<string, UIElement> _pageContentCache = new(StringComparer.Ordinal);
+    private ControlsGallery? _controlsGallery;
+    private ScrollViewer? _controlsGalleryScrollViewer;
 
     public MainWindow()
     {
@@ -366,81 +404,88 @@ public partial class MainWindow : PremiumWindow
             return;
         }
 
-        _currentPageKey = pageKey;
-        var content = CreatePageContent(pageInfo);
-        PageContent.Content = content;
+        UIElement content;
+        if (pageInfo.IsGallery)
+        {
+            if (!DemoExamples.TryGetValue(pageKey, out var example))
+            {
+                throw new InvalidOperationException($"No demo source is registered for '{pageKey}'.");
+            }
 
-        ContentHeaderTitle.Text = pageInfo.Title;
+            _controlsGallery ??= new ControlsGallery();
+            _controlsGalleryScrollViewer ??= new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+                Content = _controlsGallery
+            };
+            _controlsGallery.ShowPage(pageKey, example.Title, example.Source);
+            content = _controlsGalleryScrollViewer;
+            _controlsGalleryScrollViewer.ScrollToTop();
+        }
+        else if (_pageContentCache.TryGetValue(pageKey, out var cachedContent))
+        {
+            content = cachedContent;
+        }
+        else
+        {
+            content = CreatePageContent(pageInfo);
+            _pageContentCache.Add(pageKey, content);
+        }
+
+        if (!ReferenceEquals(PageContent.Content, content))
+        {
+            PageContent.Content = content;
+            PlayPageTransition();
+        }
+
+        AutomationProperties.SetName(PageContent, pageInfo.Title);
         PageTitle.Text = pageInfo.Title;
-        UpdateRightPanel(pageKey);
+    }
+
+    private void PlayPageTransition()
+    {
+        var duration = TimeSpan.FromMilliseconds(150);
+        PageContent.BeginAnimation(
+            UIElement.OpacityProperty,
+            new DoubleAnimation(0, 1, duration)
+            {
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut },
+                FillBehavior = FillBehavior.Stop
+            },
+            HandoffBehavior.SnapshotAndReplace);
+
+        var translation = new TranslateTransform();
+        PageContent.RenderTransform = translation;
+        translation.BeginAnimation(
+            TranslateTransform.YProperty,
+            new DoubleAnimation(6, 0, duration)
+            {
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut },
+                FillBehavior = FillBehavior.Stop
+            },
+            HandoffBehavior.SnapshotAndReplace);
     }
 
     private UIElement CreatePageContent(PageInfo pageInfo)
     {
-        if (pageInfo.IsGallery)
-        {
-            var gallery = new ControlsGallery();
-            return new ScrollViewer
-            {
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-                Content = gallery
-            };
-        }
-
-        return Activator.CreateInstance(pageInfo.PageType) as UIElement
+        var page = Activator.CreateInstance(pageInfo.PageType) as UIElement
             ?? new TextBlock { Text = "Không thể tạo trang", Foreground = (Brush)FindResource("DestructiveBrush") };
+
+        if (DemoExamples.TryGetValue(pageInfo.Key, out var example))
+        {
+            if (page is not UserControl { Content: ScrollViewer { Content: StackPanel content } })
+            {
+                throw new InvalidOperationException($"Page '{pageInfo.Key}' does not expose a scrollable demo layout.");
+            }
+
+            content.Children.Add(ControlsGallery.CreateCodePanel(example.Title, example.Source));
+        }
+
+        return page;
     }
 
-    private void UpdateRightPanel(string pageKey)
-    {
-        if (RightPanelContent == null) return;
-        RightPanelContent.Children.Clear();
-
-        if (DemoExamples.TryGetValue(pageKey, out var example))
-        {
-            RightPanelContent.Children.Add(new TextBlock
-            {
-                Text = $"Ví dụ: {example.Title}",
-                FontWeight = FontWeights.SemiBold,
-                FontSize = 14,
-                Margin = new Thickness(0, 0, 0, 8)
-            });
-            RightPanelContent.Children.Add(new TextBox
-            {
-                Text = example.Source,
-                IsReadOnly = true,
-                TextWrapping = TextWrapping.Wrap,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-                FontFamily = new System.Windows.Media.FontFamily("Consolas"),
-                FontSize = 11,
-                Padding = new Thickness(8),
-                MinHeight = 200,
-                Background = (Brush)FindResource("BackgroundBrush"),
-                BorderBrush = (Brush)FindResource("BorderBrush")
-            });
-        }
-        else
-        {
-            RightPanelContent.Children.Add(new TextBlock
-            {
-                Text = "Mã ví dụ",
-                FontWeight = FontWeights.SemiBold,
-                FontSize = 14,
-                Margin = new Thickness(0, 0, 0, 8)
-            });
-            RightPanelContent.Children.Add(new TextBlock
-            {
-                Text = "Không có mã ví dụ cho trang này.",
-                FontSize = 12,
-                Foreground = (Brush)FindResource("MutedForegroundBrush"),
-                TextWrapping = TextWrapping.Wrap
-            });
-        }
-    }
-
-    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    private void SearchBox_TextChanged(object? sender, EventArgs e)
     {
         if (SearchBox == null) return;
         var searchText = SearchBox.Text?.ToLower() ?? "";
@@ -499,7 +544,8 @@ public partial class MainWindow : PremiumWindow
     private void ToggleSidebar_Click(object sender, RoutedEventArgs e)
     {
         _isSidebarCollapsed = !_isSidebarCollapsed;
-        SidebarColumn.Width = _isSidebarCollapsed ? new GridLength(60) : new GridLength(280);
+        SidebarColumn.Width = _isSidebarCollapsed ? new GridLength(0) : new GridLength(280);
+        SidebarSplitter.Visibility = _isSidebarCollapsed ? Visibility.Collapsed : Visibility.Visible;
 
         var icon = ToggleSidebarButton.Content as PackIconMaterial;
         if (icon != null)
@@ -537,28 +583,4 @@ public partial class MainWindow : PremiumWindow
         DialogService.ShowDialog(this, "Hộp thoại phương thức", content);
     }
 
-    private void ShowCodeButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (RightPanelColumn.Width.Value > 0)
-        {
-            CloseRightPanel_Click(sender, e);
-        }
-        else
-        {
-            OpenRightPanel_Click(sender, e);
-        }
-    }
-
-    private void OpenRightPanel_Click(object sender, RoutedEventArgs e)
-    {
-        RightPanelColumn.Width = new GridLength(320);
-        RightPanel.Visibility = Visibility.Visible;
-        UpdateRightPanel(_currentPageKey);
-    }
-
-    private void CloseRightPanel_Click(object sender, RoutedEventArgs e)
-    {
-        RightPanel.Visibility = Visibility.Collapsed;
-        RightPanelColumn.Width = new GridLength(0);
-    }
 }

@@ -4,7 +4,6 @@
              xmlns:premium="clr-namespace:WPF_Premium.Controls;assembly=WPF_Premium">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel MaxWidth="900" HorizontalAlignment="Left" Margin="24,24,24,24">
-            <TextBlock Text="Giao diện" FontSize="28" FontWeight="Bold" />
             <TextBlock Text="Tùy chỉnh chủ đề, màu sắc và cài đặt giao diện cho ứng dụng."
                        FontSize="14" Foreground="{DynamicResource MutedForegroundBrush}"
                        Margin="0,8,0,24" TextWrapping="Wrap" MaxWidth="700" />
@@ -38,14 +37,14 @@
                     BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="1" CornerRadius="10" Padding="24">
                 <StackPanel>
-                    <TextBlock Text="Màu sắc tùy chỉnh" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16" />
-                    <TextBlock Text="Sử dụng ThemeManager để tùy chỉnh màu sắc chủ đề:" FontSize="13"
+                    <TextBlock Text="Kết hợp chủ đề và phong cách" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16" />
+                    <TextBlock Text="Chế độ sáng/tối và phong cách điều khiển có thể thay đổi độc lập:" FontSize="13"
                                Foreground="{DynamicResource MutedForegroundBrush}" Margin="0,0,0,12" TextWrapping="Wrap" />
                     <TextBox IsReadOnly="True" TextWrapping="Wrap" Padding="12"
                              Background="{DynamicResource BackgroundBrush}"
                              BorderBrush="{DynamicResource BorderBrush}"
                              FontFamily="Consolas" FontSize="11"
-                             Text="// Tùy chỉnh màu chính&#x0a;ThemeManager.SetPrimaryColor(Colors.Blue);&#x0a;&#x0a;// Tùy chỉnh màu nền&#x0a;ThemeManager.SetBackgroundColor(Colors.White);&#x0a;&#x0a;// Áp dụng chủ đề&#x0a;ThemeManager.SetTheme(Application.Current, WpfPremiumTheme.Dark);" />
+                             Text="ThemeManager.SetTheme(Application.Current!, WpfPremiumTheme.Dark);&#x0a;ThemeStyleManager.SetStyle(Application.Current!, WpfPremiumStyle.Modern);&#x0a;&#x0a;// Phong cách: Default, Modern, Simple, Classic" />
                 </StackPanel>
             </Border>
         </StackPanel>

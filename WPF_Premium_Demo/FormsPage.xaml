@@ -4,7 +4,6 @@
              xmlns:controls="clr-namespace:WPF_Premium.Controls;assembly=WPF_Premium">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel MaxWidth="900" HorizontalAlignment="Left" Margin="24,24,24,24">
-            <TextBlock Text="Bi&#7871;u m&#7841;u" FontSize="28" FontWeight="Bold" />
             <TextBlock Text="C&#225;c &#273;i&#7873;u khi&#7875;n bi&#7871;u m&#7841;u v&#7899;i x&#225;c th&#7921;c v&#224; ki&#7873;u d&#225;ng th&#7889;ng nh&#7845;t."
                        FontSize="14" Foreground="{DynamicResource MutedForegroundBrush}"
                        Margin="0,8,0,24" TextWrapping="Wrap" MaxWidth="700" />

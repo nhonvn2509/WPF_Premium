@@ -20,6 +20,14 @@ ThemeManager.SetTheme(Application.Current!, WpfPremiumTheme.Dark);
 ThemeManager.SetTheme(Application.Current!, WpfPremiumTheme.Light);
 ```
 
+Phong cách điều khiển được chọn độc lập với chế độ sáng/tối. Mỗi phong cách thay đổi bộ màu sáng/tối, bề mặt, viền, trạng thái tương tác, kiểu chữ và hình dáng dùng chung cho control. Thư viện có `Default` (phong cách hiện tại), `Modern` (chàm/cyan, bo tròn và thoáng), `Simple` (teal/trung tính, gọn và vuông) và `Classic` (màu giấy/navy, viền đậm và góc nhẹ). Chọn phong cách trong `AppearanceSettingsControl` hoặc gọi API:
+
+```csharp
+ThemeStyleManager.SetStyle(Application.Current!, WpfPremiumStyle.Modern);
+```
+
+`ThemeStyleManager.GetCurrent` trả về phong cách hiện tại; `ThemeStyleManager.StyleChanged` phát thông báo khi phong cách thay đổi. Phong cách và kích thước thành phần có thể được đặt cùng lúc qua `AppearanceSettingsManager`.
+
 Để cố định giao diện, gộp từ điển mong muốn một lần trong `App.xaml`:
 
 ```xml
@@ -38,9 +46,9 @@ Có thể tùy biến màu bằng cách khai báo lại các khóa tài nguyên 
 
 Default styles apply to `Button`, `TextBox`, `CheckBox`, `TabControl`, `TabItem`, `Label`, `ContextMenu`, `Menu`, `ProgressBar`, and `ToolTip`. Calendar, combobox, and table use WPF Premium controls rather than the stock WPF visuals.
 
-### Cài đặt kiểu chữ và kích thước
+### Cài đặt kiểu chữ, kích thước và phong cách
 
-Thêm `AppearanceSettingsControl` vào thanh công cụ hoặc trang cài đặt. Dialog cho phép đổi phông chữ, cỡ chữ từ 9 đến 32 pt và kích thước thành phần `sm`, `md`, `lg`; các kiểu dùng tài nguyên động sẽ cập nhật ngay sau khi áp dụng.
+Thêm `AppearanceSettingsControl` vào thanh công cụ hoặc trang cài đặt. Dialog cho phép đổi phong cách, phông chữ, cỡ chữ từ 9 đến 32 pt và kích thước thành phần `sm`, `md`, `lg`; các kiểu dùng tài nguyên động sẽ cập nhật ngay sau khi áp dụng.
 
 ```xml
 <controls:AppearanceSettingsControl />
@@ -51,7 +59,7 @@ Thêm `AppearanceSettingsControl` vào thanh công cụ hoặc trang cài đặt
 ```csharp
 AppearanceSettingsManager.Apply(
     Application.Current!,
-    new AppearanceSettings("Segoe UI", 15, ComponentSize.Large));
+    new AppearanceSettings("Segoe UI", 15, ComponentSize.Large, WpfPremiumStyle.Modern));
 
 var current = AppearanceSettingsManager.GetCurrent(Application.Current!);
 ```
@@ -63,7 +71,7 @@ Các ứng dụng dùng control cần tham chiếu thư viện và gộp `WpfPre
 | Component | WPF type / resource |
 | --- | --- |
 | Accordion, Collapsible | `Expander`, styles `Accordion`, `Collapsible` |
-| Appearance settings | `controls:AppearanceSettingsControl`; runtime API `AppearanceSettingsManager` với `ComponentSize.Small`, `Medium`, `Large` |
+| Appearance settings | `controls:AppearanceSettingsControl`; runtime API `AppearanceSettingsManager` và `ThemeStyleManager` với các phong cách `Default`, `Modern`, `Simple`, `Classic` |
 | Alert | `ContentControl`, styles `Alert`, `AlertDestructive` |
 | Alert dialog, Dialog | `DialogService.ShowAlertDialog` and `DialogService.ShowDialog` |
 | AvalonDock | AvalonDock `DockingManager`, style `WpfPremiumDockingManager` and theme resource `WpfPremiumDockingTheme` |
@@ -104,6 +112,10 @@ Các ứng dụng dùng control cần tham chiếu thư viện và gộp `WpfPre
 | StepBar | `controls:StepBar`; set `CurrentStep` to a zero-based step index |
 | Switch | `ToggleButton`, style `Switch` |
 | Table | `controls:Table`, style `Table` |
+| Data table | `controls:DataTableControl`; ADO.NET paging, sorting, and parameterized search |
+| Search box | `controls:SearchBox`; framed search icon, bindable `Text`, clear action, placeholder, and `FocusInput()` |
+| Stat card | `controls:StatCard`; title, value, description, trend, and trend color |
+| Rating | `controls:RatingControl`; bindable value, maximum, read-only mode, and `ValueChanged` |
 | Tabs | `TabControl`, style `Tabs` |
 | Textarea | `TextBox`, style `Textarea` |
 | Toast | `ToastService` and the `Toast` border style |
@@ -196,6 +208,33 @@ xmlns:avalonDock="clr-namespace:AvalonDock;assembly=AvalonDock"
 
 `Table` derives from `DataGrid` for standard column binding and selection behavior, with library-owned compact row, header, and cell styles. Declare columns explicitly using `controls:Table.Columns`.
 
+`DataTableControl` runs server-side search, sorting, and pagination through ADO.NET `DbConnection`; it does not depend on a specific provider. Configure a connection factory that returns a new connection, a base `SELECT` query without `ORDER BY`/pagination, searchable output columns, and an allow-list of sortable output columns. The control builds parameterized search and page queries, quotes column identifiers for the selected `DataTableSqlDialect`, and disposes each connection after loading. It supports SQL Server, SQLite, PostgreSQL, and MySQL paging syntax.
+
+```xml
+<controls:DataTableControl x:Name="Products" PageSize="10"
+                           SqlDialect="Sqlite">
+    <controls:DataTableControl.Columns>
+        <DataGridTextColumn Header="Product" Binding="{Binding Name}"
+                            SortMemberPath="Name" Width="*" />
+        <DataGridTextColumn Header="Category" Binding="{Binding Category}"
+                            SortMemberPath="Category" Width="*" />
+    </controls:DataTableControl.Columns>
+</controls:DataTableControl>
+```
+
+```csharp
+Products.ConnectionFactory = () => new SqliteConnection(connectionString);
+Products.Query = "SELECT Id, Name, Category FROM Products";
+Products.SearchableColumns.Add("Name");
+Products.SearchableColumns.Add("Category");
+Products.SortableColumns.Add("Name");
+Products.SortableColumns.Add("Category");
+Products.QueryParameters["tenantId"] = currentTenantId;
+await Products.RefreshAsync();
+```
+
+`Microsoft.Data.Sqlite` (or another provider) is an application dependency, not a dependency of WPF Premium. Searchable and sortable column names must be actual output columns; only add trusted names to these allow-lists. Query parameters are added to both the page and count commands. For complex queries, `CountQuery` can provide a separate base count statement; it must not include a `WHERE` clause for the control's search filter. `LoadFailed` reports errors, and the control also displays the error beside the table.
+
 `ChartControl` supports line, area, column, horizontal bar, stacked column/bar, step line, scatter, pie, and doughnut charts. Set `Kind`, `Series`, and optional category `Labels`; pie and doughnut data uses one non-negative value per named series. Observable series and label collections refresh the chart, and LiveCharts observes mutable value collections for Cartesian series. Chart colors refresh when `ThemeManager` switches between light and dark.
 
 ```xml
@@ -285,3 +324,7 @@ Có thể gán một `ObservableCollection<OfflineMapLocation>` để tự cập
 Nhãn trên bản đồ tích hợp được phân cấp theo mức thu phóng: bản đồ tổng quan ưu tiên địa danh lớn, còn tên tỉnh, thành phố, đảo và địa hình biển lần lượt xuất hiện khi phóng gần để giảm chồng lấp.
 
 Bản đồ tích hợp dùng dữ liệu [Natural Earth 1:10m](https://www.naturalearthdata.com/downloads/), gồm đường bờ, quốc gia, hơn 4.500 vùng hành chính cấp 1, địa danh, đảo nhỏ, các vùng biển, rạn san hô/đảo san hô và các dải địa hình đáy biển từ 0 đến 10.000 m. Khi phóng to, đường bờ đảo nhỏ được vẽ chi tiết hơn và có thêm nhãn đảo, đá, rạn, bãi cạn/bãi ngầm từ [GeoNames](https://www.geonames.org/), theo giấy phép [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). GeoNames ghi công dữ liệu gốc như sau: “This work is based on data from GeoNames.org.” Dữ liệu đảo và tên địa danh được cung cấp nguyên trạng, có thể chưa đầy đủ hoặc có sai số. Lớp đáy biển là các đường đẳng sâu khái quát tạo từ SRTM Plus; lớp rạn san hô Natural Earth chỉ gồm các rạn lớn từ WDB2. Các lớp này giúp định hướng trực quan ở quy mô bản đồ thế giới, không thể hiện đầy đủ mọi rạn, bãi cạn, điểm đo độ sâu hay chướng ngại hàng hải, và không phải hải đồ hàng hải chính thức. Không dùng để điều hướng hoặc đánh giá an toàn hàng hải. Dữ liệu Natural Earth thuộc phạm vi công cộng. Các vùng biển và biên giới hiển thị chỉ mang tính tham khảo, không phải ranh giới chủ quyền, EEZ hay dữ liệu pháp lý.
+
+## Hiệu ứng chuyển động
+
+Các trạng thái tương tác dùng chuyển động ngắn trên opacity hoặc render transform để tạo phản hồi khi rê chuột, nhấn, focus, chọn mục hoặc cập nhật dữ liệu. Trang demo cũng chuyển cảnh nhẹ; các hiệu ứng tránh thay đổi bố cục trong lúc chạy và không dùng vòng lặp animation liên tục.

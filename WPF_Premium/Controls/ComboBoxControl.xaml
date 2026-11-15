@@ -35,14 +35,15 @@
                Placement="Bottom"
                PlacementTarget="{Binding ElementName=DropDownToggle}"
                StaysOpen="False"
+               PopupAnimation="Fade"
                Opened="DropDownPopup_Opened"
                Closed="DropDownPopup_Closed">
             <Border Width="{Binding ActualWidth, ElementName=DropDownToggle}"
                     MaxHeight="280"
                     Background="{DynamicResource PopoverBrush}"
                     BorderBrush="{DynamicResource BorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="7"
+                    BorderThickness="{DynamicResource WpfPremium.SurfaceBorderThickness}"
+                    CornerRadius="{DynamicResource WpfPremium.SurfaceCornerRadius}"
                     Padding="4">
                 <DockPanel>
                     <TextBox x:Name="SearchBox"

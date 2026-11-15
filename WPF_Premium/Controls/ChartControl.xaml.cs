@@ -137,6 +137,7 @@ public partial class ChartControl : UserControl
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         ThemeManager.ThemeChanged += OnThemeChanged;
+        ThemeStyleManager.StyleChanged += OnThemeChanged;
         AttachCollectionNotifications();
         UpdateHeader();
         RefreshChart();
@@ -145,6 +146,7 @@ public partial class ChartControl : UserControl
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         ThemeManager.ThemeChanged -= OnThemeChanged;
+        ThemeStyleManager.StyleChanged -= OnThemeChanged;
         DetachCollectionNotifications();
         _refreshTimer.Stop();
     }

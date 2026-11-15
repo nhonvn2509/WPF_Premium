@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel MaxWidth="900" HorizontalAlignment="Left" Margin="24,24,24,24">
-            <TextBlock Text="Thẻ" FontSize="28" FontWeight="Bold" />
             <TextBlock Text="TabControl với nhiều kiểu dáng và trạng thái."
                        FontSize="14" Foreground="{DynamicResource MutedForegroundBrush}"
                        Margin="0,8,0,24" TextWrapping="Wrap" MaxWidth="700" />

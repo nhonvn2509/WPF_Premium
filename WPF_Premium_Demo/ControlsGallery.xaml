@@ -5,18 +5,13 @@
              xmlns:avalonDock="clr-namespace:AvalonDock;assembly=AvalonDock"
              xmlns:avalonDockLayout="clr-namespace:AvalonDock.Layout;assembly=AvalonDock"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks">
-    <StackPanel>
-        <TextBlock Text="Thư viện đầy đủ các thành phần" FontSize="22" FontWeight="Bold"
-                   Margin="0,28,0,6" />
-        <TextBlock Text="Các điều khiển WPF có thể tái sử dụng, dùng chung bộ giao diện WPF Premium."
-                   Foreground="{DynamicResource MutedForegroundBrush}" Margin="0,0,0,14" />
-
+    <StackPanel x:Name="GalleryRoot" Margin="20,16,20,20">
         <Border x:Name="TreeViewSection" Padding="10" Margin="0,0,0,16" CornerRadius="6"
                 Background="{DynamicResource CardBrush}"
                 BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
             <StackPanel>
                 <TextBlock Text="Cây điều hướng" FontWeight="SemiBold" Margin="0,0,0,10" />
-                <TreeView Style="{StaticResource TreeViewStyle}" MinHeight="130" MaxHeight="200">
+                <TreeView Style="{StaticResource TreeViewStyle}" MinHeight="300" MaxHeight="360">
                     <TreeViewItem IsExpanded="True" Style="{StaticResource TreeViewItemStyle}">
                         <TreeViewItem.Header>
                             <StackPanel Orientation="Horizontal">
@@ -72,18 +67,28 @@
                                 </StackPanel>
                             </TreeViewItem.Header>
                         </TreeViewItem>
+                        <TreeViewItem Header="tests" IsExpanded="True" Style="{StaticResource TreeViewItemStyle}">
+                            <TreeViewItem Header="WPF_Premium.Tests" IsExpanded="True" Style="{StaticResource TreeViewItemStyle}">
+                                <TreeViewItem Header="ButtonTests.cs" Style="{StaticResource TreeViewItemStyle}" />
+                                <TreeViewItem Header="ThemeTests.cs" Style="{StaticResource TreeViewItemStyle}" />
+                                <TreeViewItem Header="GalleryTests.cs" Style="{StaticResource TreeViewItemStyle}" />
+                            </TreeViewItem>
+                        </TreeViewItem>
+                        <TreeViewItem Header="WPF_Premium.sln" Style="{StaticResource TreeViewItemStyle}" />
+                        <TreeViewItem Header="Directory.Build.props" Style="{StaticResource TreeViewItemStyle}" />
                     </TreeViewItem>
                 </TreeView>
             </StackPanel>
         </Border>
 
         <Border x:Name="ToolbarSection" Padding="10" Margin="0,0,0,16" CornerRadius="6"
+                AutomationProperties.AutomationId="ToolbarDemoSection"
                 Background="{DynamicResource CardBrush}"
                 BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
             <StackPanel>
                 <TextBlock Text="Thanh công cụ kiểu dải băng" FontWeight="SemiBold" Margin="0,0,0,10" />
-                <controls:Toolbar Style="{StaticResource Toolbar}"
-                                  Height="56"
+                <controls:Toolbar Style="{StaticResource Toolbar}" Margin="0,0,0,6"
+                                  MinHeight="56"
                                   AutomationProperties.Name="Thanh công cụ chỉnh sửa tài liệu">
                     <StackPanel Style="{StaticResource ToolbarGroup}">
                         <Button Style="{StaticResource ToolbarButton}" ToolTip="Sao chép định dạng">
@@ -128,7 +133,9 @@
                             <iconPacks:PackIconMaterial Kind="FormatUnderline" />
                         </Button>
                     </StackPanel>
-                    <Separator Style="{StaticResource ToolbarSeparator}" />
+                </controls:Toolbar>
+                <controls:Toolbar Style="{StaticResource Toolbar}" Margin="0,0,0,6" MinHeight="56"
+                                  AutomationProperties.Name="Căn chỉnh và kiểu chữ">
                     <StackPanel Style="{StaticResource ToolbarGroup}">
                         <Button Style="{StaticResource ToolbarIconButton}" ToolTip="Danh sách dấu đầu dòng">
                             <iconPacks:PackIconMaterial Kind="FormatListBulleted" />
@@ -149,7 +156,9 @@
                             <iconPacks:PackIconMaterial Kind="FormatAlignJustify" />
                         </Button>
                     </StackPanel>
-                    <Separator Style="{StaticResource ToolbarSeparator}" />
+                </controls:Toolbar>
+                <controls:Toolbar Style="{StaticResource Toolbar}" MinHeight="56"
+                                  AutomationProperties.Name="Kiểu chữ và thao tác khác">
                     <StackPanel Style="{StaticResource ToolbarGroup}">
                         <Button Style="{StaticResource ToolbarStyleButton}" BorderBrush="{DynamicResource TraceActiveBrush}">
                             <TextBlock Text="Bình thường" FontSize="14" FontWeight="SemiBold" />
@@ -195,6 +204,16 @@
                         </controls:SplitButton.ContextMenu>
                     </controls:SplitButton>
                 </controls:Toolbar>
+                <Border Background="{DynamicResource MutedBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1" CornerRadius="6" Padding="16" Margin="0,12,0,0" MinHeight="180">
+                    <StackPanel>
+                        <TextBlock Text="Bản xem trước tài liệu" FontWeight="SemiBold" FontSize="16" />
+                        <TextBlock Text="Báo cáo dự án · Cập nhật lần cuối hôm nay"
+                                   Foreground="{DynamicResource MutedForegroundBrush}" Margin="0,4,0,12" />
+                        <TextBlock Text="WPF Premium giúp xây dựng giao diện nhất quán với các điều khiển có thể tùy biến. Thanh công cụ phía trên minh họa cách nhóm thao tác định dạng, căn chỉnh và quản lý nội dung trong một quy trình làm việc."
+                                   TextWrapping="Wrap" FontSize="14" LineHeight="24" />
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </Border>
 
@@ -203,14 +222,30 @@
                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                 <StackPanel>
                     <TextBlock Text="Ngăn xếp / Có thể thu gọn" FontWeight="SemiBold" Margin="0,0,0,12" />
-                    <Expander Header="WPF Premium là gì?" Style="{StaticResource Accordion}">
+                    <Expander Header="WPF Premium là gì?" Style="{StaticResource Accordion}" IsExpanded="True">
                         <TextBlock Text="Các điều khiển linh hoạt được tạo kiểu bằng mẫu WPF tích hợp."
+                                   TextWrapping="Wrap" Margin="12,4,12,12" />
+                    </Expander>
+                    <Expander Header="Tùy chỉnh giao diện" Style="{StaticResource Accordion}" IsExpanded="True">
+                        <TextBlock Text="Kết hợp style và resource để đồng bộ màu sắc, khoảng cách và trạng thái tương tác trên toàn ứng dụng."
                                    TextWrapping="Wrap" Margin="12,4,12,12" />
                     </Expander>
                     <Expander Header="Thông tin nâng cao" Style="{StaticResource Collapsible}">
                         <TextBlock Text="Expander hỗ trợ giao diện ngăn xếp và nội dung có thể thu gọn."
                                    TextWrapping="Wrap" Margin="12,4,12,12" />
                     </Expander>
+                    <Expander Header="Liên kết tài liệu" Style="{StaticResource Accordion}">
+                        <TextBlock Text="Đặt nội dung hướng dẫn, cấu hình hoặc phần trợ giúp vào bên trong mỗi mục."
+                                   TextWrapping="Wrap" Margin="12,4,12,12" />
+                    </Expander>
+                    <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="12" Margin="0,12,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Mẹo triển khai" FontWeight="SemiBold" />
+                            <TextBlock Text="Giữ tiêu đề ngắn, nhóm nội dung liên quan và chỉ mở sẵn mục quan trọng nhất."
+                                       TextWrapping="Wrap" Foreground="{DynamicResource MutedForegroundBrush}"
+                                       Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Border>
 
@@ -226,6 +261,13 @@
                         </StackPanel>
                     </ContentControl>
                     <ContentControl Style="{StaticResource AlertDestructive}" Content="Không thể lưu các thay đổi của bạn." />
+                    <ContentControl Style="{StaticResource Alert}" Margin="0,8,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Đã lưu thành công" FontWeight="SemiBold" />
+                            <TextBlock Text="Các thay đổi đã được đồng bộ với dự án."
+                                       Foreground="{DynamicResource MutedForegroundBrush}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </ContentControl>
                     <ContentControl Style="{StaticResource Empty}" Margin="0,8">
                         <StackPanel>
                             <TextBlock Text="Không có kết quả" FontWeight="SemiBold" HorizontalAlignment="Center" />
@@ -234,6 +276,11 @@
                         </StackPanel>
                     </ContentControl>
                     <ContentControl Style="{StaticResource Item}" Content="Mục danh sách có thể tái sử dụng" />
+                    <StackPanel Margin="0,8,0,0">
+                        <ContentControl Style="{StaticResource Item}" Content="Tác vụ đã hoàn thành · 09:42" />
+                        <ContentControl Style="{StaticResource Item}" Content="Đang chờ phê duyệt · 10:15" />
+                        <ContentControl Style="{StaticResource Item}" Content="Cập nhật cấu hình · Hôm qua" />
+                    </StackPanel>
                 </StackPanel>
             </Border>
 
@@ -321,6 +368,15 @@
                     <TextBlock Text="Khoảng ngày và giờ" FontWeight="Medium" Margin="0,0,0,8" />
                     <controls:DateTimeRangeCalendar x:Name="DateTimeRangePicker"
                                                     Style="{StaticResource DateTimeRangeCalendar}" />
+                    <Border Background="{DynamicResource MutedBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1" CornerRadius="6" Padding="16" Margin="0,16,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Lịch làm việc hôm nay" FontWeight="SemiBold" FontSize="16" />
+                            <TextBlock Text="09:00  ·  Họp nhóm thiết kế" Margin="0,12,0,0" />
+                            <TextBlock Text="13:30  ·  Rà soát bản phát hành" Margin="0,8,0,0" />
+                            <TextBlock Text="16:00  ·  Cập nhật tiến độ dự án" Margin="0,8,0,0" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Border>
 
@@ -342,6 +398,17 @@
                         <RadioButton Content="Mặc định" GroupName="Plan" IsChecked="True" />
                         <RadioButton Content="Thu gọn" GroupName="Plan" />
                     </StackPanel>
+                    <Separator Style="{StaticResource Marker}" Margin="0,12,0,12" />
+                    <TextBlock Text="Tùy chọn hiển thị" FontWeight="SemiBold" Margin="0,0,0,8" />
+                    <CheckBox Content="Ghi nhớ lựa chọn lần sau" IsChecked="True" Margin="0,0,0,8" />
+                    <CheckBox Content="Hiển thị thông báo cập nhật" IsChecked="True" Margin="0,0,0,8" />
+                    <TextBlock Text="Lệnh gần đây" FontWeight="SemiBold" Margin="0,8,0,8" />
+                    <ListBox Style="{StaticResource Command}" MaxHeight="140">
+                        <ListBoxItem Content="Tạo dự án mới" />
+                        <ListBoxItem Content="Nhập cấu hình" />
+                        <ListBoxItem Content="Kiểm tra cập nhật" />
+                        <ListBoxItem Content="Mở trợ giúp" />
+                    </ListBox>
                 </StackPanel>
             </Border>
 
@@ -372,11 +439,29 @@
                         <MenuItem Header="_Tệp">
                             <MenuItem Header="_Mới" />
                             <MenuItem Header="_Mở" />
+                            <MenuItem Header="_Lưu" />
+                            <Separator />
+                            <MenuItem Header="_Thoát" />
                         </MenuItem>
                         <MenuItem Header="_Chỉnh sửa">
                             <MenuItem Header="_Hoàn tác" />
+                            <MenuItem Header="_Làm lại" />
+                            <Separator />
+                            <MenuItem Header="_Tùy chọn" />
+                        </MenuItem>
+                        <MenuItem Header="_Xem">
+                            <MenuItem Header="_Thu phóng" />
+                            <MenuItem Header="_Toàn màn hình" />
                         </MenuItem>
                     </Menu>
+                    <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="14" Margin="0,16,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Quy ước trình đơn" FontWeight="SemiBold" />
+                            <TextBlock Text="Dùng trình đơn thả xuống cho hành động chính, trình đơn ngữ cảnh cho thao tác trên mục và thanh trình đơn cho lệnh cấp ứng dụng."
+                                       TextWrapping="Wrap" Foreground="{DynamicResource MutedForegroundBrush}"
+                                       Margin="0,6,0,0" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Border>
 
@@ -496,7 +581,19 @@
                         </Border>
                     </Popup>
                     <ProgressBar Style="{StaticResource Progress}" Value="68" Margin="0,16,0,12" />
+                    <DockPanel Margin="0,0,0,4">
+                        <TextBlock Text="Đang tải gói thành phần" />
+                        <TextBlock Text="68%" HorizontalAlignment="Right" />
+                    </DockPanel>
+                    <ProgressBar Style="{StaticResource Progress}" Value="68" Margin="0,0,0,12" />
+                    <TextBlock Text="Dung lượng đã sử dụng" FontWeight="Medium" Margin="0,4,0,4" />
+                    <ProgressBar Style="{StaticResource Progress}" Value="42" Margin="0,0,0,12" />
                     <Slider Style="{StaticResource Slider}" Value="40" />
+                    <DockPanel Margin="0,4,0,0">
+                        <TextBlock Text="Mức ưu tiên" Foreground="{DynamicResource MutedForegroundBrush}" />
+                        <TextBlock Text="40 / 100" HorizontalAlignment="Right"
+                                   Foreground="{DynamicResource MutedForegroundBrush}" />
+                    </DockPanel>
                 </StackPanel>
             </Border>
 
@@ -504,7 +601,7 @@
                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                 <StackPanel>
                     <TextBlock Text="Bảng / Chú giải / Khung chờ" FontWeight="SemiBold" Margin="0,0,0,12" />
-                    <controls:Table x:Name="Table" Style="{StaticResource Table}" Height="132" Margin="0,0,0,12">
+                    <controls:Table x:Name="Table" Style="{StaticResource Table}" Height="330" Margin="0,0,0,12">
                         <controls:Table.Columns>
                             <DataGridTextColumn Header="Tên" Binding="{Binding Name}" Width="*" />
                             <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="*" />
@@ -514,6 +611,70 @@
                             Style="{StaticResource ButtonOutline}" HorizontalAlignment="Left" Margin="0,0,0,12" />
                     <Border Style="{StaticResource Skeleton}" Height="14" Width="220" HorizontalAlignment="Left" />
                     <Border Style="{StaticResource Skeleton}" Height="14" Width="150" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="DataTableSection" Padding="12" Margin="0,0,0,12" CornerRadius="6"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="DataTable / ADO.NET SQL" FontWeight="SemiBold" Margin="0,0,0,8" />
+                    <TextBlock Text="Tìm kiếm và phân trang chạy trên cơ sở dữ liệu; nhấp tiêu đề cột để sắp xếp."
+                               Foreground="{DynamicResource MutedForegroundBrush}" Margin="0,0,0,12" />
+                    <controls:DataTableControl x:Name="ProductsDataTable" PageSize="6"
+                                               SqlDialect="Sqlite">
+                        <controls:DataTableControl.Columns>
+                            <DataGridTextColumn Header="Sản phẩm" Binding="{Binding Name}"
+                                                SortMemberPath="Name" Width="2*" />
+                            <DataGridTextColumn Header="Danh mục" Binding="{Binding Category}"
+                                                SortMemberPath="Category" Width="*" />
+                            <DataGridTextColumn Header="Giá" Binding="{Binding Price, StringFormat=N0}"
+                                                SortMemberPath="Price" Width="*" />
+                            <DataGridTextColumn Header="Tồn kho" Binding="{Binding Stock}"
+                                                SortMemberPath="Stock" Width="*" />
+                            <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}"
+                                                SortMemberPath="Status" Width="*" />
+                        </controls:DataTableControl.Columns>
+                    </controls:DataTableControl>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="DataInsightsSection" Padding="12" Margin="0,0,0,12" CornerRadius="6"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="StatCard / Đánh giá" FontWeight="SemiBold" Margin="0,0,0,12" />
+                    <UniformGrid Columns="3" Margin="0,0,0,16">
+                        <controls:StatCard Title="Doanh thu tháng" Value="128,4 triệu"
+                                           Description="So với tháng trước" Trend="+12,8%"
+                                           Margin="0,0,10,0" />
+                        <controls:StatCard Title="Đơn hàng" Value="1.284"
+                                           Description="42 đơn đang xử lý" Trend="+8,2%"
+                                           Margin="0,0,10,0" />
+                        <controls:StatCard Title="Tỷ lệ hoàn tất" Value="96,4%"
+                                           Description="Mục tiêu tháng: 95%" Trend="-1,1%"
+                                           IsPositiveTrend="False" />
+                    </UniformGrid>
+                    <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Đánh giá trải nghiệm" FontWeight="SemiBold" FontSize="15" />
+                                <TextBlock Text="Chọn số sao để cập nhật điểm đánh giá."
+                                           Foreground="{DynamicResource MutedForegroundBrush}" Margin="0,4,0,8" />
+                                <controls:RatingControl x:Name="ProductRating" Value="4" Maximum="5"
+                                                        ValueChanged="ProductRating_ValueChanged" />
+                                <TextBlock x:Name="ProductRatingValue" Text="4 / 5"
+                                           Foreground="{DynamicResource MutedForegroundBrush}" Margin="4,2,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="24,0,0,0">
+                                <TextBlock Text="Điểm trung bình" Foreground="{DynamicResource MutedForegroundBrush}" />
+                                <controls:RatingControl Value="5" Maximum="5" IsReadOnly="True" Margin="0,6,0,0" />
+                                <TextBlock Text="4,8 trên 5" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
                 </StackPanel>
             </Border>
 
@@ -529,6 +690,32 @@
                         <controls:Badge Content="Thất bại" Variant="Destructive" Margin="0,0,8,8" />
                         <controls:Badge Content="Tùy chọn" Variant="Outline" Margin="0,0,8,8" />
                     </WrapPanel>
+                    <UniformGrid Columns="3" Margin="0,8,0,0">
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="12" Margin="0,0,8,8">
+                            <StackPanel>
+                                <TextBlock Text="Phát hành" FontWeight="SemiBold" />
+                                <controls:Badge Content="Đã xuất bản" Variant="Success" Margin="0,8,0,4"
+                                                HorizontalAlignment="Left" />
+                                <TextBlock Text="Phiên bản 2.4.0" Foreground="{DynamicResource MutedForegroundBrush}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="12" Margin="0,0,8,8">
+                            <StackPanel>
+                                <TextBlock Text="Tác vụ" FontWeight="SemiBold" />
+                                <controls:Badge Content="Đang xử lý" Variant="Warning" Margin="0,8,0,4"
+                                                HorizontalAlignment="Left" />
+                                <TextBlock Text="Đồng bộ dữ liệu" Foreground="{DynamicResource MutedForegroundBrush}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,8">
+                            <StackPanel>
+                                <TextBlock Text="Kiểm tra" FontWeight="SemiBold" />
+                                <controls:Badge Content="Cần xem lại" Variant="Destructive" Margin="0,8,0,4"
+                                                HorizontalAlignment="Left" />
+                                <TextBlock Text="2 mục cần chú ý" Foreground="{DynamicResource MutedForegroundBrush}" />
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
                 </StackPanel>
             </Border>
 
@@ -546,6 +733,22 @@
                         <controls:Divider Orientation="Vertical" />
                         <TextBlock Text="Lịch sử" VerticalAlignment="Center" />
                     </StackPanel>
+                    <Separator Style="{StaticResource Marker}" Margin="0,8,0,12" />
+                    <TextBlock Text="Thành viên dự án" FontWeight="SemiBold" />
+                    <TextBlock Text="Quản lý quyền truy cập và hoạt động gần đây."
+                               Foreground="{DynamicResource MutedForegroundBrush}" Margin="0,4,0,0" />
+                    <controls:Divider />
+                    <DockPanel Margin="0,4,0,4">
+                        <TextBlock Text="Nhóm thiết kế" />
+                        <TextBlock Text="4 thành viên" HorizontalAlignment="Right"
+                                   Foreground="{DynamicResource MutedForegroundBrush}" />
+                    </DockPanel>
+                    <controls:Divider />
+                    <DockPanel Margin="0,4,0,4">
+                        <TextBlock Text="Nhóm phát triển" />
+                        <TextBlock Text="8 thành viên" HorizontalAlignment="Right"
+                                   Foreground="{DynamicResource MutedForegroundBrush}" />
+                    </DockPanel>
                 </StackPanel>
             </Border>
 
@@ -559,6 +762,38 @@
                         <controls:StepBarItem Content="Xác nhận" />
                         <controls:StepBarItem Content="Hoàn tất" />
                     </controls:StepBar>
+                    <UniformGrid Columns="3" Margin="0,24,0,0">
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="14" Margin="0,0,10,0">
+                            <StackPanel>
+                                <TextBlock Text="01 · Thông tin" FontWeight="SemiBold" />
+                                <TextBlock Text="Nhập tên dự án và mô tả ngắn."
+                                           TextWrapping="Wrap" Foreground="{DynamicResource MutedForegroundBrush}"
+                                           Margin="0,6,0,0" />
+                            </StackPanel>
+                        </Border>
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="14" Margin="0,0,10,0">
+                            <StackPanel>
+                                <TextBlock Text="02 · Cấu hình" FontWeight="SemiBold" />
+                                <TextBlock Text="Chọn nền tảng và tùy chỉnh các thiết lập."
+                                           TextWrapping="Wrap" Foreground="{DynamicResource MutedForegroundBrush}"
+                                           Margin="0,6,0,0" />
+                            </StackPanel>
+                        </Border>
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="14">
+                            <StackPanel>
+                                <TextBlock Text="03 · Xác nhận" FontWeight="SemiBold" />
+                                <TextBlock Text="Kiểm tra thông tin trước khi hoàn tất."
+                                           TextWrapping="Wrap" Foreground="{DynamicResource MutedForegroundBrush}"
+                                           Margin="0,6,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
+                    <DockPanel Margin="0,18,0,0">
+                        <Button Content="Quay lại" Style="{StaticResource ButtonOutline}"
+                                HorizontalAlignment="Left" />
+                        <Button Content="Tiếp tục" Style="{StaticResource Button}"
+                                HorizontalAlignment="Right" />
+                    </DockPanel>
                 </StackPanel>
             </Border>
 
@@ -567,28 +802,46 @@
                 <StackPanel>
                     <TextBlock Text="Waterfall Panel / Bố cục dạng thác" FontWeight="SemiBold" Margin="0,0,0,12" />
                     <controls:WaterfallPanel ColumnCount="3" HorizontalSpacing="12" VerticalSpacing="12">
-                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="10">
-                            <TextBlock Text="Thẻ ngắn. Các mục được dồn vào cột đang thấp nhất."
-                                       TextWrapping="Wrap" />
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="14" MinHeight="110">
+                            <StackPanel>
+                                <TextBlock Text="Tổng quan dự án" FontWeight="SemiBold" />
+                                <TextBlock Text="Thẻ ngắn. Các mục được dồn vào cột đang thấp nhất."
+                                           TextWrapping="Wrap" Margin="0,8,0,0" />
+                            </StackPanel>
                         </Border>
-                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="10">
-                            <TextBlock Text="Thẻ cao hơn với nội dung dài hơn để minh họa cách bố cục tự cân bằng theo chiều cao của từng cột."
-                                       TextWrapping="Wrap" />
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="14" MinHeight="190">
+                            <StackPanel>
+                                <TextBlock Text="Bản phát hành 2.4" FontWeight="SemiBold" />
+                                <TextBlock Text="Thẻ cao hơn với nội dung dài hơn để minh họa cách bố cục tự cân bằng theo chiều cao của từng cột. Dùng thẻ này để trình bày mô tả, trạng thái và các hành động liên quan."
+                                           TextWrapping="Wrap" Margin="0,8,0,0" />
+                            </StackPanel>
                         </Border>
-                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="10">
-                            <TextBlock Text="Thẻ vừa, hiển thị thêm một dòng mô tả."
-                                       TextWrapping="Wrap" />
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="14" MinHeight="140">
+                            <StackPanel>
+                                <TextBlock Text="Hoạt động gần đây" FontWeight="SemiBold" />
+                                <TextBlock Text="Thẻ vừa, hiển thị thêm một dòng mô tả và thông tin phụ."
+                                           TextWrapping="Wrap" Margin="0,8,0,0" />
+                            </StackPanel>
                         </Border>
-                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="10">
-                            <TextBlock Text="Mục tiếp theo sẽ được đặt bên dưới cột hiện đang có tổng chiều cao nhỏ nhất."
-                                       TextWrapping="Wrap" />
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="14" MinHeight="160">
+                            <StackPanel>
+                                <TextBlock Text="Tự động cân bằng" FontWeight="SemiBold" />
+                                <TextBlock Text="Mục tiếp theo sẽ được đặt bên dưới cột hiện đang có tổng chiều cao nhỏ nhất."
+                                           TextWrapping="Wrap" Margin="0,8,0,0" />
+                            </StackPanel>
                         </Border>
-                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="10">
-                            <TextBlock Text="Một thẻ ngắn nữa." TextWrapping="Wrap" />
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="14" MinHeight="110">
+                            <StackPanel>
+                                <TextBlock Text="Ghi chú" FontWeight="SemiBold" />
+                                <TextBlock Text="Một thẻ ngắn nữa." TextWrapping="Wrap" Margin="0,8,0,0" />
+                            </StackPanel>
                         </Border>
-                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="10">
-                            <TextBlock Text="Thẻ cuối với phần nội dung dài hơn để tạo bố cục không đồng đều."
-                                       TextWrapping="Wrap" />
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="14" MinHeight="180">
+                            <StackPanel>
+                                <TextBlock Text="Tài liệu tham khảo" FontWeight="SemiBold" />
+                                <TextBlock Text="Thẻ cuối với phần nội dung dài hơn để tạo bố cục không đồng đều và minh họa cách các cột thích ứng với nội dung."
+                                           TextWrapping="Wrap" Margin="0,8,0,0" />
+                            </StackPanel>
                         </Border>
                     </controls:WaterfallPanel>
                 </StackPanel>
@@ -672,19 +925,49 @@
                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                 <StackPanel>
                     <TextBlock Text="Hộp thoại / Hộp cảnh báo / Ngăn trượt / Bảng trượt / Thông báo" FontWeight="SemiBold" Margin="0,0,0,12" />
-                    <WrapPanel>
-                        <Button Content="Hộp thoại" Tag="Dialog" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,8,8" />
-                        <Button Content="Hộp cảnh báo" Tag="AlertDialog" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,8,8" />
-                        <Button Content="Ngăn trái" Tag="Drawer:Left" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,8,8" />
-                        <Button Content="Ngăn trên" Tag="Drawer:Top" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,8,8" />
-                        <Button Content="Ngăn phải" Tag="Drawer:Right" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,8,8" />
-                        <Button Content="Ngăn dưới" Tag="Drawer:Bottom" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,8,8" />
-                        <Button Content="Bảng trượt trái" Tag="Sheet:Left" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,8,8" />
-                        <Button Content="Bảng trượt trên" Tag="Sheet:Top" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,8,8" />
-                        <Button Content="Bảng trượt phải" Tag="Sheet:Right" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,8,8" />
-                        <Button Content="Bảng trượt dưới" Tag="Sheet:Bottom" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,8,8" />
-                        <Button Content="Hiện thông báo" Click="ShowToast_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,8,8" />
-                    </WrapPanel>
+                    <UniformGrid Columns="3">
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="12" Margin="0,0,10,0">
+                            <StackPanel>
+                                <TextBlock Text="Hộp thoại" FontWeight="SemiBold" Margin="0,0,0,8" />
+                                <TextBlock Text="Tác vụ cần xác nhận rõ ràng."
+                                           Foreground="{DynamicResource MutedForegroundBrush}" TextWrapping="Wrap"
+                                           Margin="0,0,0,8" />
+                                <Button Content="Hộp thoại" Tag="Dialog" Click="OpenPanel_Click"
+                                        Style="{StaticResource ButtonOutline}" HorizontalAlignment="Left" Margin="0,0,0,6" />
+                                <Button Content="Hộp cảnh báo" Tag="AlertDialog" Click="OpenPanel_Click"
+                                        Style="{StaticResource ButtonOutline}" HorizontalAlignment="Left" />
+                            </StackPanel>
+                        </Border>
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="12" Margin="0,0,10,0">
+                            <StackPanel>
+                                <TextBlock Text="Ngăn trượt" FontWeight="SemiBold" Margin="0,0,0,8" />
+                                <TextBlock Text="Chọn hướng mở để phù hợp bố cục."
+                                           Foreground="{DynamicResource MutedForegroundBrush}" TextWrapping="Wrap"
+                                           Margin="0,0,0,8" />
+                                <WrapPanel>
+                                    <Button Content="Trái" Tag="Drawer:Left" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,6,6" />
+                                    <Button Content="Trên" Tag="Drawer:Top" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,6,6" />
+                                    <Button Content="Phải" Tag="Drawer:Right" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,6,6" />
+                                    <Button Content="Dưới" Tag="Drawer:Bottom" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,6,6" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="12">
+                            <StackPanel>
+                                <TextBlock Text="Bảng trượt &amp; thông báo" FontWeight="SemiBold" Margin="0,0,0,8" />
+                                <TextBlock Text="Hiển thị nội dung phụ hoặc thông tin phản hồi nhanh."
+                                           Foreground="{DynamicResource MutedForegroundBrush}" TextWrapping="Wrap"
+                                           Margin="0,0,0,8" />
+                                <WrapPanel>
+                                    <Button Content="Trái" Tag="Sheet:Left" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,6,6" />
+                                    <Button Content="Trên" Tag="Sheet:Top" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,6,6" />
+                                    <Button Content="Phải" Tag="Sheet:Right" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,6,6" />
+                                    <Button Content="Dưới" Tag="Sheet:Bottom" Click="OpenPanel_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,6,6" />
+                                    <Button Content="Thông báo" Click="ShowToast_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,6,6" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
                 </StackPanel>
             </Border>
 
@@ -700,7 +983,7 @@
                         </StackPanel>
                     </DockPanel>
                     <avalonDock:DockingManager x:Name="DockingPreview"
-                                               Height="360"
+                                               Height="480"
                                                Style="{StaticResource WpfPremiumDockingManager}">
                         <avalonDockLayout:LayoutRoot>
                             <avalonDockLayout:LayoutPanel Orientation="Horizontal">
@@ -742,27 +1025,7 @@
                 </DockPanel>
                 <TextBlock Text="Phóng to để xem thêm đường bờ và tên đảo, rạn, bãi cạn. Dữ liệu chỉ mang tính tham khảo, không dùng để điều hướng; ứng dụng chỉ cần truyền tọa độ WGS84 để đánh dấu vị trí."
                            Foreground="{DynamicResource MutedForegroundBrush}" Margin="0,0,0,8" />
-                <controls:OfflineMapControl x:Name="OfflineMapPreview" Height="300" />
-                <TextBlock Text="Ví dụ XAML" FontWeight="SemiBold" Margin="0,10,0,4" />
-                <TextBox IsReadOnly="True" TextWrapping="Wrap" Padding="6"
-                         Background="{DynamicResource BackgroundBrush}"
-                         BorderBrush="{DynamicResource BorderBrush}"
-                         FontFamily="Consolas" FontSize="11"
-                         AutomationProperties.Name="Mã XAML ví dụ bản đồ ngoại tuyến"
-                         Text="&lt;controls:OfflineMapControl x:Name=&quot;MapView&quot; Height=&quot;300&quot; /&gt;" />
-                <TextBlock Text="Ví dụ C#" FontWeight="SemiBold" Margin="0,8,0,4" />
-                <TextBox IsReadOnly="True" AcceptsReturn="True" Height="110" TextWrapping="NoWrap"
-                         VerticalScrollBarVisibility="Auto" Padding="6"
-                         Background="{DynamicResource BackgroundBrush}"
-                         BorderBrush="{DynamicResource BorderBrush}"
-                         FontFamily="Consolas" FontSize="11"
-                         AutomationProperties.Name="Mã C-sharp ví dụ bản đồ ngoại tuyến"
-                         xml:space="preserve">MapView.Locations = new[]
-{
-    new OfflineMapLocation(21.0285, 105.8542, "Hồ Gươm", "ho-guom"),
-    new OfflineMapLocation(21.0368, 105.8342, "Lăng Chủ tịch Hồ Chí Minh", "lang-bac"),
-    new OfflineMapLocation(21.0245, 105.8412, "Nhà hát Lớn Hà Nội", "nha-hat-lon")
-};</TextBox>
+                <controls:OfflineMapControl x:Name="OfflineMapPreview" Height="480" />
             </StackPanel>
         </Border>
     </StackPanel>

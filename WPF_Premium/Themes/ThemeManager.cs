@@ -39,6 +39,7 @@ public static class ThemeManager
             themeIndex = index;
             if (HasSource(dictionaries[index].Source, source))
             {
+                ThemeStyleManager.ApplyThemePalette(application, theme);
                 return;
             }
 
@@ -49,13 +50,32 @@ public static class ThemeManager
         if (themeIndex < 0)
         {
             dictionaries.Add(newTheme);
+            ThemeStyleManager.ApplyThemePalette(application, theme);
             ThemeChanged?.Invoke(application, EventArgs.Empty);
             return;
         }
 
         dictionaries.RemoveAt(themeIndex);
         dictionaries.Insert(themeIndex, newTheme);
+        ThemeStyleManager.ApplyThemePalette(application, theme);
         ThemeChanged?.Invoke(application, EventArgs.Empty);
+    }
+
+    internal static WpfPremiumTheme GetCurrentTheme(Application application)
+    {
+        foreach (var dictionary in application.Resources.MergedDictionaries)
+        {
+            if (HasSource(dictionary.Source, DarkThemeSource))
+            {
+                return WpfPremiumTheme.Dark;
+            }
+            if (HasSource(dictionary.Source, LightThemeSource))
+            {
+                return WpfPremiumTheme.Light;
+            }
+        }
+
+        return WpfPremiumTheme.Light;
     }
 
     private static bool IsThemeDictionary(Uri? source) =>

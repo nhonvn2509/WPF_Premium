@@ -37,8 +37,8 @@
             <Border Width="300"
                     Background="{DynamicResource PopoverBrush}"
                     BorderBrush="{DynamicResource BorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="8"
+                    BorderThickness="{DynamicResource WpfPremium.SurfaceBorderThickness}"
+                    CornerRadius="{DynamicResource WpfPremium.SurfaceCornerRadius}"
                     Padding="8">
                 <StackPanel>
                     <controls:CalendarControl x:Name="DateSelector" Width="280" />

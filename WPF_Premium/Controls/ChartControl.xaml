@@ -3,8 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Border Background="{DynamicResource CardBrush}"
             BorderBrush="{DynamicResource BorderBrush}"
-            BorderThickness="1"
-            CornerRadius="8"
+            BorderThickness="{DynamicResource WpfPremium.SurfaceBorderThickness}"
+            CornerRadius="{DynamicResource WpfPremium.SurfaceCornerRadius}"
             Padding="12">
         <Grid>
             <Grid.RowDefinitions>

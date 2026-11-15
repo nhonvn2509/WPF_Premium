@@ -9,6 +9,7 @@
         Title="WPF Premium"
         Width="1600"
         Height="1000"
+        WindowState="Maximized"
         MinWidth="1200"
         MinHeight="800"
         Background="{DynamicResource BackgroundBrush}"
@@ -33,6 +34,15 @@
 
                 <!-- App Title -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="ToggleSidebarButton"
+                            Style="{StaticResource ButtonGhost}"
+                            Padding="6"
+                            Margin="0,0,8,0"
+                            ToolTip="Thu gọn thanh bên"
+                            AutomationProperties.AutomationId="ToggleSidebarButton"
+                            Click="ToggleSidebar_Click">
+                        <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="16" Height="16" />
+                    </Button>
                     <Border Width="28" Height="28" CornerRadius="6" Background="{DynamicResource PrimaryBrush}">
                         <TextBlock Text="W" Foreground="{DynamicResource PrimaryForegroundBrush}"
                                    FontWeight="Bold" FontSize="14"
@@ -42,11 +52,11 @@
                                FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" />
                 </StackPanel>
 
-                <!-- Page Title -->
                 <TextBlock x:Name="PageTitle" Grid.Column="1"
                            VerticalAlignment="Center" HorizontalAlignment="Center"
                            FontSize="13" FontWeight="Medium"
-                           Foreground="{DynamicResource MutedForegroundBrush}" />
+                           Foreground="{DynamicResource MutedForegroundBrush}"
+                           AutomationProperties.AutomationId="DemoPageTitle" />
 
                 <!-- Toolbar Actions -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
@@ -65,11 +75,9 @@
         <!-- Main Content Area -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="SidebarColumn" Width="280" MinWidth="60" MaxWidth="400" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition x:Name="SidebarColumn" Width="280" MinWidth="0" MaxWidth="400" />
+                <ColumnDefinition Width="4" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition x:Name="RightPanelColumn" Width="0" MinWidth="0" MaxWidth="320" />
             </Grid.ColumnDefinitions>
 
             <!-- Left Sidebar -->
@@ -88,11 +96,6 @@
                     <!-- Sidebar Header -->
                     <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
                         <DockPanel Margin="12,10">
-                            <Button x:Name="ToggleSidebarButton" DockPanel.Dock="Right"
-                                    Style="{StaticResource ButtonGhost}" Padding="6"
-                                    ToolTip="Thu gọn thanh bên" Click="ToggleSidebar_Click">
-                                <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="16" Height="16" />
-                            </Button>
                             <TextBlock Text="Danh mục" FontWeight="SemiBold" FontSize="12"
                                        VerticalAlignment="Center" />
                         </DockPanel>
@@ -100,27 +103,17 @@
 
                     <!-- Search Box -->
                     <Border Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Margin="8,8,8,0">
-                        <Grid Margin="8,6">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <iconPacks:PackIconMaterial Kind="Magnify" Width="16" Height="16"
-                                                        Foreground="{DynamicResource MutedForegroundBrush}"
-                                                        VerticalAlignment="Center" Margin="0,0,6,0" />
-                            <TextBox x:Name="SearchBox" Grid.Column="1"
-                                     Tag="Tìm kiếm điều khiển..."
-                                     FontSize="12"
-                                     Padding="6,4"
-                                     VerticalAlignment="Center"
-                                     TextChanged="SearchBox_TextChanged" />
-                        </Grid>
+                        <premium:SearchBox x:Name="SearchBox"
+                                           Margin="8,6"
+                                           Placeholder="Tìm kiếm điều khiển..."
+                                           AutomationId="NavigationSearchBoxInput" />
                     </Border>
 
                     <!-- Navigation Tree -->
                     <TreeView x:Name="NavTree" Grid.Row="2" Margin="6,8,6,6"
                               Style="{StaticResource TreeViewStyle}"
                               SelectedItemChanged="NavTree_SelectedItemChanged"
+                              AutomationProperties.AutomationId="DemoNavigation"
                               AutomationProperties.Name="Điều hướng demo">
                         <TreeViewItem IsExpanded="True" Style="{StaticResource TreeViewItemStyle}">
                             <TreeViewItem.Header>
@@ -276,6 +269,22 @@
                                     </StackPanel>
                                 </TreeViewItem.Header>
                             </TreeViewItem>
+                            <TreeViewItem x:Name="NavDataTable" Tag="Page.DataTable" Style="{StaticResource TreeViewItemStyle}">
+                                <TreeViewItem.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Kind="DatabaseSearch" Width="16" Height="16" Margin="0,0,8,0" />
+                                        <TextBlock Text="DataTable / SQL" />
+                                    </StackPanel>
+                                </TreeViewItem.Header>
+                            </TreeViewItem>
+                            <TreeViewItem x:Name="NavDataInsights" Tag="Page.DataInsights" Style="{StaticResource TreeViewItemStyle}">
+                                <TreeViewItem.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Kind="ChartBoxOutline" Width="16" Height="16" Margin="0,0,8,0" />
+                                        <TextBlock Text="Thống kê / Đánh giá" />
+                                    </StackPanel>
+                                </TreeViewItem.Header>
+                            </TreeViewItem>
                             <TreeViewItem x:Name="NavBadge" Tag="Page.Badge" Style="{StaticResource TreeViewItemStyle}">
                                 <TreeViewItem.Header>
                                     <StackPanel Orientation="Horizontal">
@@ -363,72 +372,15 @@
             </Border>
 
             <!-- Sidebar Splitter -->
-            <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center"
+            <GridSplitter x:Name="SidebarSplitter" Grid.Column="1" Width="4" HorizontalAlignment="Center"
                           Background="Transparent"
                           ResizeBehavior="PreviousAndNext"
                           ResizeDirection="Columns" />
 
             <!-- Central Content Area -->
             <Border Grid.Column="2" Background="{DynamicResource BackgroundBrush}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <!-- Page Header -->
-                    <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Background="{DynamicResource CardBrush}">
-                        <DockPanel Margin="16,10">
-                            <TextBlock x:Name="ContentHeaderTitle" Text="Giao diện"
-                                       FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
-                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button x:Name="ShowCodeButton" Content="Xem mã"
-                                        Style="{StaticResource ButtonOutline}" Padding="12,6"
-                                        Click="ShowCodeButton_Click" />
-                                <Button x:Name="OpenRightPanelButton" Style="{StaticResource ButtonGhost}" Padding="8"
-                                        ToolTip="Mở bảng thông tin" Click="OpenRightPanel_Click">
-                                    <iconPacks:PackIconMaterial Kind="InformationOutline" Width="16" Height="16" />
-                                </Button>
-                            </StackPanel>
-                        </DockPanel>
-                    </Border>
-
-                    <!-- Page Content -->
-                    <ContentControl x:Name="PageContent" Grid.Row="1" />
-                </Grid>
-            </Border>
-
-            <!-- Right Panel Splitter -->
-            <GridSplitter Grid.Column="3" Width="4" HorizontalAlignment="Center"
-                          Background="Transparent"
-                          ResizeBehavior="PreviousAndNext"
-                          ResizeDirection="Columns"
-                          Visibility="{Binding ElementName=RightPanelColumn, Path=Width, Converter={StaticResource WpfPremiumBooleanToVisibilityConverter}}" />
-
-            <!-- Right Panel (Code Example/Inspector) -->
-            <Border x:Name="RightPanel" Grid.Column="4"
-                    BorderBrush="{DynamicResource BorderBrush}"
-                    BorderThickness="1,0,0,0"
-                    Background="{DynamicResource CardBrush}"
-                    Visibility="Collapsed">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
-                        <DockPanel Margin="12,10">
-                            <Button DockPanel.Dock="Right" Style="{StaticResource ButtonGhost}" Padding="6"
-                                    ToolTip="Đóng bảng" Click="CloseRightPanel_Click">
-                                <iconPacks:PackIconMaterial Kind="Close" Width="16" Height="16" />
-                            </Button>
-                            <TextBlock Text="Mã ví dụ" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
-                        </DockPanel>
-                    </Border>
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="12">
-                        <StackPanel x:Name="RightPanelContent" />
-                    </ScrollViewer>
-                </Grid>
+                <ContentControl x:Name="PageContent"
+                                AutomationProperties.AutomationId="DemoPageContent" />
             </Border>
         </Grid>
     </Grid>

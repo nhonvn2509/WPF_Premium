@@ -78,12 +78,12 @@ public sealed class CalendarControl : UserControl
         var border = new Border
         {
             Padding = new Thickness(10),
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(8),
             Child = layout
         };
         border.SetResourceReference(Border.BackgroundProperty, "CardBrush");
         border.SetResourceReference(Border.BorderBrushProperty, "BorderBrush");
+        border.SetResourceReference(Border.BorderThicknessProperty, "WpfPremium.SurfaceBorderThickness");
+        border.SetResourceReference(Border.CornerRadiusProperty, "WpfPremium.SurfaceCornerRadius");
         Content = border;
         UpdateNavigationVisibility();
         UpdateCalendar();

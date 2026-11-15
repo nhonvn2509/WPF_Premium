@@ -5,7 +5,6 @@
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel MaxWidth="900" HorizontalAlignment="Left" Margin="24,24,24,24">
-            <TextBlock Text="Hộp thoại" FontSize="28" FontWeight="Bold" />
             <TextBlock Text="Hộp thoại phương thức, hộp cảnh báo, ngăn trượt, bảng trượt và thông báo."
                        FontSize="14" Foreground="{DynamicResource MutedForegroundBrush}"
                        Margin="0,8,0,24" TextWrapping="Wrap" MaxWidth="700" />

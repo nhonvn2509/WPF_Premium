@@ -16,6 +16,7 @@
     <Compile Include="..\WPF_Premium\Controls\ComboBoxControl.xaml.cs" Link="Controls\ComboBoxControl.xaml.cs" />
     <Compile Include="..\WPF_Premium\Controls\DateTimeCalendar.xaml.cs" Link="Controls\DateTimeCalendar.xaml.cs" />
     <Compile Include="..\WPF_Premium\Controls\DateTimeRangeCalendar.xaml.cs" Link="Controls\DateTimeRangeCalendar.xaml.cs" />
+    <Compile Include="..\WPF_Premium\Controls\DataTableControl.cs" Link="Controls\DataTableControl.cs" />
     <Compile Include="..\WPF_Premium\Controls\DialogService.cs" Link="Controls\DialogService.cs" />
     <Compile Include="..\WPF_Premium\Controls\Divider.cs" Link="Controls\Divider.cs" />
     <Compile Include="..\WPF_Premium\Controls\Field.cs" Link="Controls\Field.cs" />
@@ -23,8 +24,11 @@
     <Compile Include="..\WPF_Premium\Controls\MultiSelectControl.xaml.cs" Link="Controls\MultiSelectControl.xaml.cs" />
     <Compile Include="..\WPF_Premium\Controls\Pagination.cs" Link="Controls\Pagination.cs" />
     <Compile Include="..\WPF_Premium\Controls\PremiumWindow.cs" Link="Controls\PremiumWindow.cs" />
+    <Compile Include="..\WPF_Premium\Controls\RatingControl.cs" Link="Controls\RatingControl.cs" />
+    <Compile Include="..\WPF_Premium\Controls\SearchBox.cs" Link="Controls\SearchBox.cs" />
     <Compile Include="..\WPF_Premium\Controls\SplitButton.cs" Link="Controls\SplitButton.cs" />
     <Compile Include="..\WPF_Premium\Controls\StepBar.cs" Link="Controls\StepBar.cs" />
+    <Compile Include="..\WPF_Premium\Controls\StatCard.cs" Link="Controls\StatCard.cs" />
     <Compile Include="..\WPF_Premium\Controls\Table.cs" Link="Controls\Table.cs" />
     <Compile Include="..\WPF_Premium\Controls\ToastService.cs" Link="Controls\ToastService.cs" />
     <Compile Include="..\WPF_Premium\Controls\Toolbar.cs" Link="Controls\Toolbar.cs" />
@@ -32,6 +36,7 @@
     <Compile Include="..\WPF_Premium\Controls\WaterfallPanel.cs" Link="Controls\WaterfallPanel.cs" />
     <Compile Include="..\WPF_Premium\Themes\AppearanceSettings.cs" Link="Themes\AppearanceSettings.cs" />
     <Compile Include="..\WPF_Premium\Themes\ThemeManager.cs" Link="Themes\ThemeManager.cs" />
+    <Compile Include="..\WPF_Premium\Themes\ThemeStyleManager.cs" Link="Themes\ThemeStyleManager.cs" />
     <Page Include="..\WPF_Premium\Controls\AppearanceSettingsControl.xaml" Link="Controls\AppearanceSettingsControl.xaml" />
     <Page Include="..\WPF_Premium\Controls\ComboBoxControl.xaml" Link="Controls\ComboBoxControl.xaml" />
     <Page Include="..\WPF_Premium\Controls\DateTimeCalendar.xaml" Link="Controls\DateTimeCalendar.xaml" />

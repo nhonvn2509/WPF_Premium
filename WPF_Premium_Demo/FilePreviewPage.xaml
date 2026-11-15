@@ -4,7 +4,6 @@
              xmlns:premium="clr-namespace:WPF_Premium.Controls;assembly=WPF_Premium">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel MaxWidth="900" HorizontalAlignment="Left" Margin="24,24,24,24">
-            <TextBlock Text="Xem trước tệp" FontSize="28" FontWeight="Bold" />
             <TextBlock Text="Xem trước hình ảnh, âm thanh, video, văn bản, thư điện tử và tài liệu Office."
                        FontSize="14" Foreground="{DynamicResource MutedForegroundBrush}"
                        Margin="0,8,0,24" TextWrapping="Wrap" MaxWidth="700" />

@@ -38,8 +38,8 @@
                     MaxHeight="680"
                     Background="{DynamicResource PopoverBrush}"
                     BorderBrush="{DynamicResource BorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="8"
+                    BorderThickness="{DynamicResource WpfPremium.SurfaceBorderThickness}"
+                    CornerRadius="{DynamicResource WpfPremium.SurfaceCornerRadius}"
                     Padding="10">
                 <StackPanel>
                     <TextBlock Text="KHOẢNG THỜI GIAN"

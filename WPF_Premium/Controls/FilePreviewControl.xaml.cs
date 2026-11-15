@@ -589,17 +589,18 @@ public partial class FilePreviewControl : UserControl
         if (_magnifierToolTip is null)
         {
             _magnifierPreview = new Image { Width = 192, Height = 192, Stretch = Stretch.Fill, SnapsToDevicePixels = true };
+            var magnifierBorder = new Border
+            {
+                BorderThickness = new Thickness(2),
+                Child = _magnifierPreview
+            };
+            magnifierBorder.SetResourceReference(Border.BorderBrushProperty, "FocusBrush");
             _magnifierToolTip = new ToolTip
             {
                 Placement = System.Windows.Controls.Primitives.PlacementMode.Mouse,
                 PlacementTarget = _image,
                 StaysOpen = true,
-                Content = new Border
-                {
-                    BorderBrush = Brushes.DodgerBlue,
-                    BorderThickness = new Thickness(2),
-                    Child = _magnifierPreview
-                }
+                Content = magnifierBorder
             };
         }
 

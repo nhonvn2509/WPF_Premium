@@ -13,9 +13,15 @@ public enum ComponentSize
 public sealed record AppearanceSettings(
     string FontFamily,
     double FontSize,
-    ComponentSize ComponentSize)
+    ComponentSize ComponentSize,
+    WpfPremiumStyle Style)
 {
-    public static AppearanceSettings Default { get; } = new("Segoe UI", 14, ComponentSize.Medium);
+    public AppearanceSettings(string FontFamily, double FontSize, ComponentSize ComponentSize)
+        : this(FontFamily, FontSize, ComponentSize, WpfPremiumStyle.Default)
+    {
+    }
+
+    public static AppearanceSettings Default { get; } = new("Segoe UI", 14, ComponentSize.Medium, WpfPremiumStyle.Default);
 }
 
 public static class AppearanceSettingsManager
@@ -58,10 +64,15 @@ public static class AppearanceSettingsManager
                             resources["WpfPremium.ComponentSize"] is ComponentSize configuredComponentSize
             ? configuredComponentSize
             : AppearanceSettings.Default.ComponentSize;
+        var style = resources.Contains(ThemeStyleManager.StyleResourceKey) &&
+                    resources[ThemeStyleManager.StyleResourceKey] is WpfPremiumStyle configuredStyle
+            ? configuredStyle
+            : WpfPremiumStyle.Default;
         return new AppearanceSettings(
             fontFamily?.Source ?? AppearanceSettings.Default.FontFamily,
             fontSize,
-            componentSize);
+            componentSize,
+            style);
     }
 
     public static void Apply(Application application, AppearanceSettings settings)
@@ -83,6 +94,10 @@ public static class AppearanceSettingsManager
         if (!Enum.IsDefined(settings.ComponentSize))
         {
             throw new ArgumentOutOfRangeException(nameof(settings), "Unsupported component size.");
+        }
+        if (!Enum.IsDefined(settings.Style))
+        {
+            throw new ArgumentOutOfRangeException(nameof(settings), "Unsupported WPF Premium style.");
         }
 
         var resources = application.Resources;
@@ -114,6 +129,7 @@ public static class AppearanceSettingsManager
         resources[SwitchCornerRadiusResourceKey] = dimensions.SwitchCornerRadius;
         resources[SwitchThumbSizeResourceKey] = dimensions.SwitchThumbSize;
         resources[TableRowHeightResourceKey] = dimensions.TableRowHeight;
+        ThemeStyleManager.ApplyResources(application, settings.Style, settings.ComponentSize);
         SettingsChanged?.Invoke(application, EventArgs.Empty);
     }
 
