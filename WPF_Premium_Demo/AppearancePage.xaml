@@ -1,0 +1,53 @@
+<UserControl x:Class="WPF_Premium_Demo.AppearancePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:premium="clr-namespace:WPF_Premium.Controls;assembly=WPF_Premium">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel MaxWidth="900" HorizontalAlignment="Left" Margin="24,24,24,24">
+            <TextBlock Text="Giao diện" FontSize="28" FontWeight="Bold" />
+            <TextBlock Text="Tùy chỉnh chủ đề, màu sắc và cài đặt giao diện cho ứng dụng."
+                       FontSize="14" Foreground="{DynamicResource MutedForegroundBrush}"
+                       Margin="0,8,0,24" TextWrapping="Wrap" MaxWidth="700" />
+
+            <Border Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="24" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Text="Cài đặt giao diện" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16" />
+                    <premium:AppearanceSettingsControl />
+                </StackPanel>
+            </Border>
+
+            <Border Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="24" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Text="Chuyển đổi chủ đề nhanh" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16" />
+                    <WrapPanel>
+                        <Button x:Name="LightThemeButton" Content="☀ Sáng" Tag="Light"
+                                Click="SetTheme_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,12,12" Padding="16,8" />
+                        <Button x:Name="DarkThemeButton" Content="🌙 Tối" Tag="Dark"
+                                Click="SetTheme_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,12,12" Padding="16,8" />
+                        <Button x:Name="SystemThemeButton" Content="💻 Hệ thống" Tag="System"
+                                Click="SetTheme_Click" Style="{StaticResource ButtonOutline}" Margin="0,0,12,12" Padding="16,8" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="Màu sắc tùy chỉnh" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16" />
+                    <TextBlock Text="Sử dụng ThemeManager để tùy chỉnh màu sắc chủ đề:" FontSize="13"
+                               Foreground="{DynamicResource MutedForegroundBrush}" Margin="0,0,0,12" TextWrapping="Wrap" />
+                    <TextBox IsReadOnly="True" TextWrapping="Wrap" Padding="12"
+                             Background="{DynamicResource BackgroundBrush}"
+                             BorderBrush="{DynamicResource BorderBrush}"
+                             FontFamily="Consolas" FontSize="11"
+                             Text="// Tùy chỉnh màu chính&#x0a;ThemeManager.SetPrimaryColor(Colors.Blue);&#x0a;&#x0a;// Tùy chỉnh màu nền&#x0a;ThemeManager.SetBackgroundColor(Colors.White);&#x0a;&#x0a;// Áp dụng chủ đề&#x0a;ThemeManager.SetTheme(Application.Current, WpfPremiumTheme.Dark);" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

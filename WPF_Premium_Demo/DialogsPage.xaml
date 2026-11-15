@@ -1,0 +1,99 @@
+<UserControl x:Class="WPF_Premium_Demo.DialogsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:WPF_Premium.Controls;assembly=WPF_Premium"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel MaxWidth="900" HorizontalAlignment="Left" Margin="24,24,24,24">
+            <TextBlock Text="Hộp thoại" FontSize="28" FontWeight="Bold" />
+            <TextBlock Text="Hộp thoại phương thức, hộp cảnh báo, ngăn trượt, bảng trượt và thông báo."
+                       FontSize="14" Foreground="{DynamicResource MutedForegroundBrush}"
+                       Margin="0,8,0,24" TextWrapping="Wrap" MaxWidth="700" />
+
+            <Border Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="24" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Text="Hộp thoại phương thức" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16" />
+                    <DockPanel>
+                        <StackPanel>
+                            <TextBlock Text="Mở hộp thoại căn giữa cửa sổ cha với nội dung tùy chỉnh." FontSize="13"
+                                       Foreground="{DynamicResource MutedForegroundBrush}" Margin="0,0,0,12" />
+                        </StackPanel>
+                        <Button Content="Mở hộp thoại" Click="OpenDialog_Click"
+                                Style="{StaticResource ButtonOutline}" DockPanel.Dock="Right"
+                                Margin="16,0,0,0" Padding="16,8" />
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="24" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Text="Hộp thoại xác nhận" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16" />
+                    <WrapPanel>
+                        <Button Content="Xác nhận hành động" Click="ShowConfirm_Click"
+                                Style="{StaticResource ButtonOutline}" Margin="0,0,12,12" Padding="16,8" />
+                        <Button Content="Cảnh báo nguy hiểm" Click="ShowDestructiveConfirm_Click"
+                                Style="{StaticResource ButtonDestructive}" Margin="0,0,12,12" Padding="16,8" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="24" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Text="Ngăn trượt (Drawer)" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16" />
+                    <WrapPanel>
+                        <Button Content="Ngăn trái" Tag="Drawer:Left" Click="OpenPanel_Click"
+                                Style="{StaticResource ButtonOutline}" Margin="0,0,12,12" Padding="16,8" />
+                        <Button Content="Ngăn trên" Tag="Drawer:Top" Click="OpenPanel_Click"
+                                Style="{StaticResource ButtonOutline}" Margin="0,0,12,12" Padding="16,8" />
+                        <Button Content="Ngăn phải" Tag="Drawer:Right" Click="OpenPanel_Click"
+                                Style="{StaticResource ButtonOutline}" Margin="0,0,12,12" Padding="16,8" />
+                        <Button Content="Ngăn dưới" Tag="Drawer:Bottom" Click="OpenPanel_Click"
+                                Style="{StaticResource ButtonOutline}" Margin="0,0,12,12" Padding="16,8" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="24" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Text="Bảng trượt (Sheet)" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16" />
+                    <WrapPanel>
+                        <Button Content="Bảng trượt trái" Tag="Sheet:Left" Click="OpenPanel_Click"
+                                Style="{StaticResource ButtonOutline}" Margin="0,0,12,12" Padding="16,8" />
+                        <Button Content="Bảng trượt trên" Tag="Sheet:Top" Click="OpenPanel_Click"
+                                Style="{StaticResource ButtonOutline}" Margin="0,0,12,12" Padding="16,8" />
+                        <Button Content="Bảng trượt phải" Tag="Sheet:Right" Click="OpenPanel_Click"
+                                Style="{StaticResource ButtonOutline}" Margin="0,0,12,12" Padding="16,8" />
+                        <Button Content="Bảng trượt dưới" Tag="Sheet:Bottom" Click="OpenPanel_Click"
+                                Style="{StaticResource ButtonOutline}" Margin="0,0,12,12" Padding="16,8" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="Thông báo (Toast)" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16" />
+                    <WrapPanel>
+                        <Button Content="Thành công" Click="ShowToast_Click" Tag="Success"
+                                Style="{StaticResource ButtonOutline}" Margin="0,0,12,12" Padding="16,8" />
+                        <Button Content="Cảnh báo" Click="ShowToast_Click" Tag="Warning"
+                                Style="{StaticResource ButtonOutline}" Margin="0,0,12,12" Padding="16,8" />
+                        <Button Content="Lỗi" Click="ShowToast_Click" Tag="Error"
+                                Style="{StaticResource ButtonOutline}" Margin="0,0,12,12" Padding="16,8" />
+                        <Button Content="Thông tin" Click="ShowToast_Click" Tag="Info"
+                                Style="{StaticResource ButtonOutline}" Margin="0,0,12,12" Padding="16,8" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

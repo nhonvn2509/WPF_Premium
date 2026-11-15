@@ -1,0 +1,80 @@
+<UserControl x:Class="WPF_Premium_Demo.TabsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel MaxWidth="900" HorizontalAlignment="Left" Margin="24,24,24,24">
+            <TextBlock Text="Thẻ" FontSize="28" FontWeight="Bold" />
+            <TextBlock Text="TabControl với nhiều kiểu dáng và trạng thái."
+                       FontSize="14" Foreground="{DynamicResource MutedForegroundBrush}"
+                       Margin="0,8,0,24" TextWrapping="Wrap" MaxWidth="700" />
+
+            <Border Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="24" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Text="Thẻ cơ bản" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16" />
+                    <TabControl>
+                        <TabItem Header="Tổng quan">
+                            <StackPanel Margin="16">
+                                <TextBlock Text="Tổng quan" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,8" />
+                                <TextBlock Text="Nội dung trang tổng quan. TabControl sử dụng kiểu dáng mặc định của WPF Premium."
+                                           Foreground="{DynamicResource MutedForegroundBrush}" TextWrapping="Wrap" MaxWidth="600" />
+                            </StackPanel>
+                        </TabItem>
+                        <TabItem Header="Tính năng">
+                            <StackPanel Margin="16">
+                                <TextBlock Text="Tính năng" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,8" />
+                                <TextBlock Text="Danh sách các tính năng chính của ứng dụng."
+                                           Foreground="{DynamicResource MutedForegroundBrush}" TextWrapping="Wrap" MaxWidth="600" />
+                            </StackPanel>
+                        </TabItem>
+                        <TabItem Header="Cài đặt">
+                            <StackPanel Margin="16">
+                                <TextBlock Text="Cài đặt" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,8" />
+                                <TextBlock Text="Cấu hình các tùy chọn ứng dụng tại đây."
+                                           Foreground="{DynamicResource MutedForegroundBrush}" TextWrapping="Wrap" MaxWidth="600" />
+                            </StackPanel>
+                        </TabItem>
+                        <TabItem Header="Đã tắt" IsEnabled="False" />
+                    </TabControl>
+                </StackPanel>
+            </Border>
+
+            <Border Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="24" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Text="Thẻ có thể đóng" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16" />
+                    <TabControl x:Name="ClosableTabControl">
+                        <TabItem Header="Tab 1">
+                            <TextBlock Text="Nội dung tab 1" Margin="16" />
+                        </TabItem>
+                        <TabItem Header="Tab 2">
+                            <TextBlock Text="Nội dung tab 2" Margin="16" />
+                        </TabItem>
+                    </TabControl>
+                    <Button Content="Thêm tab" Click="AddTab_Click" Style="{StaticResource ButtonOutline}" Margin="0,12,0,0" HorizontalAlignment="Left" />
+                </StackPanel>
+            </Border>
+
+            <Border Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="Thẻ dọc" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16" />
+                    <TabControl TabStripPlacement="Left">
+                        <TabItem Header="Danh sách">
+                            <TextBlock Text="Nội dung danh sách" Margin="16" />
+                        </TabItem>
+                        <TabItem Header="Chi tiết">
+                            <TextBlock Text="Nội dung chi tiết" Margin="16" />
+                        </TabItem>
+                        <TabItem Header="Cài đặt">
+                            <TextBlock Text="Nội dung cài đặt" Margin="16" />
+                        </TabItem>
+                    </TabControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,55 @@
+<UserControl x:Class="WPF_Premium_Demo.FilePreviewPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:premium="clr-namespace:WPF_Premium.Controls;assembly=WPF_Premium">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel MaxWidth="900" HorizontalAlignment="Left" Margin="24,24,24,24">
+            <TextBlock Text="Xem trước tệp" FontSize="28" FontWeight="Bold" />
+            <TextBlock Text="Xem trước hình ảnh, âm thanh, video, văn bản, thư điện tử và tài liệu Office."
+                       FontSize="14" Foreground="{DynamicResource MutedForegroundBrush}"
+                       Margin="0,8,0,24" TextWrapping="Wrap" MaxWidth="700" />
+
+            <Border Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="24" Margin="0,0,0,24">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,12">
+                        <TextBlock Text="Kéo thả hoặc chọn tệp để xem trước" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource MutedForegroundBrush}" />
+                        <Button x:Name="BrowseButton" Content="Chọn tệp" Click="BrowseButton_Click"
+                                Style="{StaticResource ButtonOutline}" DockPanel.Dock="Right" />
+                    </DockPanel>
+                    <premium:FilePreviewControl x:Name="FilePreview" MinHeight="440" />
+                </StackPanel>
+            </Border>
+
+            <Border Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="Các định dạng hỗ trợ" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16" />
+                    <WrapPanel>
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="12,8" Margin="0,0,8,8">
+                            <TextBlock Text="Hình ảnh: PNG, JPG, GIF, BMP, WebP, SVG" FontSize="12" />
+                        </Border>
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="12,8" Margin="0,0,8,8">
+                            <TextBlock Text="Video: MP4, WebM, AVI, MOV" FontSize="12" />
+                        </Border>
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="12,8" Margin="0,0,8,8">
+                            <TextBlock Text="Âm thanh: MP3, WAV, OGG, FLAC" FontSize="12" />
+                        </Border>
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="12,8" Margin="0,0,8,8">
+                            <TextBlock Text="Văn bản: TXT, MD, JSON, XML, CS, XAML" FontSize="12" />
+                        </Border>
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="12,8" Margin="0,0,8,8">
+                            <TextBlock Text="Office: DOCX, XLSX, PPTX, PDF" FontSize="12" />
+                        </Border>
+                        <Border Background="{DynamicResource MutedBrush}" CornerRadius="6" Padding="12,8" Margin="0,0,8,8">
+                            <TextBlock Text="Thư điện tử: EML, MSG" FontSize="12" />
+                        </Border>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
