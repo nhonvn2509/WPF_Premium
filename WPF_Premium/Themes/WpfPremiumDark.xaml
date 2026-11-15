@@ -28,6 +28,11 @@
     <SolidColorBrush x:Key="ChartColor3Brush" Color="#FF4ADE80" />
     <SolidColorBrush x:Key="ChartColor4Brush" Color="#FFFACC15" />
     <SolidColorBrush x:Key="ChartColor5Brush" Color="#FFF87171" />
+    <SolidColorBrush x:Key="ChartColor6Brush" Color="#FFC084FC" />
+    <SolidColorBrush x:Key="ChartColor7Brush" Color="#FF22D3EE" />
+    <SolidColorBrush x:Key="ChartColor8Brush" Color="#FFF472B6" />
+    <SolidColorBrush x:Key="ChartColor9Brush" Color="#FFFB923C" />
+    <SolidColorBrush x:Key="ChartColor10Brush" Color="#FFA3E635" />
     <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="#FF3F3F46" />
     <SolidColorBrush x:Key="ScrollBarThumbHoverBrush" Color="#FF71717A" />
 </ResourceDictionary>

@@ -33,6 +33,11 @@
     <SolidColorBrush x:Key="ChartColor3Brush" Color="#FF16A34A" />
     <SolidColorBrush x:Key="ChartColor4Brush" Color="#FFCA8A04" />
     <SolidColorBrush x:Key="ChartColor5Brush" Color="#FFDC2626" />
+    <SolidColorBrush x:Key="ChartColor6Brush" Color="#FF7C3AED" />
+    <SolidColorBrush x:Key="ChartColor7Brush" Color="#FF0891B2" />
+    <SolidColorBrush x:Key="ChartColor8Brush" Color="#FFDB2777" />
+    <SolidColorBrush x:Key="ChartColor9Brush" Color="#FFEA580C" />
+    <SolidColorBrush x:Key="ChartColor10Brush" Color="#FF65A30D" />
     <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="#FFD4D4D8" />
     <SolidColorBrush x:Key="ScrollBarThumbHoverBrush" Color="#FFA1A1AA" />
     <BooleanToVisibilityConverter x:Key="WpfPremiumBooleanToVisibilityConverter" />

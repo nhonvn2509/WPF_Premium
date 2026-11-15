@@ -26,14 +26,14 @@ public sealed class ThemeStyleManagerTests
                     new AppearanceSettings("Segoe UI", 14, ComponentSize.Medium).Style);
                 var styles = new[]
                 {
-                    (WpfPremiumStyle.Default, 6d, 34d),
-                    (WpfPremiumStyle.Modern, 16d, 40d),
-                    (WpfPremiumStyle.Simple, 0d, 32d),
-                    (WpfPremiumStyle.Classic, 2d, 36d)
+                    (WpfPremiumStyle.Default, 6d),
+                    (WpfPremiumStyle.Modern, 16d),
+                    (WpfPremiumStyle.Simple, 0d),
+                    (WpfPremiumStyle.Classic, 2d)
                 };
                 var styleBackgrounds = new List<Color>();
 
-                foreach (var (style, radius, minHeight) in styles)
+                foreach (var (style, radius) in styles)
                 {
                     ThemeStyleManager.SetStyle(application, style);
 
@@ -41,11 +41,49 @@ public sealed class ThemeStyleManagerTests
                     Assert.AreEqual(
                         radius,
                         ((CornerRadius)application.Resources[AppearanceSettingsManager.ControlCornerRadiusResourceKey]).TopLeft);
-                    Assert.AreEqual(minHeight, application.Resources[AppearanceSettingsManager.ControlMinHeightResourceKey]);
+                    Assert.AreEqual(
+                        new Thickness(1),
+                        application.Resources["WpfPremium.ControlBorderThickness"]);
+                    Assert.AreEqual(
+                        new Thickness(1),
+                        application.Resources["WpfPremium.SurfaceBorderThickness"]);
                     styleBackgrounds.Add(GetBrushColor(application.Resources, "BackgroundBrush"));
+                    Assert.AreEqual(10, Enumerable.Range(1, 10)
+                        .Select(index => GetBrushColor(application.Resources, $"ChartColor{index}Brush"))
+                        .Distinct()
+                        .Count(), $"{style} should expose ten distinct chart colors.");
                 }
 
                 Assert.AreEqual(4, styleBackgrounds.Distinct().Count(), "Every style should have its own color palette.");
+
+                var componentSizes = new[]
+                {
+                    (ComponentSize.Small, 30d, new Thickness(8, 4, 8, 4), 32d),
+                    (ComponentSize.Medium, 34d, new Thickness(10, 6, 10, 6), 36d),
+                    (ComponentSize.Large, 42d, new Thickness(14, 8, 14, 8), 44d)
+                };
+                foreach (var (size, expectedHeight, expectedPadding, expectedRowHeight) in componentSizes)
+                {
+                    foreach (var (style, _) in styles)
+                    {
+                        AppearanceSettingsManager.Apply(
+                            application,
+                            AppearanceSettingsManager.GetCurrent(application) with { ComponentSize = size, Style = style });
+
+                        Assert.AreEqual(
+                            expectedHeight,
+                            application.Resources[AppearanceSettingsManager.ControlMinHeightResourceKey],
+                            $"{style} should preserve the {size} control height.");
+                        Assert.AreEqual(
+                            expectedPadding,
+                            application.Resources[AppearanceSettingsManager.ControlPaddingResourceKey],
+                            $"{style} should preserve the {size} control padding.");
+                        Assert.AreEqual(
+                            expectedRowHeight,
+                            application.Resources[AppearanceSettingsManager.TableRowHeightResourceKey],
+                            $"{style} should preserve the {size} table row height.");
+                    }
+                }
 
                 ThemeStyleManager.SetStyle(application, WpfPremiumStyle.Modern);
                 var modernLightBackground = GetBrushColor(application.Resources, "BackgroundBrush");
@@ -62,7 +100,7 @@ public sealed class ThemeStyleManagerTests
                 Assert.AreEqual(
                     12d,
                     ((CornerRadius)application.Resources[AppearanceSettingsManager.ControlCornerRadiusResourceKey]).TopLeft);
-                Assert.AreEqual(34d, application.Resources[AppearanceSettingsManager.ControlMinHeightResourceKey]);
+                Assert.AreEqual(30d, application.Resources[AppearanceSettingsManager.ControlMinHeightResourceKey]);
                 application.Shutdown();
             }
             catch (Exception exception)

@@ -90,25 +90,25 @@ public static class ThemeStyleManager
             WpfPremiumStyle.Default => dimensions,
             WpfPremiumStyle.Modern => size switch
             {
-                ComponentSize.Small => new StyleDimensions(34, new Thickness(10, 5, 10, 5), 12, 16, 36, 1),
-                ComponentSize.Medium => new StyleDimensions(40, new Thickness(13, 8, 13, 8), 16, 20, 42, 1),
-                ComponentSize.Large => new StyleDimensions(48, new Thickness(17, 10, 17, 10), 20, 24, 50, 1),
+                ComponentSize.Small => new StyleDimensions(dimensions.ControlMinHeight, dimensions.ControlPadding, 12, 16, dimensions.TableRowHeight, 1),
+                ComponentSize.Medium => new StyleDimensions(dimensions.ControlMinHeight, dimensions.ControlPadding, 16, 20, dimensions.TableRowHeight, 1),
+                ComponentSize.Large => new StyleDimensions(dimensions.ControlMinHeight, dimensions.ControlPadding, 20, 24, dimensions.TableRowHeight, 1),
                 _ => throw new ArgumentOutOfRangeException(nameof(size), size, "Unsupported component size.")
             },
             WpfPremiumStyle.Simple => new StyleDimensions(
-                Math.Max(28, dimensions.ControlMinHeight - 2),
-                new Thickness(6, 3, 6, 3),
+                dimensions.ControlMinHeight,
+                dimensions.ControlPadding,
                 0,
                 3,
-                Math.Max(30, dimensions.TableRowHeight - 2),
+                dimensions.TableRowHeight,
                 1),
             WpfPremiumStyle.Classic => new StyleDimensions(
-                dimensions.ControlMinHeight + 2,
-                new Thickness(10, 5, 10, 5),
+                dimensions.ControlMinHeight,
+                dimensions.ControlPadding,
                 2,
                 4,
-                dimensions.TableRowHeight + 2,
-                2),
+                dimensions.TableRowHeight,
+                1),
             _ => throw new ArgumentOutOfRangeException(nameof(style), style, "Unsupported WPF Premium style.")
         };
 
@@ -166,6 +166,9 @@ public static class ThemeStyleManager
                 ("SelectedTabBrush", "#FFC7D2FE"), ("ChartColor1Brush", "#FF4F46E5"),
                 ("ChartColor2Brush", "#FF06B6D4"), ("ChartColor3Brush", "#FF10B981"),
                 ("ChartColor4Brush", "#FFF59E0B"), ("ChartColor5Brush", "#FFEF4444"),
+                ("ChartColor6Brush", "#FFEC4899"), ("ChartColor7Brush", "#FF8B5CF6"),
+                ("ChartColor8Brush", "#FF14B8A6"), ("ChartColor9Brush", "#FFF97316"),
+                ("ChartColor10Brush", "#FF84CC16"),
                 ("ScrollBarThumbBrush", "#FFB6C2DE"), ("ScrollBarThumbHoverBrush", "#FF7B8CB3")
             },
             (WpfPremiumStyle.Modern, WpfPremiumTheme.Dark) => new[]
@@ -183,6 +186,9 @@ public static class ThemeStyleManager
                 ("SelectedTabBrush", "#FF312E81"), ("ChartColor1Brush", "#FFA5B4FC"),
                 ("ChartColor2Brush", "#FF22D3EE"), ("ChartColor3Brush", "#FF4ADE80"),
                 ("ChartColor4Brush", "#FFFACC15"), ("ChartColor5Brush", "#FFFB7185"),
+                ("ChartColor6Brush", "#FFF472B6"), ("ChartColor7Brush", "#FFC4B5FD"),
+                ("ChartColor8Brush", "#FF2DD4BF"), ("ChartColor9Brush", "#FFFB923C"),
+                ("ChartColor10Brush", "#FFA3E635"),
                 ("ScrollBarThumbBrush", "#FF3B4D71"), ("ScrollBarThumbHoverBrush", "#FF637AA8")
             },
             (WpfPremiumStyle.Simple, WpfPremiumTheme.Light) => new[]
@@ -200,6 +206,9 @@ public static class ThemeStyleManager
                 ("SelectedTabBrush", "#FFCCFBF1"), ("ChartColor1Brush", "#FF0F766E"),
                 ("ChartColor2Brush", "#FF64748B"), ("ChartColor3Brush", "#FF15803D"),
                 ("ChartColor4Brush", "#FFD97706"), ("ChartColor5Brush", "#FFB42318"),
+                ("ChartColor6Brush", "#FF2563EB"), ("ChartColor7Brush", "#FF7C3AED"),
+                ("ChartColor8Brush", "#FFDB2777"), ("ChartColor9Brush", "#FF0891B2"),
+                ("ChartColor10Brush", "#FF65A30D"),
                 ("ScrollBarThumbBrush", "#FFC3CDD1"), ("ScrollBarThumbHoverBrush", "#FF87969C")
             },
             (WpfPremiumStyle.Simple, WpfPremiumTheme.Dark) => new[]
@@ -217,6 +226,9 @@ public static class ThemeStyleManager
                 ("SelectedTabBrush", "#FF164E4A"), ("ChartColor1Brush", "#FF5EEAD4"),
                 ("ChartColor2Brush", "#FF94A3B8"), ("ChartColor3Brush", "#FF4ADE80"),
                 ("ChartColor4Brush", "#FFFBBF24"), ("ChartColor5Brush", "#FFFB7185"),
+                ("ChartColor6Brush", "#FF60A5FA"), ("ChartColor7Brush", "#FFC4B5FD"),
+                ("ChartColor8Brush", "#FFF472B6"), ("ChartColor9Brush", "#FF22D3EE"),
+                ("ChartColor10Brush", "#FFA3E635"),
                 ("ScrollBarThumbBrush", "#FF3B4A4D"), ("ScrollBarThumbHoverBrush", "#FF64777A")
             },
             (WpfPremiumStyle.Classic, WpfPremiumTheme.Light) => new[]
@@ -234,6 +246,9 @@ public static class ThemeStyleManager
                 ("SelectedTabBrush", "#FFD7DFEC"), ("ChartColor1Brush", "#FF274C77"),
                 ("ChartColor2Brush", "#FFC18F3C"), ("ChartColor3Brush", "#FF557A46"),
                 ("ChartColor4Brush", "#FFCB6D35"), ("ChartColor5Brush", "#FFB94747"),
+                ("ChartColor6Brush", "#FF7C3AED"), ("ChartColor7Brush", "#FF0F766E"),
+                ("ChartColor8Brush", "#FF6D597A"), ("ChartColor9Brush", "#FF7F1D1D"),
+                ("ChartColor10Brush", "#FF2563EB"),
                 ("ScrollBarThumbBrush", "#FFC4BBAA"), ("ScrollBarThumbHoverBrush", "#FF8D826E")
             },
             (WpfPremiumStyle.Classic, WpfPremiumTheme.Dark) => new[]
@@ -251,6 +266,9 @@ public static class ThemeStyleManager
                 ("SelectedTabBrush", "#FF3D4656"), ("ChartColor1Brush", "#FF8EACD0"),
                 ("ChartColor2Brush", "#FFE0B45C"), ("ChartColor3Brush", "#FF8CBF8C"),
                 ("ChartColor4Brush", "#FFE28B52"), ("ChartColor5Brush", "#FFE07474"),
+                ("ChartColor6Brush", "#FFC4B5FD"), ("ChartColor7Brush", "#FF2DD4BF"),
+                ("ChartColor8Brush", "#FFD8B4FE"), ("ChartColor9Brush", "#FFFCA5A5"),
+                ("ChartColor10Brush", "#FF93C5FD"),
                 ("ScrollBarThumbBrush", "#FF5A5B60"), ("ScrollBarThumbHoverBrush", "#FF858177")
             },
             _ => throw new ArgumentOutOfRangeException(nameof(style), style, "Unsupported WPF Premium style.")
@@ -264,7 +282,6 @@ public static class ThemeStyleManager
             dictionary[key] = brush;
         }
 
-        dictionary["WpfPremium.FontWeight"] = style == WpfPremiumStyle.Modern ? FontWeights.Medium : FontWeights.Normal;
         return dictionary;
     }
 

@@ -27,7 +27,12 @@ public partial class ChartControl : UserControl
         "ChartColor2Brush",
         "ChartColor3Brush",
         "ChartColor4Brush",
-        "ChartColor5Brush"
+        "ChartColor5Brush",
+        "ChartColor6Brush",
+        "ChartColor7Brush",
+        "ChartColor8Brush",
+        "ChartColor9Brush",
+        "ChartColor10Brush"
     ];
 
     public static readonly DependencyProperty KindProperty =
