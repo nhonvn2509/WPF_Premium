@@ -9,6 +9,11 @@ namespace WPF_Premium.Controls;
 public sealed class Pagination : UserControl
 {
     private readonly StackPanel _pages = new() { Orientation = Orientation.Horizontal };
+    private readonly TextBlock _pageText = new()
+    {
+        VerticalAlignment = VerticalAlignment.Center,
+        Margin = new Thickness(8, 0, 0, 0),
+    };
 
     public static readonly DependencyProperty CurrentPageProperty =
         DependencyProperty.Register(
@@ -37,6 +42,46 @@ public sealed class Pagination : UserControl
             typeof(ICommand),
             typeof(Pagination));
 
+    public static readonly DependencyProperty ShowFirstLastButtonsProperty =
+        DependencyProperty.Register(
+            nameof(ShowFirstLastButtons),
+            typeof(bool),
+            typeof(Pagination),
+            new PropertyMetadata(false, OnShowFirstLastButtonsChanged));
+
+    public static readonly DependencyProperty FirstPageCommandProperty =
+        DependencyProperty.Register(
+            nameof(FirstPageCommand),
+            typeof(ICommand),
+            typeof(Pagination));
+
+    public static readonly DependencyProperty LastPageCommandProperty =
+        DependencyProperty.Register(
+            nameof(LastPageCommand),
+            typeof(ICommand),
+            typeof(Pagination));
+
+    public static readonly DependencyProperty PageTextProperty =
+        DependencyProperty.Register(
+            nameof(PageText),
+            typeof(string),
+            typeof(Pagination),
+            new PropertyMetadata(string.Empty, OnPageTextChanged));
+
+    public static readonly DependencyProperty CanGoPreviousPageProperty =
+        DependencyProperty.Register(
+            nameof(CanGoPreviousPage),
+            typeof(bool),
+            typeof(Pagination),
+            new PropertyMetadata(true));
+
+    public static readonly DependencyProperty CanGoNextPageProperty =
+        DependencyProperty.Register(
+            nameof(CanGoNextPage),
+            typeof(bool),
+            typeof(Pagination),
+            new PropertyMetadata(true));
+
     public static readonly RoutedEvent PageChangedEvent =
         EventManager.RegisterRoutedEvent(
             nameof(PageChanged),
@@ -46,8 +91,18 @@ public sealed class Pagination : UserControl
 
     public Pagination()
     {
-        Content = _pages;
+        var root = new StackPanel { Orientation = Orientation.Horizontal };
+        root.Children.Add(_pages);
+        root.Children.Add(_pageText);
+        Content = root;
         UpdateButtons();
+        UpdatePageText();
+    }
+
+    private void UpdatePageText()
+    {
+        _pageText.Text = PageText;
+        _pageText.Visibility = string.IsNullOrEmpty(PageText) ? Visibility.Collapsed : Visibility.Visible;
     }
 
     public int CurrentPage
@@ -72,6 +127,42 @@ public sealed class Pagination : UserControl
     {
         get => (ICommand?)GetValue(PageChangedCommandProperty);
         set => SetValue(PageChangedCommandProperty, value);
+    }
+
+    public bool ShowFirstLastButtons
+    {
+        get => (bool)GetValue(ShowFirstLastButtonsProperty);
+        set => SetValue(ShowFirstLastButtonsProperty, value);
+    }
+
+    public ICommand? FirstPageCommand
+    {
+        get => (ICommand?)GetValue(FirstPageCommandProperty);
+        set => SetValue(FirstPageCommandProperty, value);
+    }
+
+    public ICommand? LastPageCommand
+    {
+        get => (ICommand?)GetValue(LastPageCommandProperty);
+        set => SetValue(LastPageCommandProperty, value);
+    }
+
+    public string PageText
+    {
+        get => (string)GetValue(PageTextProperty);
+        set => SetValue(PageTextProperty, value);
+    }
+
+    public bool CanGoPreviousPage
+    {
+        get => (bool)GetValue(CanGoPreviousPageProperty);
+        set => SetValue(CanGoPreviousPageProperty, value);
+    }
+
+    public bool CanGoNextPage
+    {
+        get => (bool)GetValue(CanGoNextPageProperty);
+        set => SetValue(CanGoNextPageProperty, value);
     }
 
     public event RoutedPropertyChangedEventHandler<int> PageChanged
@@ -112,6 +203,12 @@ public sealed class Pagination : UserControl
             PageChangedEvent));
     }
 
+    private static void OnShowFirstLastButtonsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        => ((Pagination)d).UpdateButtons();
+
+    private static void OnPageTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        => ((Pagination)d).UpdatePageText();
+
     private void UpdateButtons()
     {
         if (_pages is null)
@@ -120,6 +217,15 @@ public sealed class Pagination : UserControl
         }
 
         _pages.Children.Clear();
+        if (ShowFirstLastButtons)
+        {
+            _pages.Children.Add(CreateButton(
+                "|<",
+                1,
+                "Trang đầu",
+                CurrentPage > 1,
+                FirstPageCommand));
+        }
         _pages.Children.Add(CreateButton(
             CreateNavigationContent(PackIconMaterialKind.ChevronLeft, "Trước"),
             CurrentPage - 1,
@@ -153,6 +259,15 @@ public sealed class Pagination : UserControl
             CurrentPage + 1,
             "Trang sau",
             CurrentPage < PageCount));
+        if (ShowFirstLastButtons)
+        {
+            _pages.Children.Add(CreateButton(
+                ">|",
+                PageCount,
+                "Trang cuối",
+                CurrentPage < PageCount,
+                LastPageCommand));
+        }
     }
 
     private StackPanel CreateNavigationContent(PackIconMaterialKind icon, string label) =>
@@ -175,7 +290,7 @@ public sealed class Pagination : UserControl
             }
         };
 
-    private Button CreateButton(object content, int page, string automationName, bool isEnabled)
+    private Button CreateButton(object content, int page, string automationName, bool isEnabled, ICommand? directCommand = null)
     {
         var button = new Button
         {
@@ -192,9 +307,10 @@ public sealed class Pagination : UserControl
         {
             var previousPage = CurrentPage;
             SetCurrentValue(CurrentPageProperty, page);
-            if (CurrentPage != previousPage && PageChangedCommand?.CanExecute(CurrentPage) == true)
+            var command = directCommand ?? PageChangedCommand;
+            if (CurrentPage != previousPage && command?.CanExecute(CurrentPage) == true)
             {
-                PageChangedCommand.Execute(CurrentPage);
+                command.Execute(CurrentPage);
             }
         };
         return button;

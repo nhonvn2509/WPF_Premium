@@ -1013,6 +1013,27 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <Style TargetType="{x:Type controls:ToolbarButton}" BasedOn="{StaticResource ToolbarButton}" />
+    <Style TargetType="{x:Type controls:ToolbarSeparator}" BasedOn="{StaticResource ToolbarSeparator}" />
+    <Style x:Key="ToolbarItem" TargetType="{x:Type controls:ToolbarItem}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:ToolbarItem}">
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="3,0">
+                        <TextBlock Text="{TemplateBinding Label}"
+                                   VerticalAlignment="Center"
+                                   FontSize="{DynamicResource WpfPremium.SmallFontSize}"
+                                   Foreground="{DynamicResource MutedForegroundBrush}"
+                                   Margin="0,0,6,0" />
+                        <ContentPresenter VerticalAlignment="Center" />
+                    </StackPanel>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="{x:Type controls:ToolbarItem}" BasedOn="{StaticResource ToolbarItem}" />
     <Style x:Key="ToolbarStyleButton" TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonOutline}">
         <Setter Property="MinWidth" Value="70" />
         <Setter Property="MinHeight" Value="38" />

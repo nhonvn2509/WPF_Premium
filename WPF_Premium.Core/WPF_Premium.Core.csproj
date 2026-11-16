@@ -33,6 +33,9 @@
     <Compile Include="..\WPF_Premium\Controls\Table.cs" Link="Controls\Table.cs" />
     <Compile Include="..\WPF_Premium\Controls\ToastService.cs" Link="Controls\ToastService.cs" />
     <Compile Include="..\WPF_Premium\Controls\Toolbar.cs" Link="Controls\Toolbar.cs" />
+    <Compile Include="..\WPF_Premium\Controls\ToolbarButton.cs" Link="Controls\ToolbarButton.cs" />
+    <Compile Include="..\WPF_Premium\Controls\ToolbarItem.cs" Link="Controls\ToolbarItem.cs" />
+    <Compile Include="..\WPF_Premium\Controls\ToolbarSeparator.cs" Link="Controls\ToolbarSeparator.cs" />
     <Compile Include="..\WPF_Premium\Controls\TraceEntry.cs" Link="Controls\TraceEntry.cs" />
     <Compile Include="..\WPF_Premium\Controls\WaterfallPanel.cs" Link="Controls\WaterfallPanel.cs" />
     <Compile Include="..\WPF_Premium\Themes\AppearanceSettings.cs" Link="Themes\AppearanceSettings.cs" />
