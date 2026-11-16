@@ -2,13 +2,13 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-             Height="420" MinHeight="200">
+             MinHeight="0">
     <Border Background="{DynamicResource CardBrush}" BorderBrush="{DynamicResource BorderBrush}"
             BorderThickness="{DynamicResource WpfPremium.SurfaceBorderThickness}"
             CornerRadius="{DynamicResource WpfPremium.SurfaceCornerRadius}">
         <Grid>
             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-            <DockPanel Margin="8,6" LastChildFill="True">
+            <DockPanel x:Name="HeaderPanel" Margin="8,6" LastChildFill="True">
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                     <Button Click="OpenDefault_Click" Style="{StaticResource ButtonOutline}" Width="30" Height="28" MinHeight="28" Padding="3" Margin="0,0,5,0" ToolTip="Mở bằng ứng dụng mặc định" AutomationProperties.Name="Mở bằng ứng dụng mặc định" AutomationProperties.AutomationId="OpenWithDefaultAppButton">
                         <iconPacks:PackIconMaterial Kind="OpenInApp" />
@@ -28,7 +28,7 @@
                     <TextBlock x:Name="FileSizeText" Grid.Column="2" FontSize="12" Foreground="{DynamicResource MutedForegroundBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
                 </Grid>
             </DockPanel>
-            <Border Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,1" Padding="5">
+            <Border x:Name="ToolsPanel" Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,1" Padding="5">
                 <DockPanel LastChildFill="True">
                     <StackPanel x:Name="ImageTools" AutomationProperties.AutomationId="PreviewImageTools" DockPanel.Dock="Left" Orientation="Horizontal" Visibility="Collapsed">
                         <Button Click="ZoomOut_Click" Style="{StaticResource ButtonOutline}" Width="28" Height="27" MinHeight="27" Padding="3" Margin="0,0,4,0" ToolTip="Thu nhỏ" AutomationProperties.Name="Thu nhỏ" AutomationProperties.AutomationId="ImageZoomOutButton"><iconPacks:PackIconMaterial Kind="MagnifyMinus" /></Button>

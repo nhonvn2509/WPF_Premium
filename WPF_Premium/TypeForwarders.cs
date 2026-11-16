@@ -26,6 +26,7 @@ using WPF_Premium.Themes;
 [assembly: TypeForwardedTo(typeof(OfflineMapLocation))]
 [assembly: TypeForwardedTo(typeof(Pagination))]
 [assembly: TypeForwardedTo(typeof(PremiumWindow))]
+[assembly: TypeForwardedTo(typeof(PremiumDockingManager))]
 [assembly: TypeForwardedTo(typeof(RatingControl))]
 [assembly: TypeForwardedTo(typeof(SearchBox))]
 [assembly: TypeForwardedTo(typeof(SplitButton))]

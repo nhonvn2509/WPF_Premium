@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Input;
 using MahApps.Metro.IconPacks;
 
 namespace WPF_Premium.Controls;
@@ -29,6 +30,12 @@ public sealed class Pagination : UserControl
             typeof(int),
             typeof(Pagination),
             new FrameworkPropertyMetadata(5, OnMaximumVisiblePagesChanged, CoerceMaximumVisiblePages));
+
+    public static readonly DependencyProperty PageChangedCommandProperty =
+        DependencyProperty.Register(
+            nameof(PageChangedCommand),
+            typeof(ICommand),
+            typeof(Pagination));
 
     public static readonly RoutedEvent PageChangedEvent =
         EventManager.RegisterRoutedEvent(
@@ -59,6 +66,12 @@ public sealed class Pagination : UserControl
     {
         get => (int)GetValue(MaximumVisiblePagesProperty);
         set => SetValue(MaximumVisiblePagesProperty, value);
+    }
+
+    public ICommand? PageChangedCommand
+    {
+        get => (ICommand?)GetValue(PageChangedCommandProperty);
+        set => SetValue(PageChangedCommandProperty, value);
     }
 
     public event RoutedPropertyChangedEventHandler<int> PageChanged
@@ -175,7 +188,15 @@ public sealed class Pagination : UserControl
         };
         button.SetResourceReference(FrameworkElement.StyleProperty, "ButtonOutline");
         AutomationProperties.SetName(button, automationName);
-        button.Click += (_, _) => SetCurrentValue(CurrentPageProperty, page);
+        button.Click += (_, _) =>
+        {
+            var previousPage = CurrentPage;
+            SetCurrentValue(CurrentPageProperty, page);
+            if (CurrentPage != previousPage && PageChangedCommand?.CanExecute(CurrentPage) == true)
+            {
+                PageChangedCommand.Execute(CurrentPage);
+            }
+        };
         return button;
     }
 

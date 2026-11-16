@@ -16,9 +16,5 @@ public partial class FilePreviewPage : UserControl
         FilePreview.Browse();
     }
 
-    public static void LoadFileStatic(string path)
-    {
-        // This will be called from MainWindow.Loaded
-        // We need to find the instance
-    }
+    public void LoadFile(string path) => FilePreview.LoadFile(path);
 }

@@ -24,6 +24,7 @@
     <Compile Include="..\WPF_Premium\Controls\MultiSelectControl.xaml.cs" Link="Controls\MultiSelectControl.xaml.cs" />
     <Compile Include="..\WPF_Premium\Controls\Pagination.cs" Link="Controls\Pagination.cs" />
     <Compile Include="..\WPF_Premium\Controls\PremiumWindow.cs" Link="Controls\PremiumWindow.cs" />
+    <Compile Include="..\WPF_Premium\Controls\PremiumDockingManager.cs" Link="Controls\PremiumDockingManager.cs" />
     <Compile Include="..\WPF_Premium\Controls\RatingControl.cs" Link="Controls\RatingControl.cs" />
     <Compile Include="..\WPF_Premium\Controls\SearchBox.cs" Link="Controls\SearchBox.cs" />
     <Compile Include="..\WPF_Premium\Controls\SplitButton.cs" Link="Controls\SplitButton.cs" />

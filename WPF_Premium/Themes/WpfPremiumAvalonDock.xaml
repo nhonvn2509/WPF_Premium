@@ -3,7 +3,8 @@
                     xmlns:avalonDock="clr-namespace:AvalonDock;assembly=AvalonDock"
                     xmlns:avalonDockControls="clr-namespace:AvalonDock.Controls;assembly=AvalonDock"
                     xmlns:avalonDockConverters="clr-namespace:AvalonDock.Converters;assembly=AvalonDock"
-                    xmlns:avalonDockThemes="clr-namespace:AvalonDock.Themes;assembly=AvalonDock">
+                    xmlns:avalonDockThemes="clr-namespace:AvalonDock.Themes;assembly=AvalonDock"
+                    xmlns:controls="clr-namespace:WPF_Premium.Controls">
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/AvalonDock;component/Themes/generic.xaml" />
     </ResourceDictionary.MergedDictionaries>
@@ -196,6 +197,7 @@
         </Setter>
     </Style>
     <Style TargetType="{x:Type avalonDock:DockingManager}" BasedOn="{StaticResource WpfPremiumDockingManager}" />
+    <Style TargetType="{x:Type controls:PremiumDockingManager}" BasedOn="{StaticResource WpfPremiumDockingManager}" />
 
     <Style TargetType="{x:Type avalonDockControls:LayoutDocumentTabItem}">
         <Setter Property="Background" Value="{DynamicResource CardBrush}" />

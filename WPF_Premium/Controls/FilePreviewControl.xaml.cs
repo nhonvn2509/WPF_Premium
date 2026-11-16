@@ -29,6 +29,8 @@ public partial class FilePreviewControl : UserControl
     private static readonly Lazy<LibVLCSharp.Shared.LibVLC> SharedVlc = new(() => { LibVLCSharp.Shared.Core.Initialize(); return new LibVLCSharp.Shared.LibVLC(enableDebugLogs: false); });
     private string? _filePath;
     private Image? _image;
+    private ScaleTransform? _imageScale;
+    private RotateTransform? _imageRotation;
     private MediaElement? _media;
     private MediaPlayer? _audioPlayer;
     private LibVLCSharp.Shared.MediaPlayer? _vlcVideoPlayer;
@@ -41,6 +43,8 @@ public partial class FilePreviewControl : UserControl
     private TextBox? _textView;
     private double _zoom = 1;
     private bool _magnifier;
+    private bool _imageFillMode;
+    private FrameworkElement? _customContent;
     private long _previewGeneration;
     private ToolTip? _magnifierToolTip;
     private Image? _magnifierPreview;
@@ -48,9 +52,23 @@ public partial class FilePreviewControl : UserControl
     public FilePreviewControl()
     {
         InitializeComponent();
+        UpdateChromeVisibility();
         AllowDrop = true;
         Drop += OnDrop;
         Unloaded += (_, _) => StopCurrentMedia();
+    }
+
+    public static readonly DependencyProperty ShowChromeProperty =
+        DependencyProperty.Register(
+            nameof(ShowChrome),
+            typeof(bool),
+            typeof(FilePreviewControl),
+            new PropertyMetadata(true, OnShowChromeChanged));
+
+    public bool ShowChrome
+    {
+        get => (bool)GetValue(ShowChromeProperty);
+        set => SetValue(ShowChromeProperty, value);
     }
 
     public string? FilePath
@@ -58,6 +76,8 @@ public partial class FilePreviewControl : UserControl
         get => _filePath;
         set { if (string.IsNullOrWhiteSpace(value)) return; LoadFile(value); }
     }
+
+    public double ImageZoom => _zoom;
 
     public void Browse()
     {
@@ -67,10 +87,18 @@ public partial class FilePreviewControl : UserControl
 
     public void LoadFile(string path)
     {
-        if (!File.Exists(path)) { ShowMessage("Không tìm thấy tệp."); return; }
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        if (!File.Exists(path))
+        {
+            ClearPreview();
+            ShowMessage("Không tìm thấy tệp.");
+            return;
+        }
+
         StopCurrentMedia();
         var generation = _previewGeneration;
         _filePath = System.IO.Path.GetFullPath(path); _zoom = 1; _magnifier = false;
+        _imageFillMode = false;
         var fileName = System.IO.Path.GetFileName(_filePath);
         var extension = System.IO.Path.GetExtension(_filePath);
         FileNameText.Text = System.IO.Path.GetFileNameWithoutExtension(_filePath);
@@ -80,7 +108,12 @@ public partial class FilePreviewControl : UserControl
         AutomationProperties.SetName(FileNameText, fileName);
         CloseDocumentBrowser();
         CloseMagnifier();
-        ContentHost.Children.Clear(); _image = null; _media = null; _textView = null;
+        ContentHost.Children.Clear();
+        _image = null;
+        _imageScale = null;
+        _imageRotation = null;
+        _media = null;
+        _textView = null;
         ImageTools.Visibility = TextTools.Visibility = Visibility.Collapsed; ZoomText.Visibility = Visibility.Visible;
         var ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
         try
@@ -93,6 +126,141 @@ public partial class FilePreviewControl : UserControl
             else ShowText(path, ext);
         }
         catch (Exception ex) { ShowMessage($"Không thể tạo bản xem trước: {ex.Message}"); }
+    }
+
+    public void SetCustomContent(FrameworkElement content)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        if (content.Parent is not null && !ReferenceEquals(content.Parent, ContentHost))
+        {
+            throw new InvalidOperationException("Custom preview content must be detached before it is assigned.");
+        }
+
+        _customContent = content;
+        ShowCustomContent();
+    }
+
+    public void ShowCustomContent()
+    {
+        if (_customContent is not null && ReferenceEquals(_customContent.Parent, ContentHost))
+        {
+            return;
+        }
+
+        StopCurrentMedia();
+        CloseDocumentBrowser();
+        CloseMagnifier();
+        _filePath = null;
+        _image = null;
+        _imageScale = null;
+        _imageRotation = null;
+        _media = null;
+        _textView = null;
+        FileNameText.Text = "Chưa chọn tệp";
+        FileExtensionText.Text = string.Empty;
+        FileSizeText.Text = string.Empty;
+        ImageTools.Visibility = TextTools.Visibility = Visibility.Collapsed;
+        ZoomText.Visibility = Visibility.Visible;
+        ZoomText.Text = "100%";
+        _zoom = 1;
+        _imageFillMode = false;
+        ContentHost.Children.Clear();
+        if (_customContent is null)
+        {
+            EmptyText.Visibility = Visibility.Visible;
+            ContentHost.Children.Add(EmptyText);
+            return;
+        }
+
+        _customContent.Visibility = Visibility.Visible;
+        ContentHost.Children.Add(_customContent);
+    }
+
+    public void ClearPreview()
+    {
+        StopCurrentMedia();
+        CloseDocumentBrowser();
+        CloseMagnifier();
+        _filePath = null;
+        _image = null;
+        _imageScale = null;
+        _imageRotation = null;
+        _media = null;
+        _textView = null;
+        FileNameText.Text = "Chưa chọn tệp";
+        FileExtensionText.Text = string.Empty;
+        FileSizeText.Text = string.Empty;
+        ImageTools.Visibility = TextTools.Visibility = Visibility.Collapsed;
+        ZoomText.Visibility = Visibility.Visible;
+        ZoomText.Text = "100%";
+        _zoom = 1;
+        _magnifier = false;
+        _imageFillMode = false;
+        ContentHost.Children.Clear();
+        EmptyText.Visibility = Visibility.Visible;
+        ContentHost.Children.Add(EmptyText);
+    }
+
+    public void SetImageZoom(double zoom)
+    {
+        if (_image is null)
+        {
+            return;
+        }
+
+        SetZoom(Math.Clamp(zoom, 0.2, 5));
+    }
+
+    public void ToggleImageFit()
+    {
+        if (_image is null)
+        {
+            return;
+        }
+
+        _imageFillMode = !_imageFillMode;
+        _image.Stretch = _imageFillMode ? Stretch.UniformToFill : Stretch.Uniform;
+    }
+
+    public void RotateImage()
+    {
+        if (_imageRotation is null)
+        {
+            return;
+        }
+
+        _imageRotation.Angle = (_imageRotation.Angle + 90) % 360;
+    }
+
+    public void ResetImage()
+    {
+        if (_image is null || _imageScale is null || _imageRotation is null)
+        {
+            return;
+        }
+
+        _imageScale.ScaleX = _imageScale.ScaleY = 1;
+        _imageRotation.Angle = 0;
+        _imageFillMode = false;
+        _image.Stretch = Stretch.Uniform;
+        ZoomText.Text = "100%";
+    }
+
+    private static void OnShowChromeChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+    {
+        ((FilePreviewControl)dependencyObject).UpdateChromeVisibility();
+    }
+
+    private void UpdateChromeVisibility()
+    {
+        if (HeaderPanel is null || ToolsPanel is null)
+        {
+            return;
+        }
+
+        var visibility = ShowChrome ? Visibility.Visible : Visibility.Collapsed;
+        HeaderPanel.Visibility = visibility;
+        ToolsPanel.Visibility = visibility;
     }
 
     private void ShowDocument(string path, string? html)
@@ -174,7 +342,15 @@ public partial class FilePreviewControl : UserControl
         var image = new Image { Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, RenderTransformOrigin = new Point(.5, .5) };
         _image = image;
         AutomationProperties.SetAutomationId(_image, "PreviewImage");
-        _image.RenderTransform = new ScaleTransform(1, 1); _image.MouseMove += Image_MouseMove; _image.MouseLeave += Image_MouseLeave;
+        _imageScale = new ScaleTransform(1, 1);
+        _imageRotation = new RotateTransform(0);
+        var transform = new TransformGroup();
+        transform.Children.Add(_imageScale);
+        transform.Children.Add(_imageRotation);
+        _image.RenderTransform = transform;
+        _image.MouseMove += Image_MouseMove;
+        _image.MouseLeave += Image_MouseLeave;
+        _image.PreviewMouseWheel += Image_PreviewMouseWheel;
         var status = new TextBlock { Text = "Đang giải mã hình ảnh…", Foreground = (Brush)FindResource("MutedForegroundBrush"), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
         AutomationProperties.SetAutomationId(status, "PreviewImageStatus");
         var imageHost = new Grid(); imageHost.Children.Add(image); imageHost.Children.Add(status);
@@ -571,7 +747,12 @@ public partial class FilePreviewControl : UserControl
     }
     private void OnDrop(object sender, DragEventArgs e) { if (e.Data.GetData(DataFormats.FileDrop) is string[] files && files.Length > 0) LoadFile(files[0]); }
     private void ZoomIn_Click(object s, RoutedEventArgs e) => SetZoom(Math.Min(6, _zoom * 1.2)); private void ZoomOut_Click(object s, RoutedEventArgs e) => SetZoom(Math.Max(.15, _zoom / 1.2)); private void ZoomReset_Click(object s, RoutedEventArgs e) => SetZoom(1);
-    private void SetZoom(double z) { _zoom = z; if (_image?.RenderTransform is ScaleTransform t) t.ScaleX = t.ScaleY = z; ZoomText.Text = $"{z:P0}"; }
+    private void SetZoom(double z) { _zoom = z; if (_imageScale is not null) _imageScale.ScaleX = _imageScale.ScaleY = z; ZoomText.Text = $"{z:P0}"; }
+    private void Image_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        SetImageZoom(_zoom + (e.Delta > 0 ? 0.1 : -0.1));
+        e.Handled = true;
+    }
     private void Magnifier_Click(object s, RoutedEventArgs e)
     {
         _magnifier = MagnifierToggle.IsChecked == true;

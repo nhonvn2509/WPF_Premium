@@ -371,7 +371,18 @@ public partial class MainWindow : PremiumWindow
         // Build navigation item visibility map
         BuildNavItemVisibilityMap(NavTree.Items);
         
-        // Select first item by default
+        var arguments = Environment.GetCommandLineArgs();
+        if (arguments.Length > 2 && arguments[1].Equals("--preview", StringComparison.OrdinalIgnoreCase))
+        {
+            NavFilePreview.IsSelected = true;
+            if (PageContent.Content is FilePreviewPage previewPage)
+            {
+                previewPage.LoadFile(arguments[2]);
+            }
+
+            return;
+        }
+
         NavAppearance.IsSelected = true;
         OpenPage("Page.Appearance");
     }

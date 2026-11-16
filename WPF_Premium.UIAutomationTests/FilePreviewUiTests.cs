@@ -129,6 +129,7 @@ public sealed class FilePreviewUiTests
             var window = WaitForMainWindow(application, automation);
             var elementsByAutomationId = new Dictionary<string, AutomationElement>(StringComparer.Ordinal);
             elementsByAutomationId["FileNameText"] = WaitForElement(window, "FileNameText");
+            elementsByAutomationId["PreviewZoomText"] = WaitForElement(window, "PreviewZoomText");
             foreach (var automationId in scenario.RequiredAutomationIds)
             {
                 var element = WaitForElement(window, automationId);

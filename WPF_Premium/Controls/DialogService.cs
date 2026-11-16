@@ -15,6 +15,17 @@ public enum OverlayDirection
     Bottom
 }
 
+public enum DialogChoiceVariant
+{
+    Primary,
+    Secondary,
+    Outline,
+    Destructive,
+    Ghost
+}
+
+public sealed record DialogChoice(string Id, string Text, DialogChoiceVariant Variant = DialogChoiceVariant.Outline);
+
 public static class DialogService
 {
     public static bool? ShowDialog(Window owner, string title, object content) =>
@@ -27,6 +38,33 @@ public static class DialogService
         string confirmText = "Tiếp tục",
         string cancelText = "Hủy") =>
         ShowOverlay(owner, title, content, OverlayKind.AlertDialog, OverlayDirection.Right, confirmText, cancelText);
+
+    public static string? ShowChoiceDialog(
+        Window owner,
+        string title,
+        object content,
+        IReadOnlyList<DialogChoice> choices)
+    {
+        ArgumentNullException.ThrowIfNull(choices);
+        if (choices.Count < 2)
+        {
+            throw new ArgumentException("At least two choices are required.", nameof(choices));
+        }
+
+        if (choices.Any(choice =>
+                choice is null ||
+                string.IsNullOrWhiteSpace(choice.Id) ||
+                string.IsNullOrWhiteSpace(choice.Text) ||
+                !Enum.IsDefined(choice.Variant)) ||
+            choices.Select(choice => choice.Id).Distinct(StringComparer.Ordinal).Count() != choices.Count)
+        {
+            throw new ArgumentException("Choices must have unique IDs, non-empty text, and a supported variant.", nameof(choices));
+        }
+
+        var choiceContent = new ChoiceDialogContent(content, choices);
+        ShowDialog(owner, title, choiceContent);
+        return choiceContent.SelectedChoice;
+    }
 
     public static bool? ShowDrawer(
         Window owner,
@@ -251,6 +289,48 @@ public static class DialogService
         var button = new Button { Content = content };
         button.SetResourceReference(FrameworkElement.StyleProperty, styleKey);
         return button;
+    }
+
+    private sealed class ChoiceDialogContent : UserControl
+    {
+        public ChoiceDialogContent(object content, IReadOnlyList<DialogChoice> choices)
+        {
+            ArgumentNullException.ThrowIfNull(content);
+            var layout = new DockPanel();
+            var actions = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, 12, 0, 0)
+            };
+
+            foreach (var choice in choices)
+            {
+                var button = CreateButton(choice.Text, choice.Variant switch
+                {
+                    DialogChoiceVariant.Primary => "ButtonPrimary",
+                    DialogChoiceVariant.Secondary => "ButtonSecondary",
+                    DialogChoiceVariant.Destructive => "ButtonDestructive",
+                    DialogChoiceVariant.Ghost => "ButtonGhost",
+                    _ => "ButtonOutline"
+                });
+                button.MinWidth = 84;
+                button.Margin = new Thickness(8, 0, 0, 0);
+                button.Click += (_, _) =>
+                {
+                    SelectedChoice = choice.Id;
+                    Window.GetWindow(this)?.Close();
+                };
+                actions.Children.Add(button);
+            }
+
+            DockPanel.SetDock(actions, Dock.Bottom);
+            layout.Children.Add(actions);
+            layout.Children.Add(new ContentControl { Content = content });
+            Content = layout;
+        }
+
+        public string? SelectedChoice { get; private set; }
     }
 
     private enum OverlayKind

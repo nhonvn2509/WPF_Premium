@@ -73,8 +73,8 @@ Các ứng dụng dùng control cần tham chiếu thư viện và gộp `WpfPre
 | Accordion, Collapsible | `Expander`, styles `Accordion`, `Collapsible` |
 | Appearance settings | `controls:AppearanceSettingsControl`; runtime API `AppearanceSettingsManager` và `ThemeStyleManager` với các phong cách `Default`, `Modern`, `Simple`, `Classic` |
 | Alert | `ContentControl`, styles `Alert`, `AlertDestructive` |
-| Alert dialog, Dialog | `DialogService.ShowAlertDialog` and `DialogService.ShowDialog` |
-| AvalonDock | AvalonDock `DockingManager`, style `WpfPremiumDockingManager` and theme resource `WpfPremiumDockingTheme` |
+| Alert dialog, Dialog | `DialogService.ShowAlertDialog`, `DialogService.ShowChoiceDialog`, and `DialogService.ShowDialog` |
+| Docking | `controls:PremiumDockingManager`, AvalonDock-compatible manager with WPF Premium theme and localized pane/document menus |
 | Attachment | `controls:AttachmentControl`, style `Attachment` |
 | Badge | `controls:Badge`, style `Badge`; variants `Primary`, `Secondary`, `Success`, `Warning`, `Destructive`, and `Outline` |
 | Button | `Button` default style; keys `Button`, `ButtonPrimary`, `ButtonSecondary`, `ButtonOutline`, `ButtonGhost`, `ButtonDestructive`, `ButtonLink` |
@@ -103,7 +103,7 @@ Các ứng dụng dùng control cần tham chiếu thư viện và gộp `WpfPre
 | Label | `Label`, style `Label` |
 | Marker | `Separator`, style `Marker` |
 | Menubar | `Menu`, style `Menubar` |
-| Pagination | `controls:Pagination` with two-way `CurrentPage`, `PageCount`, and `PageChanged` |
+| Pagination | `controls:Pagination` with `CurrentPage`, `PageCount`, `PageChanged`, and an optional `PageChangedCommand` |
 | Popover | `Popup`, style `Popover` |
 | Progress | `ProgressBar`, style `Progress` |
 | Radio group | `StackPanel`, style `RadioGroup` |
@@ -143,16 +143,19 @@ xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
 <iconPacks:PackIconMaterial Kind="Calendar" />
 ```
 
-Sử dụng AvalonDock cùng giao diện WPF Premium có sẵn:
+Sử dụng docking manager của WPF Premium cùng các layout AvalonDock hiện có:
 
 ```xml
-xmlns:avalonDock="clr-namespace:AvalonDock;assembly=AvalonDock"
-<avalonDock:DockingManager Style="{StaticResource WpfPremiumDockingManager}">
-    <!-- Khai báo LayoutRoot, các ngăn và tài liệu tại đây. -->
-</avalonDock:DockingManager>
+xmlns:premium="clr-namespace:WPF_Premium.Controls;assembly=WPF_Premium"
+xmlns:avalonDockLayout="clr-namespace:AvalonDock.Layout;assembly=AvalonDock"
+<premium:PremiumDockingManager>
+    <avalonDockLayout:LayoutRoot>
+        <!-- Khai báo các panel, ngăn và tài liệu. -->
+    </avalonDockLayout:LayoutRoot>
+</premium:PremiumDockingManager>
 ```
 
-`Themes/WpfPremiumAvalonDock.xaml` được gộp bởi `Themes/WpfPremium.xaml`. Style `WpfPremiumDockingManager` áp dụng theme và bảng màu WPF Premium, đồng thời thay menu ngữ cảnh mặc định bằng menu có thể bản địa hóa. Thêm từ điển ngôn ngữ vào tài nguyên ứng dụng sau giao diện WPF Premium:
+`PremiumDockingManager` giữ nguyên API layout, kéo-thả, float, auto-hide và đóng/mở pane của AvalonDock; WPF_Premium cung cấp control/API và theme nhất quán ở lớp ứng dụng. `Themes/WpfPremiumAvalonDock.xaml` áp dụng bảng màu và menu ngữ cảnh có thể bản địa hóa. Thêm từ điển ngôn ngữ vào tài nguyên ứng dụng sau giao diện WPF Premium:
 
 ```xml
 <ResourceDictionary Source="/WPF_Premium;component/Resources/AvalonDock.vi.xaml" />
@@ -247,7 +250,7 @@ await Products.RefreshAsync();
 
 `ChartSeries` is constructed from a display name and an `IReadOnlyList<double>`. Scatter series optionally accept a matching X-value list; if omitted, point indexes are used. The theme provides five chart colors (`ChartColor1Brush` through `ChartColor5Brush`) and uses the active theme's foreground, border, and surface colors for axes, legends, and tooltips. LiveCharts2 requires Windows 10 version 2004 (build 19041) or later.
 
-`DialogService.ShowDialog`, `ShowAlertDialog`, `ShowDrawer`, and `ShowSheet` create owner-modal overlays with close and Escape handling. Drawer and sheet edges can be selected with `OverlayDirection.Left`, `Top`, `Right`, or `Bottom`; the defaults are right for a drawer and bottom for a sheet. The alert dialog returns `true` for confirmation and `false` for cancellation; other overlays return `null` when closed.
+`DialogService.ShowDialog`, `ShowAlertDialog`, `ShowChoiceDialog`, `ShowDrawer`, and `ShowSheet` create owner-modal overlays with close and Escape handling. `ShowChoiceDialog` accepts two or more uniquely identified choices and returns the selected ID, or `null` if the dialog is dismissed. Drawer and sheet edges can be selected with `OverlayDirection.Left`, `Top`, `Right`, or `Bottom`; the defaults are right for a drawer and bottom for a sheet. The alert dialog returns `true` for confirmation and `false` for cancellation; other overlays return `null` when closed.
 
 ```csharp
 DialogService.ShowDrawer(owner, "Details", content, OverlayDirection.Left);
@@ -276,7 +279,7 @@ WPF binding validation errors can also drive the field automatically. Enable `No
 
 Cùng thành phần `Field` có thể bao quanh nhóm hộp kiểm, nhóm nút chọn hoặc nhiều điều khiển. Khi có lỗi liên kết, lỗi đầu tiên được hiển thị; thuộc tính `Description` dùng làm dòng hướng dẫn khi trường hợp lệ.
 
-`Pagination` keeps `CurrentPage` within `1..PageCount`, provides previous/next and a bounded set of page buttons, and raises the bubbling `PageChanged` routed event. Bind `CurrentPage` two-way for MVVM use.
+`Pagination` keeps `CurrentPage` within `1..PageCount`, provides previous/next and a bounded set of page buttons, and raises the bubbling `PageChanged` routed event. Bind `CurrentPage` two-way for MVVM use, or bind `PageChangedCommand` when changing the page must invoke an asynchronous view-model command without treating external page updates as user input.
 
 `StepBar.CurrentStep` is zero-based; completed, current, and upcoming steps receive distinct theme-aware markers. `WaterfallPanel` assigns each visible child to the currently shortest column and lays out children without requiring fixed heights.
 

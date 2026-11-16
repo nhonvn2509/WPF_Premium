@@ -449,6 +449,11 @@
         <Setter Property="Padding" Value="0" />
         <Setter Property="MinHeight" Value="0" />
     </Style>
+    <Style x:Key="WpfPremium.ButtonPrimary" TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonPrimary}" />
+    <Style x:Key="WpfPremium.ButtonSecondary" TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonSecondary}" />
+    <Style x:Key="WpfPremium.ButtonOutline" TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonOutline}" />
+    <Style x:Key="WpfPremium.ButtonGhost" TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonGhost}" />
+    <Style x:Key="WpfPremium.ButtonDestructive" TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonDestructive}" />
 
     <Style TargetType="{x:Type TextBox}">
         <Setter Property="Background" Value="{DynamicResource InputBrush}" />
@@ -1313,6 +1318,7 @@
     </Style>
     <Style TargetType="{x:Type ContextMenu}" BasedOn="{StaticResource ContextMenu}" />
     <Style x:Key="DropdownMenu" TargetType="{x:Type ContextMenu}" BasedOn="{StaticResource ContextMenu}" />
+    <Style x:Key="WpfPremium.ContextMenu" TargetType="{x:Type ContextMenu}" BasedOn="{StaticResource ContextMenu}" />
     <Style TargetType="{x:Type MenuItem}">
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
         <Setter Property="Background" Value="Transparent" />
@@ -1456,6 +1462,8 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <Style x:Key="WpfPremium.MenuItem" TargetType="{x:Type MenuItem}" BasedOn="{StaticResource {x:Type MenuItem}}" />
+    <Style x:Key="WpfPremium.Separator" TargetType="{x:Type Separator}" BasedOn="{StaticResource {x:Type Separator}}" />
 
     <Style x:Key="DialogWindow" TargetType="{x:Type Window}">
         <Setter Property="WindowStyle" Value="None" />
@@ -1468,6 +1476,7 @@
     </Style>
     <Style x:Key="Dialog" TargetType="{x:Type Window}" BasedOn="{StaticResource DialogWindow}" />
     <Style x:Key="AlertDialog" TargetType="{x:Type Window}" BasedOn="{StaticResource DialogWindow}" />
+    <Style x:Key="WpfPremium.DialogWindow" TargetType="{x:Type Window}" BasedOn="{StaticResource DialogWindow}" />
     <Style x:Key="DrawerWindow" TargetType="{x:Type Window}">
         <Setter Property="Width" Value="400" />
         <Setter Property="WindowStyle" Value="None" />
@@ -1644,6 +1653,7 @@
         <Setter Property="Margin" Value="0,4" />
     </Style>
     <Style TargetType="{x:Type controls:Pagination}" BasedOn="{StaticResource Pagination}" />
+    <Style x:Key="WpfPremium.Pagination" TargetType="{x:Type controls:Pagination}" BasedOn="{StaticResource Pagination}" />
     <Style x:Key="Popover" TargetType="{x:Type Popup}">
         <Setter Property="AllowsTransparency" Value="True" />
         <Setter Property="PopupAnimation" Value="Fade" />
@@ -1708,6 +1718,7 @@
         </Style.Triggers>
     </Style>
     <Style TargetType="{x:Type controls:Badge}" BasedOn="{StaticResource Badge}" />
+    <Style x:Key="WpfPremium.Badge" TargetType="{x:Type controls:Badge}" BasedOn="{StaticResource Badge}" />
 
     <Style x:Key="Divider" TargetType="{x:Type controls:Divider}">
         <Setter Property="Orientation" Value="Horizontal" />
@@ -1979,6 +1990,8 @@
     </Style>
     <Style x:Key="Table" TargetType="{x:Type controls:Table}" BasedOn="{StaticResource TableBase}" />
     <Style TargetType="{x:Type controls:Table}" BasedOn="{StaticResource Table}" />
+    <Style x:Key="WpfPremium.Table" TargetType="{x:Type controls:Table}" BasedOn="{StaticResource Table}" />
+    <Style x:Key="WpfPremium.TableBase" TargetType="{x:Type DataGrid}" BasedOn="{StaticResource TableBase}" />
     <Style x:Key="Tabs" TargetType="{x:Type TabControl}" BasedOn="{StaticResource {x:Type TabControl}}" />
     <Style x:Key="ToastWindow" TargetType="{x:Type Window}">
         <Setter Property="WindowStyle" Value="None" />
