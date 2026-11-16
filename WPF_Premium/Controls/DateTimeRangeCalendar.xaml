@@ -9,9 +9,12 @@
     <Grid>
         <ToggleButton x:Name="RangeToggle"
                       Click="RangeToggle_Click"
+                      AutomationProperties.AutomationId="DateRangePickerOpenButton"
+                      AutomationProperties.Name="Chọn khoảng thời gian"
                       Style="{StaticResource ComboBoxToggle}">
             <Grid>
                 <TextBlock Text="{Binding DisplayText, RelativeSource={RelativeSource AncestorType={x:Type controls:DateTimeRangeCalendar}}}"
+                           AutomationProperties.AutomationId="DateRangeSummary"
                            VerticalAlignment="Center"
                            TextTrimming="CharacterEllipsis"
                            Margin="29,0,28,0" />
@@ -30,6 +33,7 @@
             </Grid>
         </ToggleButton>
         <Popup x:Name="RangePopup"
+               AutomationProperties.AutomationId="DateRangePopup"
                Placement="Bottom"
                PlacementTarget="{Binding ElementName=RangeToggle}"
                StaysOpen="False"
@@ -47,16 +51,21 @@
                                FontWeight="SemiBold"
                                Foreground="{DynamicResource MutedForegroundBrush}"
                                Margin="2,0,0,10" />
-                    <WrapPanel Margin="0,0,0,10">
+                    <WrapPanel x:Name="PresetPanel" Margin="0,0,0,10">
                         <Button Content="Hôm qua" Tag="Yesterday" Click="Preset_Click"
+                                AutomationProperties.AutomationId="DateRangePresetYesterday"
                                 Style="{StaticResource ButtonOutline}" Margin="0,0,6,0" />
                         <Button Content="Hôm nay" Tag="Today" Click="Preset_Click"
+                                AutomationProperties.AutomationId="DateRangePresetToday"
                                 Style="{StaticResource ButtonOutline}" Margin="0,0,6,0" />
                         <Button Content="7 ngày qua" Tag="Last7Days" Click="Preset_Click"
+                                AutomationProperties.AutomationId="DateRangePresetLast7Days"
                                 Style="{StaticResource ButtonOutline}" Margin="0,0,6,0" />
                         <Button Content="30 ngày qua" Tag="Last30Days" Click="Preset_Click"
+                                AutomationProperties.AutomationId="DateRangePresetLast30Days"
                                 Style="{StaticResource ButtonOutline}" Margin="0,0,6,0" />
                         <Button Content="Tùy chỉnh" Tag="Custom" Click="Preset_Click"
+                                AutomationProperties.AutomationId="DateRangePresetCustom"
                                 Style="{StaticResource ButtonOutline}" />
                     </WrapPanel>
                     <Grid Margin="0,0,0,4">
@@ -66,11 +75,15 @@
                             <ColumnDefinition Width="32" />
                         </Grid.ColumnDefinitions>
                         <Button Click="PreviousMonth_Click"
+                                AutomationProperties.AutomationId="DateRangePreviousMonth"
+                                AutomationProperties.Name="Tháng trước"
                                 Style="{StaticResource ButtonGhost}"
                                 Padding="0" MinHeight="28">
                             <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="14" Height="14" />
                         </Button>
                         <Button Grid.Column="2" Click="NextMonth_Click"
+                                AutomationProperties.AutomationId="DateRangeNextMonth"
+                                AutomationProperties.Name="Tháng sau"
                                 Style="{StaticResource ButtonGhost}"
                                 Padding="0" MinHeight="28">
                             <iconPacks:PackIconMaterial Kind="ChevronRight" Width="14" Height="14" />
@@ -84,12 +97,14 @@
                         </Grid.ColumnDefinitions>
                         <controls:CalendarControl x:Name="FirstCalendar"
                                                   Grid.Column="0"
+                                                  AutomationIdPrefix="DateRangeDay"
                                                   Width="272"
                                                   SelectionMode="Range"
                                                   ShowNavigationButtons="False"
                                                   RangeSelectionChanged="RangeCalendar_RangeSelectionChanged" />
                         <controls:CalendarControl x:Name="SecondCalendar"
                                                   Grid.Column="2"
+                                                  AutomationIdPrefix="DateRangeDay"
                                                   Width="272"
                                                   SelectionMode="Range"
                                                   ShowNavigationButtons="False"
@@ -105,7 +120,9 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="BẮT ĐẦU" FontSize="10"
                                        Foreground="{DynamicResource MutedForegroundBrush}" />
-                            <TextBlock x:Name="StartDateLabel" FontSize="12"
+                            <TextBlock x:Name="StartDateLabel"
+                                       AutomationProperties.AutomationId="DateRangePendingStartDate"
+                                       FontSize="12"
                                        FontWeight="Medium" Margin="0,3,0,6" />
                             <StackPanel Orientation="Horizontal">
                                 <controls:ComboBoxControl x:Name="StartHour" Width="54" MinWidth="0"
@@ -121,7 +138,9 @@
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="KẾT THÚC" FontSize="10"
                                        Foreground="{DynamicResource MutedForegroundBrush}" />
-                            <TextBlock x:Name="EndDateLabel" FontSize="12"
+                            <TextBlock x:Name="EndDateLabel"
+                                       AutomationProperties.AutomationId="DateRangePendingEndDate"
+                                       FontSize="12"
                                        FontWeight="Medium" Margin="0,3,0,6" />
                             <StackPanel Orientation="Horizontal">
                                 <controls:ComboBoxControl x:Name="EndHour" Width="54" MinWidth="0"
@@ -136,6 +155,7 @@
                         </StackPanel>
                     </Grid>
                     <TextBlock x:Name="ValidationText"
+                               AutomationProperties.AutomationId="DateRangeValidationMessage"
                                Foreground="{DynamicResource DestructiveBrush}"
                                FontSize="11"
                                Margin="0,8,0,0"
@@ -144,10 +164,13 @@
                                 HorizontalAlignment="Right"
                                 Margin="0,14,0,0">
                         <Button Content="Xóa" Click="Clear_Click"
+                                AutomationProperties.AutomationId="DateRangeClearButton"
                                 Style="{StaticResource ButtonGhost}" />
                         <Button Content="Hủy" Click="Cancel_Click"
+                                AutomationProperties.AutomationId="DateRangeCancelButton"
                                 Style="{StaticResource ButtonOutline}" Margin="6,0,0,0" />
                         <Button Content="Áp dụng" Click="Apply_Click"
+                                AutomationProperties.AutomationId="DateRangeApplyButton"
                                 Style="{StaticResource ButtonPrimary}" Margin="6,0,0,0" />
                     </StackPanel>
                 </StackPanel>

@@ -46,12 +46,18 @@ public partial class OfflineMapControl : UserControl, IDisposable
         MapHost.Children.Add(_mapControl);
         _mapControl.MapPointerMoved += MapControl_MapPointerMoved;
         _mapControl.MouseLeave += (_, _) => CoordinateText.Text = "—";
-        Loaded += (_, _) => RebuildMap();
-        Unloaded += (_, _) =>
-        {
-            _mapBuildVersion++;
-            DisposeMap();
-        };
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
+    }
+
+    public static readonly DependencyProperty IsMapActiveProperty = DependencyProperty.Register(
+        nameof(IsMapActive), typeof(bool), typeof(OfflineMapControl),
+        new PropertyMetadata(true, OnIsMapActiveChanged));
+
+    public bool IsMapActive
+    {
+        get => (bool)GetValue(IsMapActiveProperty);
+        set => SetValue(IsMapActiveProperty, value);
     }
 
     /// <summary>Optional full path to a local MBTiles file. When empty, the built-in world map is shown.</summary>
@@ -85,6 +91,20 @@ public partial class OfflineMapControl : UserControl, IDisposable
     public static readonly DependencyProperty AttributionProperty = DependencyProperty.Register(
         nameof(Attribution), typeof(string), typeof(OfflineMapControl), new PropertyMetadata(null));
 
+    private static void OnIsMapActiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var control = (OfflineMapControl)d;
+        if (e.NewValue is true)
+        {
+            control.RebuildMap();
+            return;
+        }
+
+        control._mapBuildVersion++;
+        control.DisposeMap();
+        control.OfflineStatusText.Visibility = Visibility.Collapsed;
+    }
+
     private static void OnMapSettingsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((OfflineMapControl)d).RebuildMap();
 
     private static void OnLocationsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -98,9 +118,23 @@ public partial class OfflineMapControl : UserControl, IDisposable
 
     private void Locations_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => UpdateLocations();
 
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        if (IsMapActive)
+        {
+            RebuildMap();
+        }
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        _mapBuildVersion++;
+        DisposeMap();
+    }
+
     private async void RebuildMap()
     {
-        if (_isDisposed || !IsLoaded) return;
+        if (_isDisposed || !IsLoaded || !IsMapActive) return;
         var buildVersion = ++_mapBuildVersion;
         var path = MapFilePath;
         DisposeMap();
@@ -877,6 +911,8 @@ public partial class OfflineMapControl : UserControl, IDisposable
     private void ZoomIn_Click(object sender, RoutedEventArgs e) => _mapControl.Map?.Navigator.ZoomIn();
     private void ZoomOut_Click(object sender, RoutedEventArgs e) => _mapControl.Map?.Navigator.ZoomOut();
     private void ZoomToLocations_Click(object sender, RoutedEventArgs e) => UpdateLocations(fitToLocations: true);
+
+    public void ZoomToWorld() => _mapControl.Map?.Navigator.ZoomToPanBounds();
 
     private void DisposeShapeFiles()
     {

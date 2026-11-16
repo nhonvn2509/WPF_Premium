@@ -11,8 +11,7 @@
     <avalonDockThemes:GenericTheme x:Key="WpfPremiumDockingTheme" />
 
     <!-- AvalonDock creates this menu internally, so the application ContextMenu style is not inherited reliably. -->
-    <Style TargetType="{x:Type avalonDockControls:DropDownButton}"
-           BasedOn="{StaticResource {x:Type avalonDockControls:DropDownButton}}">
+    <Style TargetType="{x:Type avalonDockControls:DropDownButton}">
         <Style.Resources>
             <Style TargetType="{x:Type ContextMenu}">
                 <Setter Property="Background" Value="{DynamicResource CardBrush}" />

@@ -34,6 +34,14 @@ public sealed class CalendarControl : UserControl
         DependencyProperty.Register(nameof(SelectedDate), typeof(DateTime?), typeof(CalendarControl),
             new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedDateChanged));
 
+    public static readonly DependencyProperty MinimumDateProperty =
+        DependencyProperty.Register(nameof(MinimumDate), typeof(DateTime?), typeof(CalendarControl),
+            new PropertyMetadata(null, OnBoundaryChanged));
+
+    public static readonly DependencyProperty MaximumDateProperty =
+        DependencyProperty.Register(nameof(MaximumDate), typeof(DateTime?), typeof(CalendarControl),
+            new PropertyMetadata(null, OnBoundaryChanged));
+
     public static readonly DependencyProperty SelectionModeProperty =
         DependencyProperty.Register(nameof(SelectionMode), typeof(CalendarSelectionMode), typeof(CalendarControl),
             new FrameworkPropertyMetadata(CalendarSelectionMode.Single, OnSelectionModeChanged));
@@ -49,6 +57,10 @@ public sealed class CalendarControl : UserControl
     public static readonly DependencyProperty ShowNavigationButtonsProperty =
         DependencyProperty.Register(nameof(ShowNavigationButtons), typeof(bool), typeof(CalendarControl),
             new PropertyMetadata(true, OnShowNavigationButtonsChanged));
+
+    public static readonly DependencyProperty AutomationIdPrefixProperty =
+        DependencyProperty.Register(nameof(AutomationIdPrefix), typeof(string), typeof(CalendarControl),
+            new PropertyMetadata("CalendarDay"));
 
     public CalendarControl()
     {
@@ -101,6 +113,18 @@ public sealed class CalendarControl : UserControl
         set => SetValue(SelectedDateProperty, value);
     }
 
+    public DateTime? MinimumDate
+    {
+        get => (DateTime?)GetValue(MinimumDateProperty);
+        set => SetValue(MinimumDateProperty, value);
+    }
+
+    public DateTime? MaximumDate
+    {
+        get => (DateTime?)GetValue(MaximumDateProperty);
+        set => SetValue(MaximumDateProperty, value);
+    }
+
     public CalendarSelectionMode SelectionMode
     {
         get => (CalendarSelectionMode)GetValue(SelectionModeProperty);
@@ -123,6 +147,12 @@ public sealed class CalendarControl : UserControl
     {
         get => (bool)GetValue(ShowNavigationButtonsProperty);
         set => SetValue(ShowNavigationButtonsProperty, value);
+    }
+
+    public string AutomationIdPrefix
+    {
+        get => (string)GetValue(AutomationIdPrefixProperty);
+        set => SetValue(AutomationIdPrefixProperty, value);
     }
 
     public event EventHandler? SelectedDateChanged;
@@ -168,6 +198,9 @@ public sealed class CalendarControl : UserControl
         ((CalendarControl)d).UpdateCalendar();
 
     private static void OnRangeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
+        ((CalendarControl)d).UpdateCalendar();
+
+    private static void OnBoundaryChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
         ((CalendarControl)d).UpdateCalendar();
 
     private static void OnShowNavigationButtonsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
@@ -227,6 +260,10 @@ public sealed class CalendarControl : UserControl
         };
         button.SetResourceReference(FrameworkElement.StyleProperty, "CalendarDayButton");
         AutomationProperties.SetName(button, date.ToString("D", CultureInfo.CurrentCulture));
+        AutomationProperties.SetAutomationId(button, $"{AutomationIdPrefix}_{date:yyyyMMdd}");
+        button.IsEnabled =
+            (!MinimumDate.HasValue || date.Date >= MinimumDate.Value.Date) &&
+            (!MaximumDate.HasValue || date.Date <= MaximumDate.Value.Date);
 
         var isSelected = SelectionMode == CalendarSelectionMode.Single && SelectedDate?.Date == date.Date;
         var isRangeStart = SelectionMode == CalendarSelectionMode.Range && RangeStartDate?.Date == date.Date;

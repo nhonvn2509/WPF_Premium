@@ -8,10 +8,12 @@
              Height="34">
     <Grid>
         <ToggleButton x:Name="DateToggle"
+                      AutomationProperties.AutomationId="DateTimeCalendarOpenButton"
                       Click="DateToggle_Click"
                       Style="{StaticResource ComboBoxToggle}">
             <Grid>
-                <TextBlock Text="{Binding SelectedDateTimeText, RelativeSource={RelativeSource AncestorType={x:Type controls:DateTimeCalendar}}}"
+                <TextBlock x:Name="SelectedDateTextBlock"
+                           Text="{Binding SelectedDateTimeText, RelativeSource={RelativeSource AncestorType={x:Type controls:DateTimeCalendar}}}"
                            VerticalAlignment="Center"
                            TextTrimming="CharacterEllipsis"
                            Margin="29,0,28,0" />
@@ -30,6 +32,7 @@
             </Grid>
         </ToggleButton>
         <Popup x:Name="CalendarPopup"
+               AutomationProperties.AutomationId="DateTimeCalendarPopup"
                Placement="Bottom"
                PlacementTarget="{Binding ElementName=DateToggle}"
                StaysOpen="False"
@@ -42,27 +45,36 @@
                     Padding="8">
                 <StackPanel>
                     <controls:CalendarControl x:Name="DateSelector" Width="280" />
-                    <Separator Style="{StaticResource Marker}" />
-                    <TextBlock Text="ВРЕМЯ"
-                               FontSize="11"
-                               Foreground="{DynamicResource MutedForegroundBrush}"
-                               Margin="2,2,0,6" />
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <controls:ComboBoxControl x:Name="HourPicker"
-                                                  Width="72"
-                                                  MinWidth="0"
-                                                  Height="32"
-                                                  SearchEnabled="False"
-                                                  Placeholder="чч" />
-                        <TextBlock Text=":"
-                                   VerticalAlignment="Center"
-                                   Margin="6,0" />
-                        <controls:ComboBoxControl x:Name="MinutePicker"
-                                                  Width="72"
-                                                  MinWidth="0"
-                                                  Height="32"
-                                                  SearchEnabled="False"
-                                                  Placeholder="мм" />
+                    <Button x:Name="TodayButton"
+                            Content="Hôm nay"
+                            HorizontalAlignment="Right"
+                            Margin="0,6,0,0"
+                            Style="{StaticResource ButtonGhost}"
+                            AutomationProperties.AutomationId="DateTimeCalendarTodayButton"
+                            Click="TodayButton_Click" />
+                    <StackPanel x:Name="TimeSelector">
+                        <Separator Style="{StaticResource Marker}" />
+                        <TextBlock Text="ВРЕМЯ"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource MutedForegroundBrush}"
+                                   Margin="2,2,0,6" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <controls:ComboBoxControl x:Name="HourPicker"
+                                                      Width="72"
+                                                      MinWidth="0"
+                                                      Height="32"
+                                                      SearchEnabled="False"
+                                                      Placeholder="чч" />
+                            <TextBlock Text=":"
+                                       VerticalAlignment="Center"
+                                       Margin="6,0" />
+                            <controls:ComboBoxControl x:Name="MinutePicker"
+                                                      Width="72"
+                                                      MinWidth="0"
+                                                      Height="32"
+                                                      SearchEnabled="False"
+                                                      Placeholder="мм" />
+                        </StackPanel>
                     </StackPanel>
                 </StackPanel>
             </Border>

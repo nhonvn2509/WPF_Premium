@@ -27,6 +27,20 @@ public partial class DateTimeRangeCalendar : UserControl
             typeof(DateTimeRangeCalendar),
             new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnRangeChanged));
 
+    public static readonly DependencyProperty ShowPresetsProperty =
+        DependencyProperty.Register(
+            nameof(ShowPresets),
+            typeof(bool),
+            typeof(DateTimeRangeCalendar),
+            new PropertyMetadata(true, OnShowPresetsChanged));
+
+    public static readonly DependencyProperty MinuteIntervalProperty =
+        DependencyProperty.Register(
+            nameof(MinuteInterval),
+            typeof(int),
+            typeof(DateTimeRangeCalendar),
+            new PropertyMetadata(1, OnMinuteIntervalChanged, CoerceMinuteInterval));
+
     private static readonly DependencyPropertyKey DisplayTextPropertyKey =
         DependencyProperty.RegisterReadOnly(nameof(DisplayText), typeof(string), typeof(DateTimeRangeCalendar),
             new PropertyMetadata("Chọn khoảng thời gian"));
@@ -45,9 +59,15 @@ public partial class DateTimeRangeCalendar : UserControl
             picker.SelectionChanged += TimePicker_SelectionChanged;
         }
 
-        foreach (var picker in new[] { StartMinute, StartSecond, EndMinute, EndSecond })
+        foreach (var picker in new[] { StartSecond, EndSecond })
         {
             picker.ItemsSource = minutesAndSeconds;
+            picker.SelectionChanged += TimePicker_SelectionChanged;
+        }
+
+        UpdateMinuteOptions();
+        foreach (var picker in new[] { StartMinute, EndMinute })
+        {
             picker.SelectionChanged += TimePicker_SelectionChanged;
         }
 
@@ -66,6 +86,18 @@ public partial class DateTimeRangeCalendar : UserControl
         set => SetValue(EndDateTimeProperty, value);
     }
 
+    public bool ShowPresets
+    {
+        get => (bool)GetValue(ShowPresetsProperty);
+        set => SetValue(ShowPresetsProperty, value);
+    }
+
+    public int MinuteInterval
+    {
+        get => (int)GetValue(MinuteIntervalProperty);
+        set => SetValue(MinuteIntervalProperty, value);
+    }
+
     public string DisplayText => (string)GetValue(DisplayTextProperty);
 
     private static void OnRangeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -78,6 +110,45 @@ public partial class DateTimeRangeCalendar : UserControl
             control._draftEnd = control.EndDateTime;
             control._startTime = control.StartDateTime?.TimeOfDay ?? TimeSpan.Zero;
             control._endTime = control.EndDateTime?.TimeOfDay ?? new TimeSpan(23, 59, 59);
+        }
+    }
+
+    private static void OnShowPresetsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
+        ((DateTimeRangeCalendar)d).UpdatePresetVisibility();
+
+    private static object CoerceMinuteInterval(DependencyObject d, object baseValue)
+    {
+        var interval = (int)baseValue;
+        return interval is >= 1 and <= 60 ? interval : 1;
+    }
+
+    private static void OnMinuteIntervalChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var control = (DateTimeRangeCalendar)d;
+        if (control.StartMinute is null)
+        {
+            return;
+        }
+
+        control.UpdateMinuteOptions();
+        control.UpdateDraftControls();
+    }
+
+    private void UpdateMinuteOptions()
+    {
+        var minutes = Enumerable.Range(0, 60)
+            .Where(value => value % MinuteInterval == 0)
+            .Select(value => value.ToString("D2", CultureInfo.InvariantCulture))
+            .ToArray();
+        StartMinute.ItemsSource = minutes;
+        EndMinute.ItemsSource = minutes;
+    }
+
+    private void UpdatePresetVisibility()
+    {
+        if (PresetPanel is not null)
+        {
+            PresetPanel.Visibility = ShowPresets ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 
@@ -102,7 +173,7 @@ public partial class DateTimeRangeCalendar : UserControl
     }
 
     private static string FormatDateTime(DateTime value) =>
-        value.ToString("dd/MM/yyyy HH:mm", CultureInfo.CurrentCulture);
+        value.ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.CurrentCulture);
 
     private void RangeToggle_Click(object sender, RoutedEventArgs e)
     {
@@ -166,15 +237,21 @@ public partial class DateTimeRangeCalendar : UserControl
         _updatingSelection = false;
     }
 
-    private static void SetTimePickers(
+    private void SetTimePickers(
         ComboBoxControl hourPicker,
         ComboBoxControl minutePicker,
         ComboBoxControl secondPicker,
         TimeSpan time)
     {
         hourPicker.SelectedItem = time.Hours.ToString("D2", CultureInfo.InvariantCulture);
-        minutePicker.SelectedItem = time.Minutes.ToString("D2", CultureInfo.InvariantCulture);
+        minutePicker.SelectedItem = GetNearestMinute(time.Minutes).ToString("D2", CultureInfo.InvariantCulture);
         secondPicker.SelectedItem = time.Seconds.ToString("D2", CultureInfo.InvariantCulture);
+    }
+
+    private int GetNearestMinute(int minute)
+    {
+        var rounded = (int)Math.Round(minute / (double)MinuteInterval, MidpointRounding.AwayFromZero) * MinuteInterval;
+        return Math.Min(rounded, (59 / MinuteInterval) * MinuteInterval);
     }
 
     private void RangeCalendar_RangeSelectionChanged(object? sender, EventArgs e)
@@ -224,12 +301,25 @@ public partial class DateTimeRangeCalendar : UserControl
 
     private void Preset_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button { Tag: string preset } || preset == "Custom")
+        if (sender is not Button { Tag: string preset })
         {
             return;
         }
 
+        if (preset == "Custom")
+        {
+            _draftStart = null;
+            _draftEnd = null;
+            _startTime = TimeSpan.Zero;
+            _endTime = new TimeSpan(23, 59, 59);
+            UpdateDraftControls();
+            SetVisibleMonths(DateTime.Today);
+            ShowValidation("Chọn ngày bắt đầu rồi chọn ngày kết thúc.");
+            return;
+        }
+
         var today = DateTime.Today;
+        var now = DateTime.Now;
         var start = preset switch
         {
             "Yesterday" => today.AddDays(-1),
@@ -239,11 +329,14 @@ public partial class DateTimeRangeCalendar : UserControl
             _ => today
         };
         _startTime = TimeSpan.Zero;
-        _endTime = new TimeSpan(23, 59, 59);
+        var end = preset == "Yesterday" ? today.AddTicks(-1) : now;
+        _endTime = end.TimeOfDay;
         _draftStart = start;
-        _draftEnd = today.AddHours(23).AddMinutes(59).AddSeconds(59);
+        _draftEnd = end;
         UpdateDraftControls();
         SetVisibleMonths(start);
+        ValidationText.Text = string.Empty;
+        ValidationText.Visibility = Visibility.Collapsed;
     }
 
     private void PreviousMonth_Click(object sender, RoutedEventArgs e) =>
