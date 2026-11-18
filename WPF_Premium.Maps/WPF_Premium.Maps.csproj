@@ -7,6 +7,10 @@
     <Compile Include="InternalsVisibleTo.cs" />
     <Page Include="..\WPF_Premium\Controls\OfflineMapControl.xaml" Link="Controls\OfflineMapControl.xaml" />
     <EmbeddedResource Include="..\WPF_Premium\Assets\WorldMap\**\*" Link="Assets\WorldMap\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\WPF_Premium\Assets\WorldMap\**\*"
+             Link="Assets\WorldMap\%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
     <PackageReference Include="BruTile.MbTiles" Version="6.0.0" />
     <PackageReference Include="Mapsui.Wpf" Version="5.1.0" />
     <PackageReference Include="Mapsui.Nts" Version="5.1.0" />

@@ -24,6 +24,9 @@ public partial class OfflineMapControl : UserControl, IDisposable
     private const double DuplicateLabelDistanceDegrees = 0.25;
     private const double CityMajorMaxVisible = 0.02;
     private const double CityMinorMaxVisible = 0.004;
+    private const string WorldMapExtractionMutexName = @"Local\WPF_Premium_WorldMap_Extract";
+    private static readonly SemaphoreSlim MapBuildSemaphore = new(1, 1);
+    private static readonly object WorldMapExtractionLock = new();
     private readonly Mapsui.UI.Wpf.MapControl _mapControl;
     private readonly List<ShapeFile> _shapeFiles = [];
     private MemoryLayer? _locationsLayer;
@@ -163,20 +166,20 @@ public partial class OfflineMapControl : UserControl, IDisposable
             if (string.IsNullOrWhiteSpace(path))
             {
                 // Stage 1: render countries immediately so the user sees the map right away.
-                var quickResult = await Task.Run(() => BuildQuickWorldMap());
-                if (_isDisposed || buildVersion != _mapBuildVersion || !IsLoaded)
+                var quickResult = await RunSerializedMapBuildAsync(buildVersion, BuildQuickWorldMap);
+                if (quickResult is null || _isDisposed || buildVersion != _mapBuildVersion || !IsLoaded)
                 {
-                    DisposeMapBuildResult(quickResult);
+                    if (quickResult is not null) DisposeMapBuildResult(quickResult);
                     return;
                 }
 
                 ApplyMapBuildResult(quickResult, resetView: true);
 
                 // Stage 2: load full detail layers (bathymetry, regions, islands, labels) in background.
-                var fullResult = await Task.Run(() => BuildMap(null));
-                if (_isDisposed || buildVersion != _mapBuildVersion)
+                var fullResult = await RunSerializedMapBuildAsync(buildVersion, () => BuildMap(null));
+                if (fullResult is null || _isDisposed || buildVersion != _mapBuildVersion)
                 {
-                    DisposeMapBuildResult(fullResult);
+                    if (fullResult is not null) DisposeMapBuildResult(fullResult);
                     return;
                 }
 
@@ -193,10 +196,10 @@ public partial class OfflineMapControl : UserControl, IDisposable
                 return;
             }
 
-            var result = await Task.Run(() => BuildMap(path));
-            if (_isDisposed || buildVersion != _mapBuildVersion || !IsLoaded)
+            var result = await RunSerializedMapBuildAsync(buildVersion, () => BuildMap(path));
+            if (result is null || _isDisposed || buildVersion != _mapBuildVersion || !IsLoaded)
             {
-                DisposeMapBuildResult(result);
+                if (result is not null) DisposeMapBuildResult(result);
                 return;
             }
 
@@ -213,6 +216,24 @@ public partial class OfflineMapControl : UserControl, IDisposable
             OfflineStatusText.Text = $"Không thể mở bản đồ ngoại tuyến: {ex.Message}";
             OfflineStatusText.Visibility = Visibility.Visible;
             UpdateLocations();
+        }
+    }
+
+    private async Task<MapBuildResult?> RunSerializedMapBuildAsync(int buildVersion, Func<MapBuildResult> builder)
+    {
+        await MapBuildSemaphore.WaitAsync();
+        try
+        {
+            if (_isDisposed || buildVersion != _mapBuildVersion)
+            {
+                return null;
+            }
+
+            return await Task.Run(builder);
+        }
+        finally
+        {
+            MapBuildSemaphore.Release();
         }
     }
 
@@ -713,7 +734,7 @@ public partial class OfflineMapControl : UserControl, IDisposable
     private static void AddIslandLabels(ICollection<IFeature> target)
     {
         var resourceName = $"{typeof(OfflineMapControl).Assembly.GetName().Name}.Assets.WorldMap.islands.geonames_marine_features.tsv";
-        using var resource = typeof(OfflineMapControl).Assembly.GetManifestResourceStream(resourceName)
+        using var resource = OpenWorldMapAssetStream("islands", "geonames_marine_features.tsv", resourceName)
             ?? throw new FileNotFoundException($"Thiếu dữ liệu tên đảo tích hợp: {resourceName}");
         using var reader = new StreamReader(resource, Encoding.UTF8, true);
         if (reader.ReadLine() != "Name\tLatitude\tLongitude\tFeatureCode")
@@ -953,12 +974,99 @@ public partial class OfflineMapControl : UserControl, IDisposable
     private static ShapeFile CreateShapeFile(List<ShapeFile> shapeFiles, string folder, string fileName, string? archiveName = null)
     {
         var path = ExtractShapeFile(folder, fileName, archiveName);
-        var source = new ShapeFile(path, fileBasedIndex: true, readPrjFile: true)
+        var source = OpenShapeFileWithFallback(path);
+        shapeFiles.Add(source);
+        return source;
+    }
+
+    private static ShapeFile OpenShapeFileWithFallback(string path)
+    {
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            try
+            {
+                return new ShapeFile(path, fileBasedIndex: true, readPrjFile: true)
+                {
+                    Encoding = Encoding.UTF8
+                };
+            }
+            catch (IOException) when (attempt < 2)
+            {
+                Thread.Sleep(50);
+            }
+            catch (IOException)
+            {
+                return new ShapeFile(path, fileBasedIndex: false, readPrjFile: true)
+                {
+                    Encoding = Encoding.UTF8
+                };
+            }
+        }
+
+        return new ShapeFile(path, fileBasedIndex: false, readPrjFile: true)
         {
             Encoding = Encoding.UTF8
         };
-        shapeFiles.Add(source);
-        return source;
+    }
+
+    private static Stream? OpenWorldMapAssetStream(string folder, string fileName, string resourceName)
+    {
+        var assetPath = FindBundledWorldMapAssetPath(folder, fileName);
+        if (assetPath is not null)
+        {
+            return new FileStream(assetPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        }
+
+        return typeof(OfflineMapControl).Assembly.GetManifestResourceStream(resourceName);
+    }
+
+    private static string? FindBundledWorldMapAssetPath(string folder, string fileName)
+    {
+        var baseDirs = new[]
+        {
+            AppContext.BaseDirectory,
+            Path.GetDirectoryName(typeof(OfflineMapControl).Assembly.Location)
+        };
+
+        foreach (var baseDir in baseDirs)
+        {
+            if (string.IsNullOrWhiteSpace(baseDir)) continue;
+            var candidate = Path.Combine(baseDir, "Assets", "WorldMap", folder, fileName);
+            if (File.Exists(candidate)) return candidate;
+        }
+
+        return null;
+    }
+
+    private static bool AreShapeFilesReady(string directory, string fileName, string[] extensions)
+    {
+        return extensions.All(extension =>
+        {
+            var filePath = Path.Combine(directory, $"{fileName}.{extension}");
+            if (!File.Exists(filePath)) return false;
+            return new FileInfo(filePath).Length > 0;
+        });
+    }
+
+    private static void WriteStreamAtomically(Stream source, string destination)
+    {
+        var tempPath = $"{destination}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            using (var output = new FileStream(tempPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                source.CopyTo(output);
+            }
+
+            File.Move(tempPath, destination, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+            {
+                try { File.Delete(tempPath); } catch { }
+            }
+        }
     }
 
     private static string ExtractShapeFile(string folder, string fileName, string? archiveName = null)
@@ -969,24 +1077,66 @@ public partial class OfflineMapControl : UserControl, IDisposable
         Directory.CreateDirectory(directory);
         var shapePath = Path.Combine(directory, $"{fileName}.shp");
         var extensions = new[] { "shp", "shx", "dbf", "prj", "cpg" };
-        if (extensions.All(extension => File.Exists(Path.Combine(directory, $"{fileName}.{extension}"))))
-            return shapePath;
 
-        var resourceName = $"{typeof(OfflineMapControl).Assembly.GetName().Name}.Assets.WorldMap.{folder}.{archiveName ?? fileName}.zip";
-        using var resource = typeof(OfflineMapControl).Assembly.GetManifestResourceStream(resourceName)
-            ?? throw new FileNotFoundException($"Thiếu dữ liệu bản đồ tích hợp: {resourceName}");
-        using var archive = new ZipArchive(resource, ZipArchiveMode.Read);
-        foreach (var extension in extensions)
+        lock (WorldMapExtractionLock)
         {
-            var destination = Path.Combine(directory, $"{fileName}.{extension}");
-            var entry = archive.Entries.FirstOrDefault(candidate =>
-                string.Equals(Path.GetFileName(candidate.FullName), $"{fileName}.{extension}", StringComparison.OrdinalIgnoreCase));
-            if (entry is null) throw new FileNotFoundException($"Thiếu tệp bản đồ {fileName}.{extension} trong {resourceName}");
-            using var input = entry.Open();
-            using var output = File.Create(destination);
-            input.CopyTo(output);
+            using var mutex = new Mutex(false, WorldMapExtractionMutexName);
+            var acquired = false;
+            try
+            {
+                try
+                {
+                    acquired = mutex.WaitOne(TimeSpan.FromSeconds(30));
+                }
+                catch (AbandonedMutexException)
+                {
+                    acquired = true;
+                }
+
+                if (AreShapeFilesReady(directory, fileName, extensions))
+                {
+                    return shapePath;
+                }
+
+                var archiveFileName = $"{archiveName ?? fileName}.zip";
+                var resourceName = $"{typeof(OfflineMapControl).Assembly.GetName().Name}.Assets.WorldMap.{folder}.{archiveFileName}";
+                using var resource = OpenWorldMapAssetStream(folder, archiveFileName, resourceName);
+                if (resource is not null)
+                {
+                    using var archive = new ZipArchive(resource, ZipArchiveMode.Read);
+                    foreach (var extension in extensions)
+                    {
+                        var destination = Path.Combine(directory, $"{fileName}.{extension}");
+                        if (File.Exists(destination) && new FileInfo(destination).Length > 0) continue;
+                        var entry = archive.Entries.FirstOrDefault(candidate =>
+                            string.Equals(Path.GetFileName(candidate.FullName), $"{fileName}.{extension}", StringComparison.OrdinalIgnoreCase));
+                        if (entry is null) throw new FileNotFoundException($"Thiếu tệp bản đồ {fileName}.{extension} trong {resourceName}");
+                        using var input = entry.Open();
+                        WriteStreamAtomically(input, destination);
+                    }
+                    return shapePath;
+                }
+
+                foreach (var extension in extensions)
+                {
+                    var destination = Path.Combine(directory, $"{fileName}.{extension}");
+                    if (File.Exists(destination) && new FileInfo(destination).Length > 0) continue;
+                    var bundledFile = FindBundledWorldMapAssetPath(folder, $"{fileName}.{extension}")
+                        ?? throw new FileNotFoundException($"Thiếu dữ liệu bản đồ tích hợp: {resourceName}");
+                    using var input = new FileStream(bundledFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    WriteStreamAtomically(input, destination);
+                }
+
+                return shapePath;
+            }
+            finally
+            {
+                if (acquired)
+                {
+                    try { mutex.ReleaseMutex(); } catch { }
+                }
+            }
         }
-        return shapePath;
     }
 
     private void ZoomIn_Click(object sender, RoutedEventArgs e) => _mapControl.Map?.Navigator.ZoomIn();
