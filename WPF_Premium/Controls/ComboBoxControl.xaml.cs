@@ -237,7 +237,7 @@ public partial class ComboBoxControl : UserControl
             }
         }
 
-        return item.ToString() ?? string.Empty;
+        return item?.ToString() ?? string.Empty;
     }
 
     private void ItemsList_SelectionChanged(object sender, SelectionChangedEventArgs e)

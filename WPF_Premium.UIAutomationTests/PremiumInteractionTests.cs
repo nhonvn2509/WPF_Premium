@@ -11,37 +11,149 @@ namespace WPF_Premium.UIAutomationTests;
 [TestClass]
 public sealed class PremiumInteractionTests
 {
+    private static readonly Lazy<Dispatcher> SharedStaDispatcher = new(StartStaThread);
+
+    private static Dispatcher StartStaThread()
+    {
+        Dispatcher? dispatcher = null;
+        var ready = new ManualResetEventSlim(false);
+        var thread = new Thread(() =>
+        {
+            var application = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+            application.Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("/WPF_Premium;component/Themes/WpfPremium.xaml", UriKind.Relative)
+            });
+            dispatcher = Dispatcher.CurrentDispatcher;
+            ready.Set();
+            Dispatcher.Run();
+        });
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.IsBackground = true;
+        thread.Start();
+        ready.Wait();
+        return dispatcher!;
+    }
+
     [TestMethod]
     public void Pagination_command_runs_only_for_user_page_changes()
     {
         RunOnSta(() =>
         {
-            var application = CreateApplication();
-            try
+            var command = new RecordingCommand();
+            var pagination = new Pagination
             {
-                var command = new RecordingCommand();
-                var pagination = new Pagination
-                {
-                    PageCount = 3,
-                    CurrentPage = 1,
-                    PageChangedCommand = command
-                };
-                var pageTwo = ((StackPanel)pagination.Content).Children
-                    .OfType<Button>()
-                    .Single(button => AutomationProperties.GetName(button) == "Trang 2");
+                PageCount = 3,
+                CurrentPage = 1,
+                PageChangedCommand = command
+            };
+            var pagesPanel = (StackPanel)((StackPanel)pagination.Content).Children[0];
+            var pageTwo = pagesPanel.Children
+                .OfType<Button>()
+                .Single(button => AutomationProperties.GetName(button) == "Trang 2");
 
-                pageTwo.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                Assert.AreEqual(2, pagination.CurrentPage);
-                Assert.AreEqual(1, command.ExecutionCount);
-                Assert.AreEqual(2, command.LastParameter);
+            pageTwo.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Assert.AreEqual(2, pagination.CurrentPage);
+            Assert.AreEqual(1, command.ExecutionCount);
+            Assert.AreEqual(2, command.LastParameter);
 
-                pagination.CurrentPage = 3;
-                Assert.AreEqual(1, command.ExecutionCount);
-            }
-            finally
+            pagination.CurrentPage = 3;
+            Assert.AreEqual(1, command.ExecutionCount);
+        });
+    }
+
+    [TestMethod]
+    public void Pagination_respects_can_go_previous_and_next_flags()
+    {
+        RunOnSta(() =>
+        {
+            var pagination = new Pagination
             {
-                application.Shutdown();
-            }
+                PageCount = 5,
+                CurrentPage = 3,
+                CanGoPreviousPage = false,
+                CanGoNextPage = false
+            };
+            var pagesPanel = (StackPanel)((StackPanel)pagination.Content).Children[0];
+            var prev = pagesPanel.Children.OfType<Button>().Single(b => AutomationProperties.GetName(b) == "Trang trước");
+            var next = pagesPanel.Children.OfType<Button>().Single(b => AutomationProperties.GetName(b) == "Trang sau");
+
+            Assert.IsFalse(prev.IsEnabled);
+            Assert.IsFalse(next.IsEnabled);
+
+            pagination.CanGoPreviousPage = true;
+            pagination.CanGoNextPage = true;
+            pagesPanel = (StackPanel)((StackPanel)pagination.Content).Children[0];
+            prev = pagesPanel.Children.OfType<Button>().Single(b => AutomationProperties.GetName(b) == "Trang trước");
+            next = pagesPanel.Children.OfType<Button>().Single(b => AutomationProperties.GetName(b) == "Trang sau");
+            Assert.IsTrue(prev.IsEnabled);
+            Assert.IsTrue(next.IsEnabled);
+        });
+    }
+
+    [TestMethod]
+    public void Rating_control_reuses_buttons_and_supports_allow_clear()
+    {
+        RunOnSta(() =>
+        {
+            var rating = new RatingControl { Maximum = 5, Value = 2, AllowClear = true };
+            var panel = (StackPanel)rating.Content;
+            var thirdStar = (Button)panel.Children[2];
+
+            thirdStar.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Assert.AreEqual(3, rating.Value);
+            Assert.AreSame(thirdStar, panel.Children[2]);
+
+            thirdStar.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Assert.AreEqual(0, rating.Value);
+            Assert.AreSame(thirdStar, panel.Children[2]);
+        });
+    }
+
+    [TestMethod]
+    public void Extended_controls_work_as_expected()
+    {
+        RunOnSta(() =>
+        {
+            var numeric = new NumericUpDown { Minimum = 10, Maximum = 50, Step = 5, Value = 200 };
+            Assert.AreEqual(50, numeric.Value);
+            numeric.Value = 2;
+            Assert.AreEqual(10, numeric.Value);
+
+            var segmented = new SegmentedControl { ItemsSource = new[] { "A", "B", "C" } };
+            Assert.AreEqual(0, segmented.SelectedIndex);
+            Assert.AreEqual("A", segmented.SelectedItem);
+            segmented.SelectedIndex = 2;
+            Assert.AreEqual("C", segmented.SelectedItem);
+
+            var tagInput = new TagInput { MaxTags = 2, AllowDuplicates = false };
+            Assert.IsTrue(tagInput.TryAddTag("WPF"));
+            Assert.IsFalse(tagInput.TryAddTag("wpf"));
+            Assert.IsTrue(tagInput.TryAddTag("UI"));
+            Assert.IsFalse(tagInput.TryAddTag("Extra"));
+            Assert.AreEqual(2, tagInput.Tags.Count);
+
+            var banner = new BannerAlert { Title = "T", Message = "M", IsOpen = true };
+            Assert.AreEqual(Visibility.Visible, banner.Visibility);
+            banner.IsOpen = false;
+            Assert.AreEqual(Visibility.Collapsed, banner.Visibility);
+
+            var stat = new StatCard { Title = "Users", Value = "42", CornerRadius = new CornerRadius(12) };
+            Assert.AreEqual(new CornerRadius(12), ((Border)stat.Content).CornerRadius);
+
+            var rating = new RatingControl { StarSize = 28 };
+            Assert.AreEqual(28d, rating.StarSize);
+
+            var numericHiddenButtons = new NumericUpDown { ShowButtons = false, CornerRadius = new CornerRadius(8) };
+            Assert.IsFalse(numericHiddenButtons.ShowButtons);
+            Assert.AreEqual(new CornerRadius(8), ((Border)numericHiddenButtons.Content).CornerRadius);
+
+            var app = Application.Current!;
+            var accent = System.Windows.Media.Color.FromRgb(37, 99, 235);
+            WPF_Premium.Themes.ThemeManager.SetAccentColor(app, accent);
+            Assert.AreEqual(accent, ((System.Windows.Media.SolidColorBrush)app.Resources[WPF_Premium.Themes.WpfPremiumResourceKeys.PrimaryBrush]).Color);
+            WPF_Premium.Themes.ThemeManager.ResetAccentColor(app);
+            Assert.AreNotEqual(accent, ((System.Windows.Media.SolidColorBrush)app.Resources[WPF_Premium.Themes.WpfPremiumResourceKeys.PrimaryBrush]).Color);
         });
     }
 
@@ -50,7 +162,7 @@ public sealed class PremiumInteractionTests
     {
         RunOnSta(() =>
         {
-            var application = CreateApplication();
+            var application = Application.Current!;
             var owner = new Window { Width = 480, Height = 320, ShowInTaskbar = false };
             try
             {
@@ -85,19 +197,8 @@ public sealed class PremiumInteractionTests
             finally
             {
                 owner.Close();
-                application.Shutdown();
             }
         });
-    }
-
-    private static Application CreateApplication()
-    {
-        var application = new Application();
-        application.Resources.MergedDictionaries.Add(new ResourceDictionary
-        {
-            Source = new Uri("/WPF_Premium;component/Themes/WpfPremium.xaml", UriKind.Relative)
-        });
-        return application;
     }
 
     private static IEnumerable<DependencyObject> FindLogicalDescendants(DependencyObject root)
@@ -112,10 +213,10 @@ public sealed class PremiumInteractionTests
         }
     }
 
-    private static void RunOnSta(Action action)
+    internal static void RunOnSta(Action action)
     {
         Exception? failure = null;
-        var thread = new Thread(() =>
+        SharedStaDispatcher.Value.Invoke(() =>
         {
             try
             {
@@ -126,9 +227,6 @@ public sealed class PremiumInteractionTests
                 failure = exception;
             }
         });
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        thread.Join();
 
         if (failure is not null)
         {

@@ -22,6 +22,10 @@ public sealed class StatCard : UserControl
     public static readonly DependencyProperty IsPositiveTrendProperty =
         DependencyProperty.Register(nameof(IsPositiveTrend), typeof(bool), typeof(StatCard), new PropertyMetadata(true, OnTrendChanged));
 
+    public static readonly DependencyProperty CornerRadiusProperty =
+        DependencyProperty.Register(nameof(CornerRadius), typeof(CornerRadius?), typeof(StatCard), new PropertyMetadata(null, OnSurfaceChanged));
+
+    private readonly Border _card;
     private readonly TextBlock _titleText;
     private readonly TextBlock _valueText;
     private readonly TextBlock _descriptionText;
@@ -30,11 +34,11 @@ public sealed class StatCard : UserControl
     public StatCard()
     {
         _titleText = new TextBlock { FontSize = 12 };
-        _titleText.SetResourceReference(ForegroundProperty, "MutedForegroundBrush");
+        _titleText.SetResourceReference(ForegroundProperty, Themes.WpfPremiumResourceKeys.MutedForegroundBrush);
         _valueText = new TextBlock { FontSize = 28, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 8, 0, 4) };
-        _valueText.SetResourceReference(ForegroundProperty, "ForegroundBrush");
+        _valueText.SetResourceReference(ForegroundProperty, Themes.WpfPremiumResourceKeys.ForegroundBrush);
         _descriptionText = new TextBlock { FontSize = 11, TextWrapping = TextWrapping.Wrap };
-        _descriptionText.SetResourceReference(ForegroundProperty, "MutedForegroundBrush");
+        _descriptionText.SetResourceReference(ForegroundProperty, Themes.WpfPremiumResourceKeys.MutedForegroundBrush);
         _trendText = new TextBlock { FontSize = 11, FontWeight = FontWeights.SemiBold };
 
         var content = new Grid();
@@ -53,16 +57,13 @@ public sealed class StatCard : UserControl
         _trendText.VerticalAlignment = VerticalAlignment.Center;
         content.Children.Add(_trendText);
 
-        var card = new Border
+        _card = new Border
         {
             Padding = new Thickness(16),
             Child = content
         };
-        card.SetResourceReference(Border.BackgroundProperty, "CardBrush");
-        card.SetResourceReference(Border.BorderBrushProperty, "BorderBrush");
-        card.SetResourceReference(Border.BorderThicknessProperty, "WpfPremium.SurfaceBorderThickness");
-        card.SetResourceReference(Border.CornerRadiusProperty, "WpfPremium.SurfaceCornerRadius");
-        Content = card;
+        ControlHelpers.ApplySurfaceBorderTokens(_card);
+        Content = _card;
         UpdateContent();
         UpdateTrend();
     }
@@ -95,6 +96,25 @@ public sealed class StatCard : UserControl
     {
         get => (bool)GetValue(IsPositiveTrendProperty);
         set => SetValue(IsPositiveTrendProperty, value);
+    }
+
+    public CornerRadius? CornerRadius
+    {
+        get => (CornerRadius?)GetValue(CornerRadiusProperty);
+        set => SetValue(CornerRadiusProperty, value);
+    }
+
+    private static void OnSurfaceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var card = (StatCard)d;
+        if (card.CornerRadius is CornerRadius radius)
+        {
+            card._card.CornerRadius = radius;
+        }
+        else
+        {
+            card._card.SetResourceReference(Border.CornerRadiusProperty, Themes.WpfPremiumResourceKeys.SurfaceCornerRadius);
+        }
     }
 
     private static void OnContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

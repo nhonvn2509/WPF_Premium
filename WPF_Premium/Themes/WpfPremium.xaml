@@ -23,6 +23,9 @@
     <SolidColorBrush x:Key="DestructiveBrush" Color="#FFDC2626" />
     <SolidColorBrush x:Key="DestructiveForegroundBrush" Color="#FFFAFAFA" />
     <SolidColorBrush x:Key="SuccessBrush" Color="#FF16A34A" />
+    <SolidColorBrush x:Key="SuccessForegroundBrush" Color="#FFFAFAFA" />
+    <SolidColorBrush x:Key="InfoBrush" Color="#FF2563EB" />
+    <SolidColorBrush x:Key="InfoForegroundBrush" Color="#FFFAFAFA" />
     <SolidColorBrush x:Key="WarningBrush" Color="#FFCA8A04" />
     <SolidColorBrush x:Key="WarningForegroundBrush" Color="#FF18181B" />
     <SolidColorBrush x:Key="FocusBrush" Color="#FF18181B" />

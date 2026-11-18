@@ -268,7 +268,7 @@ public partial class MultiSelectControl : UserControl
         {
             0 => Placeholder,
             1 => GetDisplayText(selectedItems[0]),
-            _ => $"{selectedCount} selected"
+            _ => $"Đã chọn {selectedCount} mục"
         };
         SetValue(DisplayTextPropertyKey, text);
     }

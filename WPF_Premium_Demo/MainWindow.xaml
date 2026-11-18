@@ -177,8 +177,8 @@
                         <TreeViewItem IsExpanded="True" Style="{StaticResource TreeViewItemStyle}">
                             <TreeViewItem.Header>
                                 <StackPanel Orientation="Horizontal">
-                                    <iconPacks:PackIconMaterial Kind="ViewGridOutline" Width="16" Height="16" Margin="0,0,8,0" Foreground="{DynamicResource PrimaryBrush}" />
-                                    <TextBlock Text="Thư viện điều khiển" />
+                                    <iconPacks:PackIconMaterial Kind="CompassOutline" Width="16" Height="16" Margin="0,0,8,0" Foreground="{DynamicResource PrimaryBrush}" />
+                                    <TextBlock Text="Điều hướng &amp; Bố cục" FontWeight="SemiBold" />
                                 </StackPanel>
                             </TreeViewItem.Header>
                             <TreeViewItem x:Name="NavTreeView" Tag="Page.TreeView" Style="{StaticResource TreeViewItemStyle}">
@@ -205,11 +205,60 @@
                                     </StackPanel>
                                 </TreeViewItem.Header>
                             </TreeViewItem>
-                            <TreeViewItem x:Name="NavAlert" Tag="Page.Alert" Style="{StaticResource TreeViewItemStyle}">
+                            <TreeViewItem x:Name="NavMenus" Tag="Page.Menus" Style="{StaticResource TreeViewItemStyle}">
                                 <TreeViewItem.Header>
                                     <StackPanel Orientation="Horizontal">
-                                        <iconPacks:PackIconMaterial Kind="AlertOutline" Width="16" Height="16" Margin="0,0,8,0" />
-                                        <TextBlock Text="Cảnh báo / Trống / Mục" />
+                                        <iconPacks:PackIconMaterial Kind="Menu" Width="16" Height="16" Margin="0,0,8,0" />
+                                        <TextBlock Text="Trình đơn" />
+                                    </StackPanel>
+                                </TreeViewItem.Header>
+                            </TreeViewItem>
+                            <TreeViewItem x:Name="NavDivider" Tag="Page.Divider" Style="{StaticResource TreeViewItemStyle}">
+                                <TreeViewItem.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Kind="MinusBoxOutline" Width="16" Height="16" Margin="0,0,8,0" />
+                                        <TextBlock Text="Divider" />
+                                    </StackPanel>
+                                </TreeViewItem.Header>
+                            </TreeViewItem>
+                            <TreeViewItem x:Name="NavStepBar" Tag="Page.StepBar" Style="{StaticResource TreeViewItemStyle}">
+                                <TreeViewItem.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Kind="ProgressCheck" Width="16" Height="16" Margin="0,0,8,0" />
+                                        <TextBlock Text="StepBar" />
+                                    </StackPanel>
+                                </TreeViewItem.Header>
+                            </TreeViewItem>
+                            <TreeViewItem x:Name="NavWaterfall" Tag="Page.Waterfall" Style="{StaticResource TreeViewItemStyle}">
+                                <TreeViewItem.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Kind="ViewColumnOutline" Width="16" Height="16" Margin="0,0,8,0" />
+                                        <TextBlock Text="Waterfall Panel" />
+                                    </StackPanel>
+                                </TreeViewItem.Header>
+                            </TreeViewItem>
+                            <TreeViewItem x:Name="NavDocking" Tag="Page.Docking" Style="{StaticResource TreeViewItemStyle}">
+                                <TreeViewItem.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Kind="WindowRestore" Width="16" Height="16" Margin="0,0,8,0" />
+                                        <TextBlock Text="AvalonDock" />
+                                    </StackPanel>
+                                </TreeViewItem.Header>
+                            </TreeViewItem>
+                        </TreeViewItem>
+
+                        <TreeViewItem IsExpanded="True" Style="{StaticResource TreeViewItemStyle}">
+                            <TreeViewItem.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="FormTextbox" Width="16" Height="16" Margin="0,0,8,0" Foreground="{DynamicResource PrimaryBrush}" />
+                                    <TextBlock Text="Nhập liệu &amp; Tương tác" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </TreeViewItem.Header>
+                            <TreeViewItem x:Name="NavExtended" Tag="Page.Extended" Style="{StaticResource TreeViewItemStyle}">
+                                <TreeViewItem.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Kind="PuzzleOutline" Width="16" Height="16" Margin="0,0,8,0" Foreground="{DynamicResource SuccessBrush}" />
+                                        <TextBlock Text="Thành phần mở rộng" FontWeight="SemiBold" />
                                     </StackPanel>
                                 </TreeViewItem.Header>
                             </TreeViewItem>
@@ -237,14 +286,6 @@
                                     </StackPanel>
                                 </TreeViewItem.Header>
                             </TreeViewItem>
-                            <TreeViewItem x:Name="NavMenus" Tag="Page.Menus" Style="{StaticResource TreeViewItemStyle}">
-                                <TreeViewItem.Header>
-                                    <StackPanel Orientation="Horizontal">
-                                        <iconPacks:PackIconMaterial Kind="Menu" Width="16" Height="16" Margin="0,0,8,0" />
-                                        <TextBlock Text="Trình đơn" />
-                                    </StackPanel>
-                                </TreeViewItem.Header>
-                            </TreeViewItem>
                             <TreeViewItem x:Name="NavButtonsGallery" Tag="Page.ButtonsGallery" Style="{StaticResource TreeViewItemStyle}">
                                 <TreeViewItem.Header>
                                     <StackPanel Orientation="Horizontal">
@@ -261,6 +302,15 @@
                                     </StackPanel>
                                 </TreeViewItem.Header>
                             </TreeViewItem>
+                        </TreeViewItem>
+
+                        <TreeViewItem IsExpanded="True" Style="{StaticResource TreeViewItemStyle}">
+                            <TreeViewItem.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="ChartBoxOutline" Width="16" Height="16" Margin="0,0,8,0" Foreground="{DynamicResource PrimaryBrush}" />
+                                    <TextBlock Text="Dữ liệu &amp; Trực quan" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </TreeViewItem.Header>
                             <TreeViewItem x:Name="NavTable" Tag="Page.Table" Style="{StaticResource TreeViewItemStyle}">
                                 <TreeViewItem.Header>
                                     <StackPanel Orientation="Horizontal">
@@ -293,30 +343,6 @@
                                     </StackPanel>
                                 </TreeViewItem.Header>
                             </TreeViewItem>
-                            <TreeViewItem x:Name="NavDivider" Tag="Page.Divider" Style="{StaticResource TreeViewItemStyle}">
-                                <TreeViewItem.Header>
-                                    <StackPanel Orientation="Horizontal">
-                                        <iconPacks:PackIconMaterial Kind="MinusBoxOutline" Width="16" Height="16" Margin="0,0,8,0" />
-                                        <TextBlock Text="Divider" />
-                                    </StackPanel>
-                                </TreeViewItem.Header>
-                            </TreeViewItem>
-                            <TreeViewItem x:Name="NavStepBar" Tag="Page.StepBar" Style="{StaticResource TreeViewItemStyle}">
-                                <TreeViewItem.Header>
-                                    <StackPanel Orientation="Horizontal">
-                                        <iconPacks:PackIconMaterial Kind="ProgressCheck" Width="16" Height="16" Margin="0,0,8,0" />
-                                        <TextBlock Text="StepBar" />
-                                    </StackPanel>
-                                </TreeViewItem.Header>
-                            </TreeViewItem>
-                            <TreeViewItem x:Name="NavWaterfall" Tag="Page.Waterfall" Style="{StaticResource TreeViewItemStyle}">
-                                <TreeViewItem.Header>
-                                    <StackPanel Orientation="Horizontal">
-                                        <iconPacks:PackIconMaterial Kind="ViewColumnOutline" Width="16" Height="16" Margin="0,0,8,0" />
-                                        <TextBlock Text="Waterfall Panel" />
-                                    </StackPanel>
-                                </TreeViewItem.Header>
-                            </TreeViewItem>
                             <TreeViewItem x:Name="NavCharts" Tag="Page.Charts" Style="{StaticResource TreeViewItemStyle}">
                                 <TreeViewItem.Header>
                                     <StackPanel Orientation="Horizontal">
@@ -333,27 +359,36 @@
                                     </StackPanel>
                                 </TreeViewItem.Header>
                             </TreeViewItem>
-                            <TreeViewItem x:Name="NavOverlays" Tag="Page.Overlays" Style="{StaticResource TreeViewItemStyle}">
-                                <TreeViewItem.Header>
-                                    <StackPanel Orientation="Horizontal">
-                                        <iconPacks:PackIconMaterial Kind="WindowOpen" Width="16" Height="16" Margin="0,0,8,0" />
-                                        <TextBlock Text="Hộp thoại / Bảng trượt" />
-                                    </StackPanel>
-                                </TreeViewItem.Header>
-                            </TreeViewItem>
-                            <TreeViewItem x:Name="NavDocking" Tag="Page.Docking" Style="{StaticResource TreeViewItemStyle}">
-                                <TreeViewItem.Header>
-                                    <StackPanel Orientation="Horizontal">
-                                        <iconPacks:PackIconMaterial Kind="WindowRestore" Width="16" Height="16" Margin="0,0,8,0" />
-                                        <TextBlock Text="AvalonDock" />
-                                    </StackPanel>
-                                </TreeViewItem.Header>
-                            </TreeViewItem>
                             <TreeViewItem x:Name="NavOfflineMap" Tag="Page.OfflineMap" Style="{StaticResource TreeViewItemStyle}">
                                 <TreeViewItem.Header>
                                     <StackPanel Orientation="Horizontal">
                                         <iconPacks:PackIconMaterial Kind="MapOutline" Width="16" Height="16" Margin="0,0,8,0" />
                                         <TextBlock Text="Bản đồ ngoại tuyến" />
+                                    </StackPanel>
+                                </TreeViewItem.Header>
+                            </TreeViewItem>
+                        </TreeViewItem>
+
+                        <TreeViewItem IsExpanded="True" Style="{StaticResource TreeViewItemStyle}">
+                            <TreeViewItem.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="BellOutline" Width="16" Height="16" Margin="0,0,8,0" Foreground="{DynamicResource PrimaryBrush}" />
+                                    <TextBlock Text="Thông báo &amp; Hộp thoại" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </TreeViewItem.Header>
+                            <TreeViewItem x:Name="NavAlert" Tag="Page.Alert" Style="{StaticResource TreeViewItemStyle}">
+                                <TreeViewItem.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Kind="AlertOutline" Width="16" Height="16" Margin="0,0,8,0" />
+                                        <TextBlock Text="Cảnh báo / Trống / Mục" />
+                                    </StackPanel>
+                                </TreeViewItem.Header>
+                            </TreeViewItem>
+                            <TreeViewItem x:Name="NavOverlays" Tag="Page.Overlays" Style="{StaticResource TreeViewItemStyle}">
+                                <TreeViewItem.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Kind="WindowOpen" Width="16" Height="16" Margin="0,0,8,0" />
+                                        <TextBlock Text="Hộp thoại / Bảng trượt" />
                                     </StackPanel>
                                 </TreeViewItem.Header>
                             </TreeViewItem>

@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Media;
 
 namespace WPF_Premium.Themes;
 
@@ -14,6 +15,42 @@ public static class ThemeManager
     private const string DarkThemeSource = "/WPF_Premium;component/Themes/WpfPremiumDark.xaml";
 
     public static event EventHandler? ThemeChanged;
+
+    /// <summary>
+    /// Overrides the primary accent brush and automatically computes an accessible contrasting foreground brush.
+    /// </summary>
+    public static void SetAccentColor(Application application, Color accentColor)
+    {
+        ArgumentNullException.ThrowIfNull(application);
+        application.Dispatcher.VerifyAccess();
+
+        var primaryBrush = new SolidColorBrush(accentColor);
+        primaryBrush.Freeze();
+
+        var luminance = (0.299 * accentColor.R + 0.587 * accentColor.G + 0.114 * accentColor.B) / 255d;
+        var foregroundColor = luminance > 0.6 ? Color.FromRgb(24, 24, 27) : Color.FromRgb(250, 250, 250);
+        var foregroundBrush = new SolidColorBrush(foregroundColor);
+        foregroundBrush.Freeze();
+
+        application.Resources[WpfPremiumResourceKeys.PrimaryBrush] = primaryBrush;
+        application.Resources[WpfPremiumResourceKeys.PrimaryForegroundBrush] = foregroundBrush;
+        application.Resources[WpfPremiumResourceKeys.FocusBrush] = primaryBrush;
+        ThemeChanged?.Invoke(application, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Removes custom accent overrides so the active theme's default primary palette is restored.
+    /// </summary>
+    public static void ResetAccentColor(Application application)
+    {
+        ArgumentNullException.ThrowIfNull(application);
+        application.Dispatcher.VerifyAccess();
+
+        application.Resources.Remove(WpfPremiumResourceKeys.PrimaryBrush);
+        application.Resources.Remove(WpfPremiumResourceKeys.PrimaryForegroundBrush);
+        application.Resources.Remove(WpfPremiumResourceKeys.FocusBrush);
+        ThemeChanged?.Invoke(application, EventArgs.Empty);
+    }
 
     public static void SetTheme(Application application, WpfPremiumTheme theme)
     {

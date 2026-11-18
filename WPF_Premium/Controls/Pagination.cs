@@ -73,14 +73,14 @@ public sealed class Pagination : UserControl
             nameof(CanGoPreviousPage),
             typeof(bool),
             typeof(Pagination),
-            new PropertyMetadata(true));
+            new PropertyMetadata(true, (d, _) => ((Pagination)d).UpdateButtons()));
 
     public static readonly DependencyProperty CanGoNextPageProperty =
         DependencyProperty.Register(
             nameof(CanGoNextPage),
             typeof(bool),
             typeof(Pagination),
-            new PropertyMetadata(true));
+            new PropertyMetadata(true, (d, _) => ((Pagination)d).UpdateButtons()));
 
     public static readonly RoutedEvent PageChangedEvent =
         EventManager.RegisterRoutedEvent(
@@ -217,20 +217,23 @@ public sealed class Pagination : UserControl
         }
 
         _pages.Children.Clear();
+        var canGoPrevious = CanGoPreviousPage && CurrentPage > 1;
+        var canGoNext = CanGoNextPage && CurrentPage < PageCount;
+
         if (ShowFirstLastButtons)
         {
             _pages.Children.Add(CreateButton(
                 "|<",
                 1,
                 "Trang đầu",
-                CurrentPage > 1,
+                canGoPrevious,
                 FirstPageCommand));
         }
         _pages.Children.Add(CreateButton(
             CreateNavigationContent(PackIconMaterialKind.ChevronLeft, "Trước"),
             CurrentPage - 1,
             "Trang trước",
-            CurrentPage > 1));
+            canGoPrevious));
 
         foreach (var token in GetPageTokens())
         {
@@ -258,14 +261,14 @@ public sealed class Pagination : UserControl
             CreateNavigationContent(PackIconMaterialKind.ChevronRight, "Sau"),
             CurrentPage + 1,
             "Trang sau",
-            CurrentPage < PageCount));
+            canGoNext));
         if (ShowFirstLastButtons)
         {
             _pages.Children.Add(CreateButton(
                 ">|",
                 PageCount,
                 "Trang cuối",
-                CurrentPage < PageCount,
+                canGoNext,
                 LastPageCommand));
         }
     }

@@ -1,7 +1,9 @@
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Media;
 using MahApps.Metro.IconPacks;
+using WPF_Premium.Themes;
 
 namespace WPF_Premium.Controls;
 
@@ -28,13 +30,41 @@ public sealed class RatingControl : UserControl
             nameof(IsReadOnly),
             typeof(bool),
             typeof(RatingControl),
-            new PropertyMetadata(false, OnReadOnlyChanged));
+            new PropertyMetadata(false, OnVisualChanged));
+
+    public static readonly DependencyProperty AllowClearProperty =
+        DependencyProperty.Register(
+            nameof(AllowClear),
+            typeof(bool),
+            typeof(RatingControl),
+            new PropertyMetadata(false));
+
+    public static readonly DependencyProperty StarSizeProperty =
+        DependencyProperty.Register(
+            nameof(StarSize),
+            typeof(double),
+            typeof(RatingControl),
+            new PropertyMetadata(20d, OnVisualChanged));
+
+    public static readonly DependencyProperty FilledBrushProperty =
+        DependencyProperty.Register(
+            nameof(FilledBrush),
+            typeof(Brush),
+            typeof(RatingControl),
+            new PropertyMetadata(null, OnVisualChanged));
+
+    public static readonly DependencyProperty EmptyBrushProperty =
+        DependencyProperty.Register(
+            nameof(EmptyBrush),
+            typeof(Brush),
+            typeof(RatingControl),
+            new PropertyMetadata(null, OnVisualChanged));
 
     public RatingControl()
     {
         Content = _items;
         AutomationProperties.SetName(this, "Đánh giá");
-        UpdateItems();
+        RebuildItems();
     }
 
     public int Value
@@ -55,6 +85,30 @@ public sealed class RatingControl : UserControl
         set => SetValue(IsReadOnlyProperty, value);
     }
 
+    public bool AllowClear
+    {
+        get => (bool)GetValue(AllowClearProperty);
+        set => SetValue(AllowClearProperty, value);
+    }
+
+    public double StarSize
+    {
+        get => (double)GetValue(StarSizeProperty);
+        set => SetValue(StarSizeProperty, value);
+    }
+
+    public Brush? FilledBrush
+    {
+        get => (Brush?)GetValue(FilledBrushProperty);
+        set => SetValue(FilledBrushProperty, value);
+    }
+
+    public Brush? EmptyBrush
+    {
+        get => (Brush?)GetValue(EmptyBrushProperty);
+        set => SetValue(EmptyBrushProperty, value);
+    }
+
     public event RoutedPropertyChangedEventHandler<int>? ValueChanged;
 
     private static object CoerceValue(DependencyObject d, object baseValue) =>
@@ -66,7 +120,7 @@ public sealed class RatingControl : UserControl
     private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var control = (RatingControl)d;
-        control.UpdateItems();
+        control.UpdateItemStates();
         control.ValueChanged?.Invoke(control, new RoutedPropertyChangedEventArgs<int>((int)e.OldValue, (int)e.NewValue));
     }
 
@@ -74,13 +128,13 @@ public sealed class RatingControl : UserControl
     {
         var control = (RatingControl)d;
         control.CoerceValue(ValueProperty);
-        control.UpdateItems();
+        control.RebuildItems();
     }
 
-    private static void OnReadOnlyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
-        ((RatingControl)d).UpdateItems();
+    private static void OnVisualChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
+        ((RatingControl)d).UpdateItemStates();
 
-    private void UpdateItems()
+    private void RebuildItems()
     {
         if (_items is null)
         {
@@ -94,10 +148,10 @@ public sealed class RatingControl : UserControl
             var icon = new PackIconMaterial
             {
                 Kind = index <= Value ? PackIconMaterialKind.Star : PackIconMaterialKind.StarOutline,
-                Width = 20,
-                Height = 20
+                Width = StarSize,
+                Height = StarSize
             };
-            icon.SetResourceReference(Control.ForegroundProperty, "WarningBrush");
+            ApplyStarBrush(icon, index <= Value);
             var button = new Button
             {
                 Content = icon,
@@ -107,8 +161,50 @@ public sealed class RatingControl : UserControl
             };
             button.SetResourceReference(FrameworkElement.StyleProperty, "ButtonGhost");
             AutomationProperties.SetName(button, $"Chọn {index} sao");
-            button.Click += (_, _) => SetCurrentValue(ValueProperty, value);
+            button.Click += (_, _) =>
+            {
+                var nextValue = AllowClear && Value == value ? 0 : value;
+                SetCurrentValue(ValueProperty, nextValue);
+            };
             _items.Children.Add(button);
+        }
+    }
+
+    private void UpdateItemStates()
+    {
+        if (_items is null || _items.Children.Count != Maximum)
+        {
+            RebuildItems();
+            return;
+        }
+
+        for (var i = 0; i < _items.Children.Count; i++)
+        {
+            if (_items.Children[i] is Button button)
+            {
+                button.IsEnabled = !IsReadOnly;
+                if (button.Content is PackIconMaterial icon)
+                {
+                    var isFilled = (i + 1) <= Value;
+                    icon.Kind = isFilled ? PackIconMaterialKind.Star : PackIconMaterialKind.StarOutline;
+                    icon.Width = StarSize;
+                    icon.Height = StarSize;
+                    ApplyStarBrush(icon, isFilled);
+                }
+            }
+        }
+    }
+
+    private void ApplyStarBrush(PackIconMaterial icon, bool isFilled)
+    {
+        var customBrush = isFilled ? FilledBrush : EmptyBrush;
+        if (customBrush is not null)
+        {
+            icon.Foreground = customBrush;
+        }
+        else
+        {
+            icon.SetResourceReference(Control.ForegroundProperty, isFilled ? WpfPremiumResourceKeys.WarningBrush : WpfPremiumResourceKeys.MutedForegroundBrush);
         }
     }
 }

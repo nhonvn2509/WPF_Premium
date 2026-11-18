@@ -21,10 +21,23 @@ public class StepBar : ItemsControl
             new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.AffectsRender, OnCurrentStepChanged),
             value => (int)value >= 0);
 
+    public StepBar()
+    {
+        ItemContainerGenerator.StatusChanged += ItemContainerGenerator_StatusChanged;
+    }
+
     public int CurrentStep
     {
         get => (int)GetValue(CurrentStepProperty);
         set => SetValue(CurrentStepProperty, value);
+    }
+
+    private void ItemContainerGenerator_StatusChanged(object? sender, EventArgs e)
+    {
+        if (ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+        {
+            UpdateContainers();
+        }
     }
 
     protected override DependencyObject GetContainerForItemOverride() => new StepBarItem();

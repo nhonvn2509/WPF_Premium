@@ -25,6 +25,7 @@ public partial class MainWindow : PremiumWindow
         ["Page.Tabs"] = new("Page.Tabs", "Thẻ", "Tab", typeof(TabsPage), false),
         ["Page.FilePreview"] = new("Page.FilePreview", "Xem trước tệp", "FileEyeOutline", typeof(FilePreviewPage), false),
         ["Page.Dialogs"] = new("Page.Dialogs", "Hộp thoại", "MessageTextOutline", typeof(DialogsPage), false),
+        ["Page.Extended"] = new("Page.Extended", "Thành phần mở rộng", "PuzzleOutline", typeof(ExtendedComponentsPage), false),
 
         ["Page.TreeView"] = new("Page.TreeView", "Cây điều hướng", "TreeOutline", typeof(TreeViewPage), true),
         ["Page.Toolbar"] = new("Page.Toolbar", "Thanh công cụ", "ToolbarOutline", typeof(ToolbarPage), true),
@@ -350,6 +351,32 @@ public partial class MainWindow : PremiumWindow
                 new OfflineMapLocation(21.0368, 105.8342, "Lăng Chủ tịch Hồ Chí Minh")
             };
             """),
+        ["Page.Extended"] = new("Thành phần mở rộng", """
+            <!-- BannerAlert (Info / Success / Warning / Destructive) -->
+            <controls:BannerAlert Kind="Info" Title="Cập nhật" Message="Nội dung thông báo." ActionText="Xem chi tiết" />
+            <controls:BannerAlert Kind="Destructive" CornerRadius="12" IconKind="AlertOctagonOutline" Title="Lỗi" Message="Chi tiết lỗi." />
+
+            <!-- Breadcrumb & SegmentedControl -->
+            <controls:Breadcrumb x:Name="DemoBreadcrumb" />
+            <controls:SegmentedControl x:Name="DemoSegmented" CornerRadius="10" ItemPadding="14,5" />
+
+            <!-- NumericUpDown (nguyên, thập phân, ẩn nút) -->
+            <controls:NumericUpDown Minimum="0" Maximum="100" Step="5" Value="25" />
+            <controls:NumericUpDown Minimum="0" Maximum="10" Step="0.25" StringFormat="0.00" Value="2.5" />
+            <controls:NumericUpDown Value="40" ShowButtons="False" IsReadOnly="True" />
+
+            <!-- TagInput, Skeleton & TimelineControl -->
+            <controls:TagInput x:Name="DemoTagInput" MaxTags="5" />
+            <controls:Skeleton Kind="Avatar" Width="44" Height="44" />
+            <controls:Skeleton Kind="Text" Height="14" />
+            <controls:Skeleton Kind="Card" Height="76" />
+            <controls:TimelineControl x:Name="DemoTimeline" />
+
+            // Code-behind: Tùy biến màu nhấn & Toast xếp chồng
+            ThemeManager.SetAccentColor(Application.Current!, Color.FromRgb(37, 99, 235));
+            ThemeManager.ResetAccentColor(Application.Current!);
+            ToastService.Show(owner, "Thông báo thành công", ToastKind.Success);
+            """),
     };
 
     private bool _isSidebarCollapsed;
@@ -361,7 +388,6 @@ public partial class MainWindow : PremiumWindow
     public MainWindow()
     {
         InitializeComponent();
-        NavTree.SelectedItemChanged += NavTree_SelectedItemChanged;
         SearchBox.TextChanged += SearchBox_TextChanged;
         Loaded += MainWindow_Loaded;
     }

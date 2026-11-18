@@ -11,16 +11,9 @@ public sealed class ThemeStyleManagerTests
     [TestMethod]
     public void Applies_each_style_and_preserves_it_when_component_size_changes()
     {
-        Exception? failure = null;
-        var thread = new Thread(() =>
+        PremiumInteractionTests.RunOnSta(() =>
         {
-            try
-            {
-                var application = new Application();
-                application.Resources.MergedDictionaries.Add(new ResourceDictionary
-                {
-                    Source = new Uri("/WPF_Premium;component/Themes/WpfPremium.xaml", UriKind.Relative)
-                });
+            var application = Application.Current!;
                 Assert.AreEqual(
                     WpfPremiumStyle.Default,
                     new AppearanceSettings("Segoe UI", 14, ComponentSize.Medium).Style);
@@ -101,21 +94,7 @@ public sealed class ThemeStyleManagerTests
                     12d,
                     ((CornerRadius)application.Resources[AppearanceSettingsManager.ControlCornerRadiusResourceKey]).TopLeft);
                 Assert.AreEqual(30d, application.Resources[AppearanceSettingsManager.ControlMinHeightResourceKey]);
-                application.Shutdown();
-            }
-            catch (Exception exception)
-            {
-                failure = exception;
-            }
         });
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        thread.Join();
-
-        if (failure is not null)
-        {
-            ExceptionDispatchInfo.Capture(failure).Throw();
-        }
     }
 
     private static Color GetBrushColor(ResourceDictionary resources, string key)

@@ -12,8 +12,11 @@
     <Compile Include="..\WPF_Premium\Controls\AppearanceSettingsControl.xaml.cs" Link="Controls\AppearanceSettingsControl.xaml.cs" />
     <Compile Include="..\WPF_Premium\Controls\AttachmentControl.cs" Link="Controls\AttachmentControl.cs" />
     <Compile Include="..\WPF_Premium\Controls\Badge.cs" Link="Controls\Badge.cs" />
+    <Compile Include="..\WPF_Premium\Controls\BannerAlert.cs" Link="Controls\BannerAlert.cs" />
+    <Compile Include="..\WPF_Premium\Controls\Breadcrumb.cs" Link="Controls\Breadcrumb.cs" />
     <Compile Include="..\WPF_Premium\Controls\CalendarControl.cs" Link="Controls\CalendarControl.cs" />
     <Compile Include="..\WPF_Premium\Controls\ComboBoxControl.xaml.cs" Link="Controls\ComboBoxControl.xaml.cs" />
+    <Compile Include="..\WPF_Premium\Controls\ControlHelpers.cs" Link="Controls\ControlHelpers.cs" />
     <Compile Include="..\WPF_Premium\Controls\DateTimeCalendar.xaml.cs" Link="Controls\DateTimeCalendar.xaml.cs" />
     <Compile Include="..\WPF_Premium\Controls\DateTimeRangeCalendar.xaml.cs" Link="Controls\DateTimeRangeCalendar.xaml.cs" />
     <Compile Include="..\WPF_Premium\Controls\DataTableControl.cs" Link="Controls\DataTableControl.cs" />
@@ -22,15 +25,20 @@
     <Compile Include="..\WPF_Premium\Controls\Field.cs" Link="Controls\Field.cs" />
     <Compile Include="..\WPF_Premium\Controls\FormattedInputControl.xaml.cs" Link="Controls\FormattedInputControl.xaml.cs" />
     <Compile Include="..\WPF_Premium\Controls\MultiSelectControl.xaml.cs" Link="Controls\MultiSelectControl.xaml.cs" />
+    <Compile Include="..\WPF_Premium\Controls\NumericUpDown.cs" Link="Controls\NumericUpDown.cs" />
     <Compile Include="..\WPF_Premium\Controls\Pagination.cs" Link="Controls\Pagination.cs" />
     <Compile Include="..\WPF_Premium\Controls\PremiumWindow.cs" Link="Controls\PremiumWindow.cs" />
     <Compile Include="..\WPF_Premium\Controls\PremiumDockingManager.cs" Link="Controls\PremiumDockingManager.cs" />
     <Compile Include="..\WPF_Premium\Controls\RatingControl.cs" Link="Controls\RatingControl.cs" />
     <Compile Include="..\WPF_Premium\Controls\SearchBox.cs" Link="Controls\SearchBox.cs" />
+    <Compile Include="..\WPF_Premium\Controls\SegmentedControl.cs" Link="Controls\SegmentedControl.cs" />
+    <Compile Include="..\WPF_Premium\Controls\Skeleton.cs" Link="Controls\Skeleton.cs" />
     <Compile Include="..\WPF_Premium\Controls\SplitButton.cs" Link="Controls\SplitButton.cs" />
     <Compile Include="..\WPF_Premium\Controls\StepBar.cs" Link="Controls\StepBar.cs" />
     <Compile Include="..\WPF_Premium\Controls\StatCard.cs" Link="Controls\StatCard.cs" />
     <Compile Include="..\WPF_Premium\Controls\Table.cs" Link="Controls\Table.cs" />
+    <Compile Include="..\WPF_Premium\Controls\TagInput.cs" Link="Controls\TagInput.cs" />
+    <Compile Include="..\WPF_Premium\Controls\TimelineControl.cs" Link="Controls\TimelineControl.cs" />
     <Compile Include="..\WPF_Premium\Controls\ToastService.cs" Link="Controls\ToastService.cs" />
     <Compile Include="..\WPF_Premium\Controls\Toolbar.cs" Link="Controls\Toolbar.cs" />
     <Compile Include="..\WPF_Premium\Controls\ToolbarButton.cs" Link="Controls\ToolbarButton.cs" />
@@ -41,6 +49,7 @@
     <Compile Include="..\WPF_Premium\Themes\AppearanceSettings.cs" Link="Themes\AppearanceSettings.cs" />
     <Compile Include="..\WPF_Premium\Themes\ThemeManager.cs" Link="Themes\ThemeManager.cs" />
     <Compile Include="..\WPF_Premium\Themes\ThemeStyleManager.cs" Link="Themes\ThemeStyleManager.cs" />
+    <Compile Include="..\WPF_Premium\Themes\WpfPremiumResourceKeys.cs" Link="Themes\WpfPremiumResourceKeys.cs" />
     <Page Include="..\WPF_Premium\Controls\AppearanceSettingsControl.xaml" Link="Controls\AppearanceSettingsControl.xaml" />
     <Page Include="..\WPF_Premium\Controls\ComboBoxControl.xaml" Link="Controls\ComboBoxControl.xaml" />
     <Page Include="..\WPF_Premium\Controls\DateTimeCalendar.xaml" Link="Controls\DateTimeCalendar.xaml" />
