@@ -31,6 +31,7 @@ public partial class OfflineMapControl : UserControl, IDisposable
     private bool _usesWebMercator;
     private bool _isDisposed;
     private int _mapBuildVersion;
+    private string? _loadedMapKey;
 
     private sealed class MapBuildResult(Map Map, List<ShapeFile> ShapeFiles, bool UsesWebMercator)
     {
@@ -42,7 +43,10 @@ public partial class OfflineMapControl : UserControl, IDisposable
     public OfflineMapControl()
     {
         InitializeComponent();
-        _mapControl = new Mapsui.UI.Wpf.MapControl();
+        _mapControl = new Mapsui.UI.Wpf.MapControl
+        {
+            Background = System.Windows.Media.Brushes.Transparent
+        };
         MapHost.Children.Add(_mapControl);
         _mapControl.MapPointerMoved += MapControl_MapPointerMoved;
         _mapControl.MouseLeave += (_, _) => CoordinateText.Text = "—";
@@ -122,14 +126,25 @@ public partial class OfflineMapControl : UserControl, IDisposable
     {
         if (IsMapActive)
         {
+            var key = MapFilePath ?? string.Empty;
+            if (_mapControl.Map is not null && string.Equals(_loadedMapKey, key, StringComparison.Ordinal))
+            {
+                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () =>
+                {
+                    if (_isDisposed || !IsLoaded) return;
+                    _mapControl.Refresh();
+                    _mapControl.InvalidateVisual();
+                });
+                return;
+            }
+
             RebuildMap();
         }
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
-        _mapBuildVersion++;
-        DisposeMap();
+        // Keep the built map cached across tab/pane switches (e.g. AvalonDock) so re-opening is instant.
     }
 
     private async void RebuildMap()
@@ -137,6 +152,7 @@ public partial class OfflineMapControl : UserControl, IDisposable
         if (_isDisposed || !IsLoaded || !IsMapActive) return;
         var buildVersion = ++_mapBuildVersion;
         var path = MapFilePath;
+        _loadedMapKey = path ?? string.Empty;
         DisposeMap();
         MarineLegend.Visibility = string.IsNullOrWhiteSpace(path) ? Visibility.Visible : Visibility.Collapsed;
         OfflineStatusText.Text = "Đang tải bản đồ ngoại tuyến…";
@@ -144,6 +160,39 @@ public partial class OfflineMapControl : UserControl, IDisposable
 
         try
         {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                // Stage 1: render countries immediately so the user sees the map right away.
+                var quickResult = await Task.Run(() => BuildQuickWorldMap());
+                if (_isDisposed || buildVersion != _mapBuildVersion || !IsLoaded)
+                {
+                    DisposeMapBuildResult(quickResult);
+                    return;
+                }
+
+                ApplyMapBuildResult(quickResult, resetView: true);
+
+                // Stage 2: load full detail layers (bathymetry, regions, islands, labels) in background.
+                var fullResult = await Task.Run(() => BuildMap(null));
+                if (_isDisposed || buildVersion != _mapBuildVersion)
+                {
+                    DisposeMapBuildResult(fullResult);
+                    return;
+                }
+
+                var previousCenter = _mapControl.Map?.Navigator.Viewport is { } vp
+                    ? new MPoint(vp.CenterX, vp.CenterY)
+                    : null;
+                var previousResolution = _mapControl.Map?.Navigator.Viewport.Resolution;
+                DisposeMap();
+                ApplyMapBuildResult(fullResult, resetView: false);
+                if (previousCenter is not null && previousResolution is > 0)
+                {
+                    _mapControl.Map?.Navigator.CenterOnAndZoomTo(previousCenter, previousResolution.Value);
+                }
+                return;
+            }
+
             var result = await Task.Run(() => BuildMap(path));
             if (_isDisposed || buildVersion != _mapBuildVersion || !IsLoaded)
             {
@@ -151,18 +200,7 @@ public partial class OfflineMapControl : UserControl, IDisposable
                 return;
             }
 
-            _shapeFiles.AddRange(result.ShapeFiles);
-            _usesWebMercator = result.UsesWebMercator;
-            var map = result.Map;
-            OfflineStatusText.Visibility = Visibility.Collapsed;
-            _locationsLayer = new MemoryLayer { Name = "Vị trí" };
-            map.Layers.Add(_locationsLayer);
-            _mapControl.Map = map;
-            if (!_usesWebMercator)
-            {
-                map.Navigator.ZoomToBox(new MRect(-180, -90, 180, 90));
-            }
-            UpdateLocations();
+            ApplyMapBuildResult(result, resetView: true);
         }
         catch (Exception ex)
         {
@@ -175,6 +213,49 @@ public partial class OfflineMapControl : UserControl, IDisposable
             OfflineStatusText.Text = $"Không thể mở bản đồ ngoại tuyến: {ex.Message}";
             OfflineStatusText.Visibility = Visibility.Visible;
             UpdateLocations();
+        }
+    }
+
+    private void ApplyMapBuildResult(MapBuildResult result, bool resetView)
+    {
+        _shapeFiles.AddRange(result.ShapeFiles);
+        _usesWebMercator = result.UsesWebMercator;
+        var map = result.Map;
+        OfflineStatusText.Visibility = Visibility.Collapsed;
+        _locationsLayer = new MemoryLayer { Name = "Vị trí" };
+        map.Layers.Add(_locationsLayer);
+        _mapControl.Map = map;
+        if (resetView && !_usesWebMercator)
+        {
+            map.Navigator.ZoomToBox(new MRect(-180, -90, 180, 90));
+        }
+
+        UpdateLocations();
+    }
+
+    private static MapBuildResult BuildQuickWorldMap()
+    {
+        var map = new Map
+        {
+            CRS = "EPSG:4326",
+            BackColor = new Color(214, 234, 248, 255)
+        };
+        var shapeFiles = new List<ShapeFile>();
+        try
+        {
+            var countriesSource = CreateShapeFile(shapeFiles, "countries", "ne_10m_admin_0_countries");
+            map.Layers.Add(new Layer("Quốc gia")
+            {
+                DataSource = countriesSource,
+                Style = new ThemeStyle(GetCountryStyle)
+            });
+            return new MapBuildResult(map, shapeFiles, false);
+        }
+        catch
+        {
+            foreach (var shapeFile in shapeFiles) shapeFile.Dispose();
+            map.Dispose();
+            throw;
         }
     }
 

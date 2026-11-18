@@ -38,7 +38,7 @@
                PopupAnimation="Fade"
                Opened="DropDownPopup_Opened"
                Closed="DropDownPopup_Closed">
-            <Border Width="{Binding ActualWidth, ElementName=DropDownToggle}"
+            <Border MinWidth="{Binding ActualWidth, ElementName=DropDownToggle}"
                     MaxHeight="280"
                     Background="{DynamicResource PopoverBrush}"
                     BorderBrush="{DynamicResource BorderBrush}"
@@ -58,6 +58,7 @@
                         <ListBox x:Name="ItemsList"
                                  ItemsSource="{Binding FilteredItems}"
                                  SelectionChanged="ItemsList_SelectionChanged"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                  BorderThickness="0"
                                  Background="Transparent"
                                  MaxHeight="220" />

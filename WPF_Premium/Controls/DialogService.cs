@@ -31,6 +31,27 @@ public static class DialogService
     public static bool? ShowDialog(Window owner, string title, object content) =>
         ShowOverlay(owner, title, content, OverlayKind.Dialog, OverlayDirection.Right);
 
+    public static bool? ShowDialog(
+        Window owner,
+        string title,
+        object content,
+        double? width,
+        double? height = null,
+        string? subtitle = null,
+        bool closeOnBackdropClick = true,
+        Func<bool>? canClose = null) =>
+        ShowOverlay(
+            owner,
+            title,
+            content,
+            OverlayKind.Dialog,
+            OverlayDirection.Right,
+            width: width,
+            height: height,
+            subtitle: subtitle,
+            closeOnBackdropClick: closeOnBackdropClick,
+            canClose: canClose);
+
     public static bool? ShowAlertDialog(
         Window owner,
         string title,
@@ -87,7 +108,12 @@ public static class DialogService
         OverlayKind kind,
         OverlayDirection direction,
         string? confirmText = null,
-        string? cancelText = null)
+        string? cancelText = null,
+        double? width = null,
+        double? height = null,
+        string? subtitle = null,
+        bool closeOnBackdropClick = true,
+        Func<bool>? canClose = null)
     {
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
@@ -123,8 +149,26 @@ public static class DialogService
         overlay.SetResourceReference(Control.FontSizeProperty, "WpfPremium.FontSize");
         Action dismiss = kind == OverlayKind.AlertDialog
             ? () => overlay.DialogResult = false
-            : overlay.Close;
-        overlay.Content = CreateOverlayContent(owner, title, content, kind, direction, confirmText, cancelText, dismiss);
+            : () =>
+            {
+                if (canClose is null || canClose())
+                {
+                    overlay.Close();
+                }
+            };
+        overlay.Content = CreateOverlayContent(
+            owner,
+            title,
+            content,
+            kind,
+            direction,
+            confirmText,
+            cancelText,
+            width,
+            height,
+            subtitle,
+            closeOnBackdropClick,
+            dismiss);
 
         var alertDialog = kind == OverlayKind.AlertDialog;
         overlay.KeyDown += (_, e) =>
@@ -137,7 +181,7 @@ public static class DialogService
                 }
                 else
                 {
-                    overlay.Close();
+                    dismiss();
                 }
             }
         };
@@ -169,20 +213,32 @@ public static class DialogService
         OverlayDirection direction,
         string? confirmText,
         string? cancelText,
+        double? width,
+        double? height,
+        string? subtitle,
+        bool closeOnBackdropClick,
         Action close)
     {
-        var root = new Grid { Background = new SolidColorBrush(Color.FromArgb(112, 0, 0, 0)) };
+        var root = new Grid { Background = new SolidColorBrush(Color.FromArgb(128, 0, 0, 0)) };
         var isEdgeOverlay = kind is OverlayKind.Drawer or OverlayKind.Sheet;
         var isSideOverlay = direction is OverlayDirection.Left or OverlayDirection.Right;
         var cornerRadius = owner.TryFindResource("WpfPremium.SurfaceCornerRadius") is CornerRadius surfaceRadius
             ? surfaceRadius.TopLeft
             : 10;
+        var maxDialogWidth = Math.Max(320, owner.ActualWidth - 48);
+        var maxDialogHeight = Math.Max(200, owner.ActualHeight - 48);
+        var dialogWidth = width.HasValue
+            ? Math.Min(width.Value, maxDialogWidth)
+            : Math.Min(440, maxDialogWidth);
+        var dialogHeight = height.HasValue
+            ? Math.Min(height.Value, maxDialogHeight)
+            : double.NaN;
         var panel = new Border
         {
-            Width = !isEdgeOverlay ? 440 : isSideOverlay ? Math.Min(400, owner.ActualWidth) : double.NaN,
-            Height = isEdgeOverlay && !isSideOverlay ? owner.ActualHeight * 0.9 : double.NaN,
-            MaxWidth = isEdgeOverlay ? owner.ActualWidth : double.PositiveInfinity,
-            MaxHeight = isEdgeOverlay ? owner.ActualHeight : Math.Max(160, owner.ActualHeight - 48),
+            Width = !isEdgeOverlay ? dialogWidth : isSideOverlay ? Math.Min(width ?? 400, owner.ActualWidth) : double.NaN,
+            Height = isEdgeOverlay && !isSideOverlay ? owner.ActualHeight * 0.9 : !isEdgeOverlay ? dialogHeight : double.NaN,
+            MaxWidth = isEdgeOverlay ? owner.ActualWidth : maxDialogWidth,
+            MaxHeight = isEdgeOverlay ? owner.ActualHeight : maxDialogHeight,
             HorizontalAlignment = !isEdgeOverlay
                 ? HorizontalAlignment.Center
                 : isSideOverlay
@@ -220,7 +276,7 @@ public static class DialogService
             layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         }
 
-        var heading = new DockPanel { Margin = new Thickness(16, 12, 12, 8), LastChildFill = true };
+        var heading = new DockPanel { Margin = new Thickness(18, 12, 12, 10), LastChildFill = true };
         var closeButton = CreateButton(new PackIconMaterial
         {
             Kind = PackIconMaterialKind.Close,
@@ -235,20 +291,48 @@ public static class DialogService
         AutomationProperties.SetName(closeButton, "Đóng");
         DockPanel.SetDock(closeButton, Dock.Right);
         heading.Children.Add(closeButton);
-        heading.Children.Add(new TextBlock
+
+        var titleStack = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+        titleStack.Children.Add(new TextBlock
         {
             Text = title,
-            FontSize = 17,
+            FontSize = 16,
             FontWeight = FontWeights.SemiBold,
             VerticalAlignment = VerticalAlignment.Center
         });
-        layout.Children.Add(heading);
+        if (!string.IsNullOrWhiteSpace(subtitle))
+        {
+            var subtitleBlock = new TextBlock
+            {
+                Text = subtitle,
+                FontSize = 12,
+                Margin = new Thickness(0, 2, 0, 0),
+                TextWrapping = TextWrapping.Wrap
+            };
+            subtitleBlock.SetResourceReference(TextBlock.ForegroundProperty, "MutedForegroundBrush");
+            titleStack.Children.Add(subtitleBlock);
+        }
+
+        heading.Children.Add(titleStack);
+
+        var headerBorder = new Border
+        {
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            Child = heading
+        };
+        headerBorder.SetResourceReference(Border.BorderBrushProperty, "BorderBrush");
+        layout.Children.Add(headerBorder);
 
         var body = new ContentControl
         {
             Content = content,
-            Margin = new Thickness(16, 4, 16, kind == OverlayKind.AlertDialog ? 12 : 16),
-            VerticalContentAlignment = VerticalAlignment.Stretch
+            Margin = new Thickness(
+                width is > 500 ? 0 : 18,
+                width is > 500 ? 0 : 12,
+                width is > 500 ? 0 : 18,
+                width is > 500 ? 0 : (kind == OverlayKind.AlertDialog ? 12 : 16)),
+            VerticalContentAlignment = VerticalAlignment.Stretch,
+            HorizontalContentAlignment = HorizontalAlignment.Stretch
         };
         Grid.SetRow(body, 1);
         layout.Children.Add(body);
@@ -276,7 +360,7 @@ public static class DialogService
         root.Children.Add(panel);
         root.MouseDown += (_, e) =>
         {
-            if (ReferenceEquals(e.OriginalSource, root))
+            if (closeOnBackdropClick && ReferenceEquals(e.OriginalSource, root))
             {
                 close();
             }

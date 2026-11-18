@@ -264,7 +264,7 @@ public partial class ChartControl : UserControl
         var horizontalBar = Kind is ChartKind.Bar or ChartKind.StackedBar;
         return new CartesianChart
         {
-            Series = series.Select((item, index) => CreateCartesianSeries(item, palette[index % palette.Count])).ToArray(),
+            Series = series.Select((item, index) => CreateCartesianSeries(item, palette[index % palette.Count], foreground)).ToArray(),
             XAxes =
             [
                 CreateAxis(horizontalBar ? Array.Empty<string>() : labels, mutedForeground, border)
@@ -354,10 +354,11 @@ public partial class ChartControl : UserControl
         return panel;
     }
 
-    private ISeries CreateCartesianSeries(ChartSeries series, SKColor color)
+    private ISeries CreateCartesianSeries(ChartSeries series, SKColor color, SKColor foreground)
     {
         var stroke = new SolidColorPaint(color) { StrokeThickness = 2 };
         var fill = new SolidColorPaint(new SKColor(color.Red, color.Green, color.Blue, 64));
+        var labelPaint = new SolidColorPaint(foreground);
         return Kind switch
         {
             ChartKind.Line => new LineSeries<double>
@@ -365,28 +366,40 @@ public partial class ChartControl : UserControl
                 Name = series.Name,
                 Values = series.Values,
                 Stroke = stroke,
-                Fill = null
+                Fill = null,
+                YToolTipLabelFormatter = point => point.Coordinate.PrimaryValue.ToString("N0")
             },
             ChartKind.Area => new LineSeries<double>
             {
                 Name = series.Name,
                 Values = series.Values,
                 Stroke = stroke,
-                Fill = fill
+                Fill = fill,
+                YToolTipLabelFormatter = point => point.Coordinate.PrimaryValue.ToString("N0")
             },
             ChartKind.Column => new ColumnSeries<double>
             {
                 Name = series.Name,
                 Values = series.Values,
                 Fill = new SolidColorPaint(color),
-                Stroke = null
+                Stroke = null,
+                DataLabelsPaint = labelPaint,
+                DataLabelsSize = 11,
+                DataLabelsPosition = DataLabelsPosition.Top,
+                DataLabelsFormatter = point => point.Coordinate.PrimaryValue.ToString("N0"),
+                YToolTipLabelFormatter = point => point.Coordinate.PrimaryValue.ToString("N0")
             },
             ChartKind.Bar => new RowSeries<double>
             {
                 Name = series.Name,
                 Values = series.Values,
                 Fill = new SolidColorPaint(color),
-                Stroke = null
+                Stroke = null,
+                DataLabelsPaint = labelPaint,
+                DataLabelsSize = 11,
+                DataLabelsPosition = DataLabelsPosition.End,
+                DataLabelsFormatter = point => point.Coordinate.PrimaryValue.ToString("N0"),
+                XToolTipLabelFormatter = point => point.Coordinate.PrimaryValue.ToString("N0")
             },
             ChartKind.StackedColumn => new StackedColumnSeries<double>
             {
@@ -424,15 +437,24 @@ public partial class ChartControl : UserControl
     }
 
     private static Axis CreateAxis(IReadOnlyList<string> labels, SKColor foreground, SKColor border) =>
-        new()
-        {
-            Labels = labels.ToArray(),
-            LabelsPaint = new SolidColorPaint(foreground),
-            SeparatorsPaint = new SolidColorPaint(border),
-            TicksPaint = new SolidColorPaint(border),
-            MinStep = 1,
-            ForceStepToMin = labels.Count > 0
-        };
+        labels.Count > 0
+            ? new Axis
+            {
+                Labels = labels.ToArray(),
+                LabelsPaint = new SolidColorPaint(foreground),
+                SeparatorsPaint = new SolidColorPaint(border),
+                TicksPaint = new SolidColorPaint(border),
+                MinStep = 1,
+                ForceStepToMin = true
+            }
+            : new Axis
+            {
+                LabelsPaint = new SolidColorPaint(foreground),
+                SeparatorsPaint = new SolidColorPaint(border),
+                TicksPaint = new SolidColorPaint(border),
+                MinLimit = 0,
+                Labeler = value => value.ToString("N0")
+            };
 
     private static void ValidateSeries(IReadOnlyList<ChartSeries> series, ChartKind kind)
     {

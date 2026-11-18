@@ -186,14 +186,15 @@
     </Style>
 
     <Style x:Key="WindowCaptionButton" TargetType="{x:Type Button}">
-        <Setter Property="Width" Value="40" />
+        <Setter Property="Width" Value="44" />
         <Setter Property="MinHeight" Value="0" />
-        <Setter Property="Height" Value="32" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource MutedForegroundBrush}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="False" />
         <Setter Property="shell:WindowChrome.IsHitTestVisibleInChrome" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
@@ -246,60 +247,105 @@
         <Setter Property="FontSize" Value="{DynamicResource WpfPremium.FontSize}" />
         <Setter Property="shell:WindowChrome.WindowChrome">
             <Setter.Value>
-                <shell:WindowChrome CaptionHeight="32" ResizeBorderThickness="0"
+                <shell:WindowChrome CaptionHeight="38" ResizeBorderThickness="6"
                                     GlassFrameThickness="0" UseAeroCaptionButtons="False" />
             </Setter.Value>
         </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:PremiumWindow}">
-                    <Border Background="{TemplateBinding Background}"
-                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0"
+                    <Border x:Name="PART_WindowRoot"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1"
                             SnapsToDevicePixels="True">
                         <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="32" />
-                            <RowDefinition Height="*" />
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="{Binding TitleBarHeight, RelativeSource={RelativeSource TemplatedParent}}" />
+                                <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <Grid x:Name="PART_TitleBar" Grid.Row="0"
-                                  Background="{DynamicResource CardBrush}"
-                                  shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,8,0">
-                                    <Border Width="20" Height="20" CornerRadius="5"
-                                            Background="{DynamicResource PrimaryBrush}" Margin="0,0,9,0">
-                                        <iconPacks:PackIconMaterial Kind="ApplicationOutline" Width="13" Height="13"
-                                                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    </Border>
-                                    <TextBlock Text="{TemplateBinding Title}" FontSize="13" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource ForegroundBrush}"
-                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                </StackPanel>
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Stretch">
-                                    <Button x:Name="PART_MinimizeButton" Style="{StaticResource WindowCaptionButton}"
-                                            AutomationProperties.Name="Thu nhỏ" ToolTip="Thu nhỏ">
-                                        <iconPacks:PackIconMaterial Kind="WindowMinimize" Width="13" Height="13" />
-                                    </Button>
-                                    <Button x:Name="PART_MaximizeButton" Style="{StaticResource WindowCaptionButton}"
-                                            AutomationProperties.Name="Phóng to hoặc khôi phục" ToolTip="Phóng to hoặc khôi phục">
-                                        <iconPacks:PackIconMaterial x:Name="PART_MaximizeIcon" Kind="WindowMaximize" Width="13" Height="13" />
-                                    </Button>
-                                    <Button x:Name="PART_CloseButton" Style="{StaticResource WindowCloseCaptionButton}"
-                                            Tag="WindowCloseButton"
-                                            AutomationProperties.Name="Đóng cửa sổ" ToolTip="Đóng">
-                                        <iconPacks:PackIconMaterial Kind="Close" Width="14" Height="14" />
-                                    </Button>
-                                </StackPanel>
-                            </Grid>
+                            <Border x:Name="PART_TitleBar"
+                                    Grid.Row="0"
+                                    Background="{DynamicResource CardBrush}"
+                                    BorderBrush="{DynamicResource BorderBrush}"
+                                    BorderThickness="0,0,0,1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,8,0">
+                                        <Grid Margin="0,0,8,0"
+                                              VerticalAlignment="Center"
+                                              Visibility="{Binding ShowIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource WpfPremiumBooleanToVisibilityConverter}}">
+                                            <Border x:Name="DefaultIconBadge"
+                                                    Width="22" Height="22" CornerRadius="6"
+                                                    Background="{DynamicResource PrimaryBrush}"
+                                                    Visibility="Collapsed">
+                                                <iconPacks:PackIconMaterial Kind="ApplicationOutline" Width="13" Height="13"
+                                                                            Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <Image x:Name="WindowIconImage"
+                                                   Width="22" Height="22"
+                                                   RenderOptions.BitmapScalingMode="HighQuality"
+                                                   Source="{TemplateBinding Icon}"
+                                                   Visibility="Visible" />
+                                        </Grid>
+                                        <TextBlock Text="{TemplateBinding Title}"
+                                                   FontSize="13" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource ForegroundBrush}"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                                   Margin="0,0,4,0"
+                                                   Visibility="{Binding ShowTitle, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource WpfPremiumBooleanToVisibilityConverter}}" />
+                                        <ContentPresenter x:Name="PART_TitleBarLeftPresenter"
+                                                          Content="{TemplateBinding TitleBarLeftContent}"
+                                                          VerticalAlignment="Center"
+                                                          shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                                    </StackPanel>
+                                    <ContentPresenter x:Name="PART_TitleBarCenterPresenter"
+                                                      Grid.Column="1"
+                                                      Content="{TemplateBinding TitleBarCenterContent}"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Stretch">
+                                        <ContentPresenter x:Name="PART_TitleBarRightPresenter"
+                                                          Content="{TemplateBinding TitleBarRightContent}"
+                                                          VerticalAlignment="Center"
+                                                          Margin="0,0,4,0"
+                                                          shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                                        <Button x:Name="PART_MinimizeButton" Style="{StaticResource WindowCaptionButton}"
+                                                AutomationProperties.Name="Thu nhỏ" ToolTip="Thu nhỏ">
+                                            <iconPacks:PackIconMaterial Kind="WindowMinimize" Width="13" Height="13" />
+                                        </Button>
+                                        <Button x:Name="PART_MaximizeButton" Style="{StaticResource WindowCaptionButton}"
+                                                AutomationProperties.Name="Phóng to hoặc khôi phục" ToolTip="Phóng to hoặc khôi phục">
+                                            <iconPacks:PackIconMaterial x:Name="PART_MaximizeIcon" Kind="WindowMaximize" Width="13" Height="13" />
+                                        </Button>
+                                        <Button x:Name="PART_CloseButton" Style="{StaticResource WindowCloseCaptionButton}"
+                                                Tag="WindowCloseButton"
+                                                AutomationProperties.Name="Đóng cửa sổ" ToolTip="Đóng">
+                                            <iconPacks:PackIconMaterial Kind="Close" Width="14" Height="14" />
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
                             <ContentPresenter Grid.Row="1" ContentSource="Content"
                                               HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                               SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                         </Grid>
                     </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Icon" Value="{x:Null}">
+                            <Setter TargetName="DefaultIconBadge" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="WindowIconImage" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="WindowState" Value="Maximized">
+                            <Setter TargetName="PART_WindowRoot" Property="BorderThickness" Value="0" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -1465,6 +1511,7 @@
                         </Trigger>
                         <Trigger Property="Role" Value="TopLevelHeader">
                             <Setter TargetName="PART_Popup" Property="Placement" Value="Bottom" />
+                            <Setter TargetName="SubmenuArrow" Property="Visibility" Value="Collapsed" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -1511,6 +1558,11 @@
         <Setter Property="Background" Value="{DynamicResource CardBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="{DynamicResource WpfPremium.SurfaceBorderThickness}" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="32" Direction="270" Opacity="0.32" ShadowDepth="10" Color="#000000" />
+            </Setter.Value>
+        </Setter>
     </Style>
     <Style x:Key="DrawerPanel" TargetType="{x:Type Border}" BasedOn="{StaticResource DialogPanel}" />
     <Style x:Key="SheetPanel" TargetType="{x:Type Border}" BasedOn="{StaticResource DialogPanel}" />
@@ -1699,7 +1751,8 @@
                     <Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="999"
+                            CornerRadius="10"
+                            SnapsToDevicePixels="True"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
@@ -2504,8 +2557,8 @@
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{DynamicResource WpfPremium.SurfaceCornerRadius}" Padding="{TemplateBinding Padding}">
                         <ScrollViewer Focusable="False" CanContentScroll="True"
-                                      HorizontalScrollBarVisibility="Auto"
-                                      VerticalScrollBarVisibility="Auto">
+                                      HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                      VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
                             <ItemsPresenter />
                         </ScrollViewer>
                     </Border>

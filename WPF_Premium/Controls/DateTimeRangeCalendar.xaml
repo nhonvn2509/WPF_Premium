@@ -125,13 +125,13 @@
                                        FontSize="12"
                                        FontWeight="Medium" Margin="0,3,0,6" />
                             <StackPanel Orientation="Horizontal">
-                                <controls:ComboBoxControl x:Name="StartHour" Width="54" MinWidth="0"
+                                <controls:ComboBoxControl x:Name="StartHour" Width="64" MinWidth="0"
                                                           Height="32" SearchEnabled="False" Placeholder="hh" />
                                 <TextBlock Text=":" VerticalAlignment="Center" Margin="4,0" />
-                                <controls:ComboBoxControl x:Name="StartMinute" Width="54" MinWidth="0"
+                                <controls:ComboBoxControl x:Name="StartMinute" Width="64" MinWidth="0"
                                                           Height="32" SearchEnabled="False" Placeholder="mm" />
                                 <TextBlock Text=":" VerticalAlignment="Center" Margin="4,0" />
-                                <controls:ComboBoxControl x:Name="StartSecond" Width="54" MinWidth="0"
+                                <controls:ComboBoxControl x:Name="StartSecond" Width="64" MinWidth="0"
                                                           Height="32" SearchEnabled="False" Placeholder="ss" />
                             </StackPanel>
                         </StackPanel>
@@ -143,13 +143,13 @@
                                        FontSize="12"
                                        FontWeight="Medium" Margin="0,3,0,6" />
                             <StackPanel Orientation="Horizontal">
-                                <controls:ComboBoxControl x:Name="EndHour" Width="54" MinWidth="0"
+                                <controls:ComboBoxControl x:Name="EndHour" Width="64" MinWidth="0"
                                                           Height="32" SearchEnabled="False" Placeholder="hh" />
                                 <TextBlock Text=":" VerticalAlignment="Center" Margin="4,0" />
-                                <controls:ComboBoxControl x:Name="EndMinute" Width="54" MinWidth="0"
+                                <controls:ComboBoxControl x:Name="EndMinute" Width="64" MinWidth="0"
                                                           Height="32" SearchEnabled="False" Placeholder="mm" />
                                 <TextBlock Text=":" VerticalAlignment="Center" Margin="4,0" />
-                                <controls:ComboBoxControl x:Name="EndSecond" Width="54" MinWidth="0"
+                                <controls:ComboBoxControl x:Name="EndSecond" Width="64" MinWidth="0"
                                                           Height="32" SearchEnabled="False" Placeholder="ss" />
                             </StackPanel>
                         </StackPanel>
