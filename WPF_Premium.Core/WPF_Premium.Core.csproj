@@ -46,6 +46,7 @@
     <Compile Include="..\WPF_Premium\Controls\ToolbarSeparator.cs" Link="Controls\ToolbarSeparator.cs" />
     <Compile Include="..\WPF_Premium\Controls\TraceEntry.cs" Link="Controls\TraceEntry.cs" />
     <Compile Include="..\WPF_Premium\Controls\WaterfallPanel.cs" Link="Controls\WaterfallPanel.cs" />
+    <Compile Include="..\WPF_Premium\Controls\WavWaveformReader.cs" Link="Controls\WavWaveformReader.cs" />
     <Compile Include="..\WPF_Premium\Themes\AppearanceSettings.cs" Link="Themes\AppearanceSettings.cs" />
     <Compile Include="..\WPF_Premium\Themes\ThemeManager.cs" Link="Themes\ThemeManager.cs" />
     <Compile Include="..\WPF_Premium\Themes\ThemeStyleManager.cs" Link="Themes\ThemeStyleManager.cs" />

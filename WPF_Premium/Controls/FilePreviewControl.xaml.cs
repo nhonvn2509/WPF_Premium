@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -122,7 +123,7 @@ public partial class FilePreviewControl : UserControl
         try
         {
             if (IsImage(ext)) ShowImage(path);
-            else if (IsAudio(ext)) ShowAudio(path);
+            else if (IsAudio(ext) || (ext == ".a_voc" && WavWaveformReader.HasWavHeader(path))) ShowAudio(path);
             else if (IsVideo(ext)) ShowVideo(path);
             else if (ext == ".pdf")
             {
@@ -504,77 +505,410 @@ public partial class FilePreviewControl : UserControl
 
     private void ShowAudio(string path)
     {
-        var root = new Grid { Margin = new Thickness(22) }; root.RowDefinitions.Add(new RowDefinition()); root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        var wave = new Canvas { Height = 180, Background = new SolidColorBrush(Color.FromRgb(25, 28, 35)), ClipToBounds = true };
-        AutomationProperties.SetAutomationId(wave, "AudioWaveform");
-        AutomationProperties.SetName(wave, "Dạng sóng âm thanh");
-        var extension = System.IO.Path.GetExtension(path);
-        var isMidi = extension is ".mid" or ".midi";
-        var n = Math.Min(800, Math.Max(120, (int)(ActualWidth - 70)));
-        if (!isMidi)
-        {
-            using var audio = File.OpenRead(path);
-            var length = audio.Length;
-            for (var i = 0; i < n; i++)
-            {
-                var sample = 0;
-                if (length > 0)
-                {
-                    audio.Position = (long)i * length / n;
-                    sample = Math.Max(0, audio.ReadByte());
-                }
+        var root = new Grid { Margin = new Thickness(18) };
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-                var amp = .08 + (sample / 255d) * .78;
-                var h = amp * 145;
-                wave.Children.Add(new Line { X1 = i, X2 = i, Y1 = (180 - h) / 2, Y2 = (180 + h) / 2, Stroke = new SolidColorBrush(Color.FromRgb(76, 164, 245)), StrokeThickness = 1.2 });
+        var extension = System.IO.Path.GetExtension(path).ToLowerInvariant();
+        var isMidi = extension is ".mid" or ".midi";
+        var waveData = isMidi
+            ? new WavWaveformData(1, 0, 0, TimeSpan.Zero, [new float[240]], false)
+            : WavWaveformReader.Read(path, 800);
+
+        var channelCount = Math.Max(1, waveData.ChannelCount);
+        var channelTrackHeight = channelCount == 1 ? 180d : Math.Max(68d, Math.Min(120d, 320d / channelCount));
+        var totalWaveHeight = channelTrackHeight * channelCount + Math.Max(0, channelCount - 1) * 6d;
+
+        var waveSurface = new Grid
+        {
+            MinHeight = totalWaveHeight,
+            Background = new SolidColorBrush(Color.FromRgb(25, 28, 35)),
+            ClipToBounds = true,
+            Cursor = isMidi ? Cursors.Arrow : Cursors.Hand
+        };
+
+        var tracksPanel = new StackPanel();
+        var channelCanvases = new List<Canvas>(channelCount);
+        Color[] channelColors =
+        [
+            Color.FromRgb(76, 164, 245),
+            Color.FromRgb(52, 211, 153),
+            Color.FromRgb(251, 191, 36),
+            Color.FromRgb(167, 139, 250),
+            Color.FromRgb(244, 114, 182),
+            Color.FromRgb(56, 189, 248)
+        ];
+
+        for (var ch = 0; ch < channelCount; ch++)
+        {
+            var trackBorder = new Border
+            {
+                Height = channelTrackHeight,
+                Margin = ch == 0 ? new Thickness(0) : new Thickness(0, 6, 0, 0),
+                Background = new SolidColorBrush(Color.FromRgb(20, 23, 30)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(42, 48, 60)),
+                BorderThickness = new Thickness(0, 0, 0, ch < channelCount - 1 ? 1 : 0)
+            };
+
+            var trackGrid = new Grid();
+            var canvas = new Canvas { ClipToBounds = true };
+            channelCanvases.Add(canvas);
+            trackGrid.Children.Add(canvas);
+
+            if (channelCount > 1)
+            {
+                var label = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromArgb(180, 15, 18, 24)),
+                    CornerRadius = new CornerRadius(3),
+                    Padding = new Thickness(6, 2, 6, 2),
+                    Margin = new Thickness(8, 6, 0, 0),
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    IsHitTestVisible = false,
+                    Child = new TextBlock
+                    {
+                        Text = $"Kênh {ch + 1}",
+                        FontSize = 11,
+                        Foreground = new SolidColorBrush(channelColors[ch % channelColors.Length])
+                    }
+                };
+                trackGrid.Children.Add(label);
             }
+
+            trackBorder.Child = trackGrid;
+            tracksPanel.Children.Add(trackBorder);
         }
-        root.Children.Add(wave);
-        var controls = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 12, 0, 0) };
+
+        var overlayCanvas = new Canvas { IsHitTestVisible = false, ClipToBounds = true };
+        var selectionRect = new System.Windows.Shapes.Rectangle
+        {
+            Fill = new SolidColorBrush(Color.FromArgb(65, 59, 130, 246)),
+            Stroke = new SolidColorBrush(Color.FromRgb(96, 165, 250)),
+            StrokeThickness = 1,
+            Visibility = Visibility.Collapsed
+        };
+        var playheadLine = new Line
+        {
+            X1 = 0,
+            X2 = 0,
+            Y1 = 0,
+            Y2 = totalWaveHeight,
+            Stroke = new SolidColorBrush(Color.FromRgb(248, 113, 113)),
+            StrokeThickness = 1.6,
+            Visibility = isMidi ? Visibility.Collapsed : Visibility.Visible
+        };
+        overlayCanvas.Children.Add(selectionRect);
+        overlayCanvas.Children.Add(playheadLine);
+
+        waveSurface.Children.Add(tracksPanel);
+        waveSurface.Children.Add(overlayCanvas);
+
+        var waveFrame = new Border
+        {
+            BorderBrush = (Brush)FindResource("BorderBrush"),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(6),
+            ClipToBounds = true,
+            Child = channelCount > 3
+                ? new ScrollViewer { MaxHeight = 360, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = waveSurface }
+                : waveSurface
+        };
+        AutomationProperties.SetAutomationId(waveFrame, "AudioWaveform");
+        AutomationProperties.SetName(waveFrame, "Dạng sóng âm thanh");
+        root.Children.Add(waveFrame);
+
+        TimeSpan? rangeStart = null;
+        TimeSpan? rangeEnd = null;
+        var totalDuration = waveData.Duration > TimeSpan.Zero ? waveData.Duration : TimeSpan.Zero;
+
+        var controls = new WrapPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 12, 0, 0) };
         var audioStatus = new TextBlock
         {
-            Text = "Âm thanh · kéo thanh để tua",
+            Text = isMidi
+                ? "Định dạng MIDI không có dạng sóng trực quan. Hãy mở tệp bằng ứng dụng mặc định."
+                : "Nhấn/kéo trên sóng để tua · Giữ Shift + kéo (hoặc bật Chọn khoảng) để phát đoạn",
             VerticalAlignment = VerticalAlignment.Center,
             TextWrapping = TextWrapping.Wrap,
-            MaxWidth = 250,
+            Margin = new Thickness(0, 6, 0, 0),
             Foreground = (Brush)FindResource("MutedForegroundBrush")
         };
         AutomationProperties.SetAutomationId(audioStatus, "AudioStatusText");
         AutomationProperties.SetName(audioStatus, "Trạng thái âm thanh");
-        var seek = new Slider { Minimum = 0, Maximum = 100, Value = 0, VerticalAlignment = VerticalAlignment.Center, MinWidth = 160, IsEnabled = !isMidi };
+
+        var seek = new Slider { Minimum = 0, Maximum = Math.Max(1, totalDuration.TotalSeconds), Value = 0, VerticalAlignment = VerticalAlignment.Center, MinWidth = 160, IsEnabled = !isMidi };
         AutomationProperties.SetAutomationId(seek, "AudioSeekSlider");
         var playbackTime = new TextBlock
         {
-            Text = "00:00",
+            Text = totalDuration > TimeSpan.Zero ? $"00:00 / {totalDuration:mm\\:ss}" : "00:00",
             Margin = new Thickness(8, 0, 0, 0),
             VerticalAlignment = VerticalAlignment.Center
         };
         AutomationProperties.SetAutomationId(playbackTime, "AudioPlaybackTimeText");
-        _audioPlayer = new MediaPlayer { Volume = .7 };
-        if (isMidi)
+
+        var rangeSelectToggle = new ToggleButton
         {
-            audioStatus.Text = "Định dạng MIDI không có dạng sóng trực quan. Hãy mở tệp bằng ứng dụng mặc định.";
+            Content = "Chọn khoảng",
+            ToolTip = "Bật để kéo chọn khoảng phát trực tiếp trên sóng (hoặc giữ Shift + kéo)",
+            Margin = new Thickness(10, 0, 0, 0),
+            Padding = new Thickness(8, 3, 8, 3),
+            IsEnabled = !isMidi
+        };
+        AutomationProperties.SetAutomationId(rangeSelectToggle, "AudioRangeSelectToggle");
+
+        var loopRangeToggle = new ToggleButton
+        {
+            Content = "Lặp khoảng",
+            IsChecked = true,
+            ToolTip = "Tự động lặp lại trong khoảng đã chọn",
+            Margin = new Thickness(6, 0, 0, 0),
+            Padding = new Thickness(8, 3, 8, 3),
+            Visibility = Visibility.Collapsed
+        };
+
+        var clearRangeButton = new Button
+        {
+            Content = "Xóa khoảng",
+            Style = (Style)FindResource("ButtonOutline"),
+            Margin = new Thickness(6, 0, 0, 0),
+            Padding = new Thickness(8, 3, 8, 3),
+            Visibility = Visibility.Collapsed
+        };
+
+        var rangeText = new TextBlock
+        {
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(8, 0, 0, 0),
+            Foreground = (Brush)FindResource("TraceActiveBrush"),
+            Visibility = Visibility.Collapsed
+        };
+
+        void UpdateOverlayVisuals()
+        {
+            var width = waveSurface.ActualWidth;
+            var height = waveSurface.ActualHeight > 0 ? waveSurface.ActualHeight : totalWaveHeight;
+            if (width <= 0 || totalDuration <= TimeSpan.Zero)
+            {
+                return;
+            }
+
+            var currentSec = _audioPlayer?.Position.TotalSeconds ?? seek.Value;
+            var x = Math.Clamp(currentSec / totalDuration.TotalSeconds, 0, 1) * width;
+            playheadLine.X1 = x;
+            playheadLine.X2 = x;
+            playheadLine.Y2 = height;
+
+            if (rangeStart is TimeSpan rs && rangeEnd is TimeSpan re && re > rs)
+            {
+                var x1 = Math.Clamp(rs.TotalSeconds / totalDuration.TotalSeconds, 0, 1) * width;
+                var x2 = Math.Clamp(re.TotalSeconds / totalDuration.TotalSeconds, 0, 1) * width;
+                Canvas.SetLeft(selectionRect, x1);
+                Canvas.SetTop(selectionRect, 0);
+                selectionRect.Width = Math.Max(2, x2 - x1);
+                selectionRect.Height = height;
+                selectionRect.Visibility = Visibility.Visible;
+                rangeText.Text = $"Khoảng: {rs:mm\\:ss\\.f} – {re:mm\\:ss\\.f}";
+                rangeText.Visibility = Visibility.Visible;
+                clearRangeButton.Visibility = Visibility.Visible;
+                loopRangeToggle.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                selectionRect.Visibility = Visibility.Collapsed;
+                rangeText.Visibility = Visibility.Collapsed;
+                clearRangeButton.Visibility = Visibility.Collapsed;
+                loopRangeToggle.Visibility = Visibility.Collapsed;
+            }
         }
+
+        void RenderWaveform()
+        {
+            if (isMidi) return;
+            var width = waveSurface.ActualWidth;
+            if (width < 20) return;
+
+            var barStep = 3d;
+            var barCount = Math.Max(24, (int)(width / barStep));
+            var actualStep = width / barCount;
+
+            for (var ch = 0; ch < channelCount; ch++)
+            {
+                var canvas = channelCanvases[ch];
+                canvas.Children.Clear();
+
+                var midY = channelTrackHeight / 2d;
+                canvas.Children.Add(new Line
+                {
+                    X1 = 0,
+                    X2 = width,
+                    Y1 = midY,
+                    Y2 = midY,
+                    Stroke = new SolidColorBrush(Color.FromArgb(70, 148, 163, 184)),
+                    StrokeThickness = 1
+                });
+
+                var peaks = waveData.ChannelPeaks[ch];
+                var strokeBrush = new SolidColorBrush(channelColors[ch % channelColors.Length]);
+                strokeBrush.Freeze();
+
+                for (var i = 0; i < barCount; i++)
+                {
+                    var startBucket = i * peaks.Length / barCount;
+                    var endBucket = Math.Max(startBucket + 1, (i + 1) * peaks.Length / barCount);
+                    var peak = 0f;
+                    for (var b = startBucket; b < endBucket && b < peaks.Length; b++)
+                    {
+                        if (peaks[b] > peak) peak = peaks[b];
+                    }
+
+                    var amp = 0.05 + peak * 0.86;
+                    var h = amp * (channelTrackHeight - 10);
+                    var x = i * actualStep + actualStep * 0.5;
+                    canvas.Children.Add(new Line
+                    {
+                        X1 = x,
+                        X2 = x,
+                        Y1 = midY - h / 2d,
+                        Y2 = midY + h / 2d,
+                        Stroke = strokeBrush,
+                        StrokeThickness = Math.Max(1.2, actualStep * 0.65)
+                    });
+                }
+            }
+
+            UpdateOverlayVisuals();
+        }
+
+        waveSurface.SizeChanged += (_, _) => RenderWaveform();
+
+        _audioPlayer = new MediaPlayer { Volume = .7 };
         var isAudioPlaying = false;
+
+        TimeSpan PositionFromX(double x)
+        {
+            var width = Math.Max(1, waveSurface.ActualWidth);
+            var ratio = Math.Clamp(x / width, 0, 1);
+            return TimeSpan.FromSeconds(ratio * Math.Max(0.1, totalDuration.TotalSeconds));
+        }
+
+        void SeekToPosition(TimeSpan target)
+        {
+            if (totalDuration > TimeSpan.Zero)
+            {
+                target = TimeSpan.FromSeconds(Math.Clamp(target.TotalSeconds, 0, totalDuration.TotalSeconds));
+            }
+            _updatingAudioSeek = true;
+            _audioPlayer.Position = target;
+            seek.Value = Math.Clamp(target.TotalSeconds, seek.Minimum, seek.Maximum);
+            playbackTime.Text = totalDuration > TimeSpan.Zero ? $"{target:mm\\:ss} / {totalDuration:mm\\:ss}" : target.ToString(@"mm\:ss");
+            _updatingAudioSeek = false;
+            UpdateOverlayVisuals();
+        }
+
+        var isDraggingWave = false;
+        var isDraggingRange = false;
+        double rangeAnchorX = 0;
+
+        waveSurface.MouseLeftButtonDown += (_, e) =>
+        {
+            if (isMidi || totalDuration <= TimeSpan.Zero) return;
+            var pos = e.GetPosition(waveSurface);
+            waveSurface.CaptureMouse();
+            isDraggingWave = true;
+            isDraggingRange = rangeSelectToggle.IsChecked == true || (Keyboard.Modifiers & ModifierKeys.Shift) != 0;
+            if (isDraggingRange)
+            {
+                rangeAnchorX = pos.X;
+                var t = PositionFromX(pos.X);
+                rangeStart = t;
+                rangeEnd = t;
+                UpdateOverlayVisuals();
+            }
+            else
+            {
+                SeekToPosition(PositionFromX(pos.X));
+            }
+            e.Handled = true;
+        };
+
+        waveSurface.MouseMove += (_, e) =>
+        {
+            if (!isDraggingWave || totalDuration <= TimeSpan.Zero) return;
+            var pos = e.GetPosition(waveSurface);
+            if (isDraggingRange)
+            {
+                var t1 = PositionFromX(rangeAnchorX);
+                var t2 = PositionFromX(pos.X);
+                rangeStart = t1 <= t2 ? t1 : t2;
+                rangeEnd = t1 <= t2 ? t2 : t1;
+                UpdateOverlayVisuals();
+            }
+            else
+            {
+                SeekToPosition(PositionFromX(pos.X));
+            }
+        };
+
+        waveSurface.MouseLeftButtonUp += (_, e) =>
+        {
+            if (!isDraggingWave) return;
+            isDraggingWave = false;
+            waveSurface.ReleaseMouseCapture();
+            if (isDraggingRange && rangeStart is TimeSpan rs && rangeEnd is TimeSpan re)
+            {
+                if ((re - rs).TotalMilliseconds < 120)
+                {
+                    rangeStart = null;
+                    rangeEnd = null;
+                    SeekToPosition(PositionFromX(e.GetPosition(waveSurface).X));
+                }
+                else
+                {
+                    SeekToPosition(rs);
+                }
+                UpdateOverlayVisuals();
+            }
+            isDraggingRange = false;
+        };
+
+        clearRangeButton.Click += (_, _) =>
+        {
+            rangeStart = null;
+            rangeEnd = null;
+            UpdateOverlayVisuals();
+        };
+
         _audioPlayer.MediaOpened += (_, _) =>
         {
             if (_audioPlayer.NaturalDuration.HasTimeSpan)
             {
-                seek.Maximum = Math.Max(1, _audioPlayer.NaturalDuration.TimeSpan.TotalSeconds);
+                totalDuration = _audioPlayer.NaturalDuration.TimeSpan;
+                seek.Maximum = Math.Max(1, totalDuration.TotalSeconds);
                 seek.IsEnabled = true;
+                playbackTime.Text = $"00:00 / {totalDuration:mm\\:ss}";
+                UpdateOverlayVisuals();
             }
         };
         _audioPlayer.MediaEnded += (_, _) =>
         {
+            if (rangeStart is TimeSpan rs && rangeEnd is TimeSpan re && re > rs && loopRangeToggle.IsChecked == true)
+            {
+                SeekToPosition(rs);
+                _audioPlayer.Play();
+                return;
+            }
             isAudioPlaying = false;
             _audioPlayer.Position = TimeSpan.Zero;
             seek.Value = 0;
+            UpdateOverlayVisuals();
         };
         _audioPlayer.MediaFailed += (_, _) =>
         {
             audioStatus.Text = "Không thể phát định dạng âm thanh này. Hãy mở tệp bằng ứng dụng mặc định.";
             audioStatus.Foreground = (Brush)FindResource("DestructiveBrush");
         };
+
         var playIcon = new PackIconMaterial { Kind = PackIconMaterialKind.Play };
         var play = new Button { Content = playIcon, ToolTip = "Phát / tạm dừng", Margin = new Thickness(0, 0, 8, 0) };
         AutomationProperties.SetName(play, "Phát");
@@ -589,6 +923,14 @@ public partial class FilePreviewControl : UserControl
             }
             else
             {
+                if (rangeStart is TimeSpan rs && rangeEnd is TimeSpan re && re > rs)
+                {
+                    var cur = _audioPlayer!.Position;
+                    if (cur < rs || cur >= re)
+                    {
+                        SeekToPosition(rs);
+                    }
+                }
                 _audioPlayer!.Play();
                 playIcon.Kind = PackIconMaterialKind.Pause;
                 AutomationProperties.SetName(play, "Tạm dừng");
@@ -596,19 +938,35 @@ public partial class FilePreviewControl : UserControl
             }
         };
         AutomationProperties.SetAutomationId(play, "AudioPlayButton");
-        var stop = new Button { Content = new PackIconMaterial { Kind = PackIconMaterialKind.Stop }, ToolTip = "Dừng", Style = (Style)FindResource("ButtonOutline"), Margin = new Thickness(0, 0, 14, 0) }; AutomationProperties.SetName(stop, "Dừng"); stop.Click += (_, _) => { _audioPlayer!.Stop(); _audioPlayer.Position = TimeSpan.Zero; seek.Value = 0; playIcon.Kind = PackIconMaterialKind.Play; AutomationProperties.SetName(play, "Phát"); isAudioPlaying = false; };
+        var stop = new Button
+        {
+            Content = new PackIconMaterial { Kind = PackIconMaterialKind.Stop },
+            ToolTip = "Dừng",
+            Style = (Style)FindResource("ButtonOutline"),
+            Margin = new Thickness(0, 0, 14, 0)
+        };
+        AutomationProperties.SetName(stop, "Dừng");
+        stop.Click += (_, _) =>
+        {
+            _audioPlayer!.Stop();
+            SeekToPosition(rangeStart ?? TimeSpan.Zero);
+            playIcon.Kind = PackIconMaterialKind.Play;
+            AutomationProperties.SetName(play, "Phát");
+            isAudioPlaying = false;
+        };
         AutomationProperties.SetAutomationId(stop, "AudioStopButton");
         seek.ValueChanged += (_, _) =>
         {
-            if (!_updatingAudioSeek && _audioPlayer is not null && Math.Abs(_audioPlayer.Position.TotalSeconds - seek.Value) > 1)
+            if (!_updatingAudioSeek && _audioPlayer is not null && Math.Abs(_audioPlayer.Position.TotalSeconds - seek.Value) > 0.5)
             {
                 _audioPlayer.Position = TimeSpan.FromSeconds(seek.Value);
+                UpdateOverlayVisuals();
             }
         };
         var volume = new Slider { Minimum = 0, Maximum = 1, Value = .7, Width = 80, Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
         AutomationProperties.SetName(volume, "Âm lượng");
         volume.ValueChanged += (_, _) => { if (_audioPlayer is not null) _audioPlayer.Volume = volume.Value; };
-        _audioPositionTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+        _audioPositionTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
         _audioPositionTimer.Tick += (_, _) =>
         {
             if (_audioPlayer is null || !_audioPlayer.NaturalDuration.HasTimeSpan || seek.IsMouseCaptureWithin)
@@ -616,11 +974,29 @@ public partial class FilePreviewControl : UserControl
                 return;
             }
 
-            _updatingAudioSeek = true;
             var position = _audioPlayer.Position;
+            if (isAudioPlaying && rangeStart is TimeSpan rs && rangeEnd is TimeSpan re && re > rs && position >= re)
+            {
+                if (loopRangeToggle.IsChecked == true)
+                {
+                    SeekToPosition(rs);
+                }
+                else
+                {
+                    _audioPlayer.Pause();
+                    playIcon.Kind = PackIconMaterialKind.Play;
+                    AutomationProperties.SetName(play, "Phát");
+                    isAudioPlaying = false;
+                    SeekToPosition(rs);
+                }
+                return;
+            }
+
+            _updatingAudioSeek = true;
             seek.Value = Math.Clamp(position.TotalSeconds, seek.Minimum, seek.Maximum);
-            playbackTime.Text = position.ToString(@"mm\:ss");
+            playbackTime.Text = totalDuration > TimeSpan.Zero ? $"{position:mm\\:ss} / {totalDuration:mm\\:ss}" : position.ToString(@"mm\:ss");
             _updatingAudioSeek = false;
+            UpdateOverlayVisuals();
         };
         _audioPositionTimer.Start();
         controls.Children.Add(play);
@@ -628,10 +1004,20 @@ public partial class FilePreviewControl : UserControl
         controls.Children.Add(seek);
         controls.Children.Add(playbackTime);
         controls.Children.Add(volume);
-        controls.Children.Add(audioStatus);
-        Grid.SetRow(controls, 1); root.Children.Add(controls); ContentHost.Children.Add(root);
+        controls.Children.Add(rangeSelectToggle);
+        controls.Children.Add(loopRangeToggle);
+        controls.Children.Add(clearRangeButton);
+        controls.Children.Add(rangeText);
+
+        Grid.SetRow(controls, 1);
+        root.Children.Add(controls);
+        Grid.SetRow(audioStatus, 2);
+        root.Children.Add(audioStatus);
+        ContentHost.Children.Add(root);
         _audioPlayer.Open(new Uri(path));
-        ZoomText.Text = "Dạng sóng trực quan";
+        ZoomText.Text = waveData.IsWav
+            ? $"{channelCount} kênh · {waveData.SampleRate} Hz · {waveData.BitsPerSample}-bit"
+            : "Dạng sóng trực quan";
     }
 
     private void ShowVideo(string path)
@@ -710,7 +1096,8 @@ public partial class FilePreviewControl : UserControl
         else if (ext == ".eml") content = ReadEml(path);
         else if (ext == ".json") content = ReadJsonPreview(path);
         else if (ext == ".zip") content = ReadZipArchive(path);
-        else content = ReadTextPreview(path, DetectEncoding(path));
+        else if (IsKnownBinaryTelemetry(ext)) content = ReadBinaryPreview(path, ext);
+        else content = ReadTextOrBinaryFallback(path, ext);
         _textView = new TextBox { Text = content, IsReadOnly = true, AcceptsReturn = true, AcceptsTab = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, FontFamily = new FontFamily("Consolas"), FontSize = 13, Padding = new Thickness(16), BorderThickness = new Thickness(0), Background = Brushes.Transparent };
         AutomationProperties.SetAutomationId(_textView, "PreviewTextContent");
         ContentHost.Children.Add(_textView); TextTools.Visibility = Visibility.Visible; ZoomText.Visibility = Visibility.Collapsed;
@@ -766,6 +1153,125 @@ public partial class FilePreviewControl : UserControl
         using var doc = JsonDocument.Parse(File.ReadAllText(path));
         return LimitPreview(JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true }), MaxTextPreviewCharacters, "JSON");
     }
+    private static string ReadTextOrBinaryFallback(string path, string ext)
+    {
+        try
+        {
+            var encoding = DetectEncoding(path);
+            var text = ReadTextPreview(path, encoding);
+            if (text.Contains('\0'))
+            {
+                return ReadBinaryPreview(path, ext);
+            }
+
+            return text;
+        }
+        catch (DecoderFallbackException)
+        {
+            return ReadBinaryPreview(path, ext);
+        }
+    }
+
+    private static bool IsKnownBinaryTelemetry(string ext) =>
+        ext is ".gpsidt" or ".unk" or ".a_voc" or ".x3" or ".777" or ".bin" or ".dat" or ".raw";
+
+    private static string ReadBinaryPreview(string path, string ext)
+    {
+        const int maxDumpBytes = 32 * 1024;
+        var fileInfo = new FileInfo(path);
+        using var stream = File.OpenRead(path);
+        var toRead = (int)Math.Min(maxDumpBytes, fileInfo.Length);
+        var bytes = new byte[toRead];
+        var read = stream.Read(bytes, 0, toRead);
+
+        var sb = new StringBuilder();
+        var description = ext switch
+        {
+            ".gpsidt" => "Gói dữ liệu định danh / tọa độ VSAT (.GPSIDT)",
+            ".a_voc" => "Dữ liệu thoại / âm thanh thô (.A_VOC)",
+            ".unk" => "Tệp dữ liệu nhị phân chưa xác định (.UNK)",
+            ".x3" => "Tệp dữ liệu phiên (.X3)",
+            ".777" => "Tệp dữ liệu phiên (.777)",
+            _ => $"Tệp dữ liệu nhị phân ({ext.ToUpperInvariant()})"
+        };
+
+        sb.AppendLine($"Định dạng: {description}");
+        sb.AppendLine($"Kích thước: {FormatSize(fileInfo.Length)} ({fileInfo.Length:N0} bytes)");
+
+        var strings = ExtractPrintableStrings(bytes.AsSpan(0, read));
+        if (strings.Count > 0)
+        {
+            sb.AppendLine();
+            sb.AppendLine("Chuỗi ký tự đọc được:");
+            foreach (var s in strings.Take(20))
+            {
+                sb.AppendLine($"  • {s}");
+            }
+        }
+
+        sb.AppendLine();
+        sb.AppendLine("Nội dung Hex / ASCII:");
+        for (var offset = 0; offset < read; offset += 16)
+        {
+            sb.Append($"{offset:X8}  ");
+            for (var i = 0; i < 16; i++)
+            {
+                if (offset + i < read)
+                {
+                    sb.Append($"{bytes[offset + i]:X2} ");
+                }
+                else
+                {
+                    sb.Append("   ");
+                }
+                if (i == 7) sb.Append(' ');
+            }
+
+            sb.Append(" |");
+            for (var i = 0; i < 16 && offset + i < read; i++)
+            {
+                var b = bytes[offset + i];
+                sb.Append(b is >= 32 and <= 126 ? (char)b : '.');
+            }
+            sb.AppendLine("|");
+        }
+
+        if (fileInfo.Length > maxDumpBytes)
+        {
+            sb.AppendLine().Append($"… [đã giới hạn hiển thị {maxDumpBytes:N0} bytes đầu]");
+        }
+
+        return sb.ToString();
+    }
+
+    private static List<string> ExtractPrintableStrings(ReadOnlySpan<byte> bytes)
+    {
+        var result = new List<string>();
+        var current = new StringBuilder();
+        foreach (var b in bytes)
+        {
+            if (b is >= 32 and <= 126)
+            {
+                current.Append((char)b);
+            }
+            else
+            {
+                if (current.Length >= 4)
+                {
+                    result.Add(current.ToString());
+                }
+                current.Clear();
+            }
+        }
+
+        if (current.Length >= 4)
+        {
+            result.Add(current.ToString());
+        }
+
+        return result;
+    }
+
     private static string ReadTextPreview(string path, Encoding encoding)
     {
         using var reader = new StreamReader(path, encoding, detectEncodingFromByteOrderMarks: true);

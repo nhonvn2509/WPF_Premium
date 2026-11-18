@@ -158,6 +158,115 @@ public sealed class PremiumInteractionTests
     }
 
     [TestMethod]
+    public void FilePreview_supports_multichannel_wav_and_binary_telemetry_files()
+    {
+        var tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"wpf_premium_media_{Guid.NewGuid():N}");
+        System.IO.Directory.CreateDirectory(tempDir);
+        try
+        {
+            var stereoWav = System.IO.Path.Combine(tempDir, "test_stereo.wav");
+            var quadWav = System.IO.Path.Combine(tempDir, "test_quad.wav");
+            WriteTestWav(stereoWav, channels: 2, sampleRate: 16000, durationSeconds: 1.0);
+            WriteTestWav(quadWav, channels: 4, sampleRate: 22050, durationSeconds: 0.5);
+
+            var gpsidtFile = System.IO.Path.Combine(tempDir, "sample.gpsidt");
+            var unkFile = System.IO.Path.Combine(tempDir, "sample.unk");
+            var avocFile = System.IO.Path.Combine(tempDir, "sample.a_voc");
+            var x3File = System.IO.Path.Combine(tempDir, "sample.x3");
+            var f777File = System.IO.Path.Combine(tempDir, "sample.777");
+
+            var payloadWith8F = new byte[72];
+            System.Text.Encoding.ASCII.GetBytes("GPSIDT_VSAT_01").CopyTo(payloadWith8F, 0);
+            payloadWith8F[16] = 0x8F;
+            payloadWith8F[17] = 0x00;
+            payloadWith8F[18] = 0xFE;
+            System.Text.Encoding.ASCII.GetBytes("192.168.10.15").CopyTo(payloadWith8F, 24);
+
+            foreach (var binPath in new[] { gpsidtFile, unkFile, avocFile, x3File, f777File })
+            {
+                System.IO.File.WriteAllBytes(binPath, payloadWith8F);
+            }
+
+            RunOnSta(() =>
+            {
+                var preview = new FilePreviewControl { Width = 900, Height = 500 };
+
+                preview.LoadFile(stereoWav);
+                var waveElement = FindLogicalDescendants(preview).OfType<FrameworkElement>()
+                    .FirstOrDefault(e => AutomationProperties.GetAutomationId(e) == "AudioWaveform");
+                Assert.IsNotNull(waveElement);
+                var rangeToggle = FindLogicalDescendants(preview).OfType<System.Windows.Controls.Primitives.ToggleButton>()
+                    .FirstOrDefault(e => AutomationProperties.GetAutomationId(e) == "AudioRangeSelectToggle");
+                Assert.IsNotNull(rangeToggle);
+                var zoomText = FindLogicalDescendants(preview).OfType<TextBlock>()
+                    .FirstOrDefault(e => e.Name == "ZoomText");
+                Assert.IsNotNull(zoomText);
+                StringAssert.Contains(zoomText.Text, "2 kênh");
+
+                preview.LoadFile(quadWav);
+                StringAssert.Contains(zoomText.Text, "4 kênh");
+
+                foreach (var binPath in new[] { gpsidtFile, unkFile, avocFile, x3File, f777File })
+                {
+                    preview.LoadFile(binPath);
+                    var error = FindLogicalDescendants(preview).OfType<FrameworkElement>()
+                        .FirstOrDefault(e => AutomationProperties.GetAutomationId(e) == "PreviewLoadError");
+                    Assert.IsNull(error, $"Unexpected preview error for {binPath}");
+
+                    var textBox = FindLogicalDescendants(preview).OfType<TextBox>()
+                        .FirstOrDefault(e => AutomationProperties.GetAutomationId(e) == "PreviewTextContent");
+                    Assert.IsNotNull(textBox, $"Missing text/hex preview for {binPath}");
+                    StringAssert.Contains(textBox.Text, "Nội dung Hex / ASCII:");
+                    StringAssert.Contains(textBox.Text, "192.168.10.15");
+                }
+            });
+        }
+        finally
+        {
+            if (System.IO.Directory.Exists(tempDir))
+            {
+                System.IO.Directory.Delete(tempDir, recursive: true);
+            }
+        }
+    }
+
+    private static void WriteTestWav(string path, short channels, int sampleRate, double durationSeconds)
+    {
+        var totalFrames = (int)(sampleRate * durationSeconds);
+        short bitsPerSample = 16;
+        short blockAlign = (short)(channels * (bitsPerSample / 8));
+        var byteRate = sampleRate * blockAlign;
+        var dataSize = totalFrames * blockAlign;
+
+        using var fs = System.IO.File.Create(path);
+        using var bw = new System.IO.BinaryWriter(fs);
+        bw.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));
+        bw.Write(36 + dataSize);
+        bw.Write(System.Text.Encoding.ASCII.GetBytes("WAVE"));
+        bw.Write(System.Text.Encoding.ASCII.GetBytes("fmt "));
+        bw.Write(16);
+        bw.Write((short)1);
+        bw.Write(channels);
+        bw.Write(sampleRate);
+        bw.Write(byteRate);
+        bw.Write(blockAlign);
+        bw.Write(bitsPerSample);
+        bw.Write(System.Text.Encoding.ASCII.GetBytes("data"));
+        bw.Write(dataSize);
+
+        for (var f = 0; f < totalFrames; f++)
+        {
+            for (var ch = 0; ch < channels; ch++)
+            {
+                var freq = 220.0 * (ch + 1);
+                var amp = 0.25 + 0.15 * ch;
+                var sample = (short)(Math.Sin(2 * Math.PI * freq * f / sampleRate) * amp * short.MaxValue);
+                bw.Write(sample);
+            }
+        }
+    }
+
+    [TestMethod]
     public void Choice_dialog_returns_the_selected_choice_id()
     {
         RunOnSta(() =>
