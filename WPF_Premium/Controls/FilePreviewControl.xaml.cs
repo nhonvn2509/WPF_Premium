@@ -45,6 +45,8 @@ public partial class FilePreviewControl : UserControl
     private DispatcherTimer? _videoPositionTimer;
     private bool _updatingAudioSeek;
     private TextBox? _textView;
+    private string? _textFilePath;
+    private string _textFileExt = string.Empty;
     private double _zoom = 1;
     private bool _magnifier;
     private bool _imageFillMode;
@@ -605,15 +607,62 @@ public partial class FilePreviewControl : UserControl
         waveSurface.Children.Add(tracksPanel);
         waveSurface.Children.Add(overlayCanvas);
 
+        const double timelineHeight = 24d;
+        var timelineCanvas = new Canvas { ClipToBounds = true, IsHitTestVisible = false };
+        var timelineOverlayCanvas = new Canvas { ClipToBounds = true, IsHitTestVisible = false };
+        var timelineSelectionRect = new System.Windows.Shapes.Rectangle
+        {
+            Fill = new SolidColorBrush(Color.FromArgb(90, 59, 130, 246)),
+            Height = timelineHeight,
+            Visibility = Visibility.Collapsed
+        };
+        var timelinePlayhead = new Polygon
+        {
+            Points = [new Point(-5, 0), new Point(5, 0), new Point(0, 8)],
+            Fill = new SolidColorBrush(Color.FromRgb(248, 113, 113)),
+            Visibility = isMidi ? Visibility.Collapsed : Visibility.Visible
+        };
+        timelineOverlayCanvas.Children.Add(timelineSelectionRect);
+        timelineOverlayCanvas.Children.Add(timelinePlayhead);
+
+        var timelineHost = new Grid
+        {
+            Height = timelineHeight,
+            Background = new SolidColorBrush(Color.FromRgb(18, 21, 28)),
+            ClipToBounds = true,
+            Cursor = isMidi ? Cursors.Arrow : Cursors.Hand,
+            Visibility = isMidi ? Visibility.Collapsed : Visibility.Visible
+        };
+        timelineHost.Children.Add(timelineCanvas);
+        timelineHost.Children.Add(timelineOverlayCanvas);
+        var timelineBorder = new Border
+        {
+            BorderBrush = new SolidColorBrush(Color.FromRgb(42, 48, 60)),
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            Child = timelineHost,
+            Visibility = isMidi ? Visibility.Collapsed : Visibility.Visible
+        };
+        AutomationProperties.SetAutomationId(timelineBorder, "AudioTimeline");
+        AutomationProperties.SetName(timelineBorder, "Thanh thời gian âm thanh");
+
+        var waveLayout = new Grid();
+        waveLayout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        waveLayout.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        Grid.SetRow(timelineBorder, 0);
+        waveLayout.Children.Add(timelineBorder);
+        UIElement waveBody = channelCount > 3
+            ? new ScrollViewer { MaxHeight = 360, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = waveSurface }
+            : waveSurface;
+        Grid.SetRow(waveBody, 1);
+        waveLayout.Children.Add(waveBody);
+
         var waveFrame = new Border
         {
             BorderBrush = (Brush)FindResource("BorderBrush"),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(6),
             ClipToBounds = true,
-            Child = channelCount > 3
-                ? new ScrollViewer { MaxHeight = 360, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = waveSurface }
-                : waveSurface
+            Child = waveLayout
         };
         AutomationProperties.SetAutomationId(waveFrame, "AudioWaveform");
         AutomationProperties.SetName(waveFrame, "Dạng sóng âm thanh");
@@ -650,6 +699,7 @@ public partial class FilePreviewControl : UserControl
         var rangeSelectToggle = new ToggleButton
         {
             Content = "Chọn khoảng",
+            Style = (Style)FindResource("Toggle"),
             ToolTip = "Bật để kéo chọn khoảng phát trực tiếp trên sóng (hoặc giữ Shift + kéo)",
             Margin = new Thickness(10, 0, 0, 0),
             Padding = new Thickness(8, 3, 8, 3),
@@ -660,6 +710,7 @@ public partial class FilePreviewControl : UserControl
         var loopRangeToggle = new ToggleButton
         {
             Content = "Lặp khoảng",
+            Style = (Style)FindResource("Toggle"),
             IsChecked = true,
             ToolTip = "Tự động lặp lại trong khoảng đã chọn",
             Margin = new Thickness(6, 0, 0, 0),
@@ -698,6 +749,8 @@ public partial class FilePreviewControl : UserControl
             playheadLine.X1 = x;
             playheadLine.X2 = x;
             playheadLine.Y2 = height;
+            Canvas.SetLeft(timelinePlayhead, x);
+            Canvas.SetTop(timelinePlayhead, 0);
 
             if (rangeStart is TimeSpan rs && rangeEnd is TimeSpan re && re > rs)
             {
@@ -708,6 +761,10 @@ public partial class FilePreviewControl : UserControl
                 selectionRect.Width = Math.Max(2, x2 - x1);
                 selectionRect.Height = height;
                 selectionRect.Visibility = Visibility.Visible;
+                Canvas.SetLeft(timelineSelectionRect, x1);
+                Canvas.SetTop(timelineSelectionRect, 0);
+                timelineSelectionRect.Width = Math.Max(2, x2 - x1);
+                timelineSelectionRect.Visibility = Visibility.Visible;
                 rangeText.Text = $"Khoảng: {rs:mm\\:ss\\.f} – {re:mm\\:ss\\.f}";
                 rangeText.Visibility = Visibility.Visible;
                 clearRangeButton.Visibility = Visibility.Visible;
@@ -716,9 +773,78 @@ public partial class FilePreviewControl : UserControl
             else
             {
                 selectionRect.Visibility = Visibility.Collapsed;
+                timelineSelectionRect.Visibility = Visibility.Collapsed;
                 rangeText.Visibility = Visibility.Collapsed;
                 clearRangeButton.Visibility = Visibility.Collapsed;
                 loopRangeToggle.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        void RenderTimeline(double width)
+        {
+            timelineCanvas.Children.Clear();
+            if (isMidi || width < 20 || totalDuration <= TimeSpan.Zero)
+            {
+                return;
+            }
+
+            var totalSeconds = totalDuration.TotalSeconds;
+            double[] candidateSteps = [0.2, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600];
+            var majorStep = candidateSteps[^1];
+            foreach (var step in candidateSteps)
+            {
+                if (width * step / totalSeconds >= 72d)
+                {
+                    majorStep = step;
+                    break;
+                }
+            }
+
+            const int minorSubdivisions = 5;
+            var minorStep = majorStep / minorSubdivisions;
+            var tickBrush = new SolidColorBrush(Color.FromArgb(140, 148, 163, 184));
+            tickBrush.Freeze();
+            var minorTickBrush = new SolidColorBrush(Color.FromArgb(70, 148, 163, 184));
+            minorTickBrush.Freeze();
+            var labelBrush = new SolidColorBrush(Color.FromRgb(180, 190, 208));
+            labelBrush.Freeze();
+
+            var maxTicks = (int)Math.Floor(totalSeconds / minorStep);
+            for (var idx = 0; idx <= maxTicks; idx++)
+            {
+                var sec = idx * minorStep;
+                var x = sec / totalSeconds * width;
+                var isMajor = idx % minorSubdivisions == 0;
+
+                timelineCanvas.Children.Add(new Line
+                {
+                    X1 = x,
+                    X2 = x,
+                    Y1 = isMajor ? timelineHeight - 9 : timelineHeight - 4,
+                    Y2 = timelineHeight,
+                    Stroke = isMajor ? tickBrush : minorTickBrush,
+                    StrokeThickness = 1
+                });
+
+                if (isMajor && x <= width - 28)
+                {
+                    var ts = TimeSpan.FromSeconds(sec);
+                    var labelText = totalSeconds < 10 && majorStep < 1
+                        ? $"{sec:0.0}s"
+                        : ts.TotalHours >= 1
+                            ? $"{(int)ts.TotalHours}:{ts.Minutes:D2}:{ts.Seconds:D2}"
+                            : $"{(int)ts.TotalMinutes:D2}:{ts.Seconds:D2}";
+                    var label = new TextBlock
+                    {
+                        Text = labelText,
+                        FontSize = 10,
+                        Foreground = labelBrush,
+                        IsHitTestVisible = false
+                    };
+                    Canvas.SetLeft(label, x + 3);
+                    Canvas.SetTop(label, 2);
+                    timelineCanvas.Children.Add(label);
+                }
             }
         }
 
@@ -777,6 +903,7 @@ public partial class FilePreviewControl : UserControl
                 }
             }
 
+            RenderTimeline(width);
             UpdateOverlayVisuals();
         }
 
@@ -810,67 +937,73 @@ public partial class FilePreviewControl : UserControl
         var isDraggingRange = false;
         double rangeAnchorX = 0;
 
-        waveSurface.MouseLeftButtonDown += (_, e) =>
+        void AttachWavePointerHandlers(UIElement target)
         {
-            if (isMidi || totalDuration <= TimeSpan.Zero) return;
-            var pos = e.GetPosition(waveSurface);
-            waveSurface.CaptureMouse();
-            isDraggingWave = true;
-            isDraggingRange = rangeSelectToggle.IsChecked == true || (Keyboard.Modifiers & ModifierKeys.Shift) != 0;
-            if (isDraggingRange)
+            target.MouseLeftButtonDown += (_, e) =>
             {
-                rangeAnchorX = pos.X;
-                var t = PositionFromX(pos.X);
-                rangeStart = t;
-                rangeEnd = t;
-                UpdateOverlayVisuals();
-            }
-            else
-            {
-                SeekToPosition(PositionFromX(pos.X));
-            }
-            e.Handled = true;
-        };
-
-        waveSurface.MouseMove += (_, e) =>
-        {
-            if (!isDraggingWave || totalDuration <= TimeSpan.Zero) return;
-            var pos = e.GetPosition(waveSurface);
-            if (isDraggingRange)
-            {
-                var t1 = PositionFromX(rangeAnchorX);
-                var t2 = PositionFromX(pos.X);
-                rangeStart = t1 <= t2 ? t1 : t2;
-                rangeEnd = t1 <= t2 ? t2 : t1;
-                UpdateOverlayVisuals();
-            }
-            else
-            {
-                SeekToPosition(PositionFromX(pos.X));
-            }
-        };
-
-        waveSurface.MouseLeftButtonUp += (_, e) =>
-        {
-            if (!isDraggingWave) return;
-            isDraggingWave = false;
-            waveSurface.ReleaseMouseCapture();
-            if (isDraggingRange && rangeStart is TimeSpan rs && rangeEnd is TimeSpan re)
-            {
-                if ((re - rs).TotalMilliseconds < 120)
+                if (isMidi || totalDuration <= TimeSpan.Zero) return;
+                var pos = e.GetPosition(target);
+                target.CaptureMouse();
+                isDraggingWave = true;
+                isDraggingRange = rangeSelectToggle.IsChecked == true || (Keyboard.Modifiers & ModifierKeys.Shift) != 0;
+                if (isDraggingRange)
                 {
-                    rangeStart = null;
-                    rangeEnd = null;
-                    SeekToPosition(PositionFromX(e.GetPosition(waveSurface).X));
+                    rangeAnchorX = pos.X;
+                    var t = PositionFromX(pos.X);
+                    rangeStart = t;
+                    rangeEnd = t;
+                    UpdateOverlayVisuals();
                 }
                 else
                 {
-                    SeekToPosition(rs);
+                    SeekToPosition(PositionFromX(pos.X));
                 }
-                UpdateOverlayVisuals();
-            }
-            isDraggingRange = false;
-        };
+                e.Handled = true;
+            };
+
+            target.MouseMove += (_, e) =>
+            {
+                if (!isDraggingWave || totalDuration <= TimeSpan.Zero) return;
+                var pos = e.GetPosition(target);
+                if (isDraggingRange)
+                {
+                    var t1 = PositionFromX(rangeAnchorX);
+                    var t2 = PositionFromX(pos.X);
+                    rangeStart = t1 <= t2 ? t1 : t2;
+                    rangeEnd = t1 <= t2 ? t2 : t1;
+                    UpdateOverlayVisuals();
+                }
+                else
+                {
+                    SeekToPosition(PositionFromX(pos.X));
+                }
+            };
+
+            target.MouseLeftButtonUp += (_, e) =>
+            {
+                if (!isDraggingWave) return;
+                isDraggingWave = false;
+                target.ReleaseMouseCapture();
+                if (isDraggingRange && rangeStart is TimeSpan rs && rangeEnd is TimeSpan re)
+                {
+                    if ((re - rs).TotalMilliseconds < 120)
+                    {
+                        rangeStart = null;
+                        rangeEnd = null;
+                        SeekToPosition(PositionFromX(e.GetPosition(target).X));
+                    }
+                    else
+                    {
+                        SeekToPosition(rs);
+                    }
+                    UpdateOverlayVisuals();
+                }
+                isDraggingRange = false;
+            };
+        }
+
+        AttachWavePointerHandlers(waveSurface);
+        AttachWavePointerHandlers(timelineHost);
 
         clearRangeButton.Click += (_, _) =>
         {
@@ -887,6 +1020,7 @@ public partial class FilePreviewControl : UserControl
                 seek.Maximum = Math.Max(1, totalDuration.TotalSeconds);
                 seek.IsEnabled = true;
                 playbackTime.Text = $"00:00 / {totalDuration:mm\\:ss}";
+                RenderTimeline(waveSurface.ActualWidth);
                 UpdateOverlayVisuals();
             }
         };
@@ -910,7 +1044,7 @@ public partial class FilePreviewControl : UserControl
         };
 
         var playIcon = new PackIconMaterial { Kind = PackIconMaterialKind.Play };
-        var play = new Button { Content = playIcon, ToolTip = "Phát / tạm dừng", Margin = new Thickness(0, 0, 8, 0) };
+        var play = new Button { Content = playIcon, Style = (Style)FindResource("ButtonPrimary"), ToolTip = "Phát / tạm dừng", Margin = new Thickness(0, 0, 8, 0) };
         AutomationProperties.SetName(play, "Phát");
         play.Click += (_, _) =>
         {
@@ -1015,8 +1149,10 @@ public partial class FilePreviewControl : UserControl
         root.Children.Add(audioStatus);
         ContentHost.Children.Add(root);
         _audioPlayer.Open(new Uri(path));
-        ZoomText.Text = waveData.IsWav
-            ? $"{channelCount} kênh · {waveData.SampleRate} Hz · {waveData.BitsPerSample}-bit"
+        ZoomText.Text = waveData.SampleRate > 0
+            ? (waveData.BitsPerSample > 0
+                ? $"{channelCount} kênh · {waveData.SampleRate} Hz · {waveData.BitsPerSample}-bit"
+                : $"{channelCount} kênh · {waveData.SampleRate} Hz")
             : "Dạng sóng trực quan";
     }
 
@@ -1029,7 +1165,7 @@ public partial class FilePreviewControl : UserControl
         var bar = new DockPanel { VerticalAlignment = VerticalAlignment.Bottom, Background = new SolidColorBrush(Color.FromArgb(210, 20, 20, 24)), Margin = new Thickness(14), LastChildFill = true };
         var isVideoPlaying = false;
         var videoPlayIcon = new PackIconMaterial { Kind = PackIconMaterialKind.Play };
-        var play = new Button { Content = videoPlayIcon, ToolTip = "Phát / tạm dừng", Margin = new Thickness(0, 0, 10, 0) };
+        var play = new Button { Content = videoPlayIcon, Style = (Style)FindResource("ButtonPrimary"), ToolTip = "Phát / tạm dừng", Margin = new Thickness(0, 0, 10, 0) };
         AutomationProperties.SetName(play, "Phát");
         play.Click += (_, _) =>
         {
@@ -1086,21 +1222,63 @@ public partial class FilePreviewControl : UserControl
 
     private void ShowText(string path, string ext)
     {
-        string content;
-        if (ext == ".epub") content = "Không đọc được EPUB";
-        else if (ext is ".azw3" or ".fb2") content = $"Không đọc được {ext.TrimStart('.').ToUpperInvariant()}";
-        else if (ext == ".ttf") content = $"Tệp phông chữ: {System.IO.Path.GetFileName(path)}";
-        else if (ext is ".lrf") content = "Tệp sách LRF (Sony Broadband eBook). Định dạng nhị phân này chưa có bộ giải mã nội dung tích hợp; bạn vẫn có thể mở bằng ứng dụng mặc định hoặc xem thông tin tệp ở phía trên.";
-        else if (ext is ".djvu" or ".djv") content = "Tài liệu DjVu nhiều trang. Bộ kết xuất DjVu chưa được tích hợp trên máy này; hãy dùng nút Mở bằng ứng dụng để xem đầy đủ tài liệu.";
-        else if (ext is ".doc" or ".xls" or ".ppt") content = ReadLegacyOffice(path, ext);
-        else if (ext == ".eml") content = ReadEml(path);
-        else if (ext == ".json") content = ReadJsonPreview(path);
-        else if (ext == ".zip") content = ReadZipArchive(path);
-        else if (IsKnownBinaryTelemetry(ext)) content = ReadBinaryPreview(path, ext);
-        else content = ReadTextOrBinaryFallback(path, ext);
-        _textView = new TextBox { Text = content, IsReadOnly = true, AcceptsReturn = true, AcceptsTab = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, FontFamily = new FontFamily("Consolas"), FontSize = 13, Padding = new Thickness(16), BorderThickness = new Thickness(0), Background = Brushes.Transparent };
+        _textFilePath = path;
+        _textFileExt = ext;
+        ReadableStringsToggle.IsChecked = false;
+        HexAsciiToggle.IsChecked = false;
+        var content = BuildTextPreviewContent(path, ext, includeReadableStrings: false, includeHexAscii: false);
+        _textView = new TextBox
+        {
+            Text = content,
+            IsReadOnly = true,
+            AcceptsReturn = true,
+            AcceptsTab = true,
+            TextWrapping = WordWrapToggle.IsChecked == true ? TextWrapping.Wrap : TextWrapping.NoWrap,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            FontFamily = new FontFamily("Consolas"),
+            FontSize = 13,
+            Padding = new Thickness(16),
+            BorderThickness = new Thickness(0),
+            Background = Brushes.Transparent
+        };
         AutomationProperties.SetAutomationId(_textView, "PreviewTextContent");
-        ContentHost.Children.Add(_textView); TextTools.Visibility = Visibility.Visible; ZoomText.Visibility = Visibility.Collapsed;
+        ContentHost.Children.Add(_textView);
+        TextTools.Visibility = Visibility.Visible;
+        ZoomText.Visibility = Visibility.Collapsed;
+    }
+
+    private void TextDisplayMode_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_textView is null || string.IsNullOrEmpty(_textFilePath))
+        {
+            return;
+        }
+
+        _textView.Text = BuildTextPreviewContent(
+            _textFilePath,
+            _textFileExt,
+            ReadableStringsToggle.IsChecked == true,
+            HexAsciiToggle.IsChecked == true);
+    }
+
+    private static string BuildTextPreviewContent(string path, string ext, bool includeReadableStrings, bool includeHexAscii)
+    {
+        if (includeReadableStrings || includeHexAscii)
+        {
+            return ReadBinaryPreview(path, ext, includeReadableStrings, includeHexAscii);
+        }
+
+        if (ext == ".epub") return "Không đọc được EPUB";
+        if (ext is ".azw3" or ".fb2") return $"Không đọc được {ext.TrimStart('.').ToUpperInvariant()}";
+        if (ext == ".ttf") return $"Tệp phông chữ: {System.IO.Path.GetFileName(path)}";
+        if (ext is ".lrf") return "Tệp sách LRF (Sony Broadband eBook). Định dạng nhị phân này chưa có bộ giải mã nội dung tích hợp; bạn vẫn có thể mở bằng ứng dụng mặc định hoặc xem thông tin tệp ở phía trên.";
+        if (ext is ".djvu" or ".djv") return "Tài liệu DjVu nhiều trang. Bộ kết xuất DjVu chưa được tích hợp trên máy này; hãy dùng nút Mở bằng ứng dụng để xem đầy đủ tài liệu.";
+        if (ext is ".doc" or ".xls" or ".ppt") return ReadLegacyOffice(path, ext);
+        if (ext == ".eml") return ReadEml(path);
+        if (ext == ".json") return ReadJsonPreview(path);
+        if (ext == ".zip") return ReadZipArchive(path);
+        return ReadNotepadTextPreview(path);
     }
 
     private static string ReadEbookArchive(string path)
@@ -1153,29 +1331,24 @@ public partial class FilePreviewControl : UserControl
         using var doc = JsonDocument.Parse(File.ReadAllText(path));
         return LimitPreview(JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true }), MaxTextPreviewCharacters, "JSON");
     }
-    private static string ReadTextOrBinaryFallback(string path, string ext)
+    private static string ReadNotepadTextPreview(string path)
     {
+        string text;
         try
         {
             var encoding = DetectEncoding(path);
-            var text = ReadTextPreview(path, encoding);
-            if (text.Contains('\0'))
-            {
-                return ReadBinaryPreview(path, ext);
-            }
-
-            return text;
+            text = ReadTextPreview(path, encoding);
         }
         catch (DecoderFallbackException)
         {
-            return ReadBinaryPreview(path, ext);
+            // Fall back to single-byte ANSI/Latin1 decoding like Notepad when UTF-8 validation fails.
+            text = ReadTextPreview(path, Encoding.Latin1);
         }
+
+        return text.Contains('\0') ? text.Replace('\0', ' ') : text;
     }
 
-    private static bool IsKnownBinaryTelemetry(string ext) =>
-        ext is ".gpsidt" or ".unk" or ".a_voc" or ".x3" or ".777" or ".bin" or ".dat" or ".raw";
-
-    private static string ReadBinaryPreview(string path, string ext)
+    private static string ReadBinaryPreview(string path, string ext, bool includeReadableStrings, bool includeHexAscii)
     {
         const int maxDumpBytes = 32 * 1024;
         var fileInfo = new FileInfo(path);
@@ -1192,53 +1365,63 @@ public partial class FilePreviewControl : UserControl
             ".unk" => "Tệp dữ liệu nhị phân chưa xác định (.UNK)",
             ".x3" => "Tệp dữ liệu phiên (.X3)",
             ".777" => "Tệp dữ liệu phiên (.777)",
-            _ => $"Tệp dữ liệu nhị phân ({ext.ToUpperInvariant()})"
+            _ => $"Tệp dữ liệu ({ext.ToUpperInvariant()})"
         };
 
         sb.AppendLine($"Định dạng: {description}");
         sb.AppendLine($"Kích thước: {FormatSize(fileInfo.Length)} ({fileInfo.Length:N0} bytes)");
 
-        var strings = ExtractPrintableStrings(bytes.AsSpan(0, read));
-        if (strings.Count > 0)
+        if (includeReadableStrings)
+        {
+            var strings = ExtractPrintableStrings(bytes.AsSpan(0, read));
+            sb.AppendLine();
+            if (strings.Count > 0)
+            {
+                sb.AppendLine("Chuỗi ký tự đọc được:");
+                foreach (var s in strings.Take(40))
+                {
+                    sb.AppendLine($"  • {s}");
+                }
+            }
+            else
+            {
+                sb.AppendLine("Chuỗi ký tự đọc được: (không có)");
+            }
+        }
+
+        if (includeHexAscii)
         {
             sb.AppendLine();
-            sb.AppendLine("Chuỗi ký tự đọc được:");
-            foreach (var s in strings.Take(20))
+            sb.AppendLine("Nội dung Hex / ASCII:");
+            for (var offset = 0; offset < read; offset += 16)
             {
-                sb.AppendLine($"  • {s}");
-            }
-        }
-
-        sb.AppendLine();
-        sb.AppendLine("Nội dung Hex / ASCII:");
-        for (var offset = 0; offset < read; offset += 16)
-        {
-            sb.Append($"{offset:X8}  ");
-            for (var i = 0; i < 16; i++)
-            {
-                if (offset + i < read)
+                sb.Append($"{offset:X8}  ");
+                for (var i = 0; i < 16; i++)
                 {
-                    sb.Append($"{bytes[offset + i]:X2} ");
+                    if (offset + i < read)
+                    {
+                        sb.Append($"{bytes[offset + i]:X2} ");
+                    }
+                    else
+                    {
+                        sb.Append("   ");
+                    }
+                    if (i == 7) sb.Append(' ');
                 }
-                else
+
+                sb.Append(" |");
+                for (var i = 0; i < 16 && offset + i < read; i++)
                 {
-                    sb.Append("   ");
+                    var b = bytes[offset + i];
+                    sb.Append(b is >= 32 and <= 126 ? (char)b : '.');
                 }
-                if (i == 7) sb.Append(' ');
+                sb.AppendLine("|");
             }
 
-            sb.Append(" |");
-            for (var i = 0; i < 16 && offset + i < read; i++)
+            if (fileInfo.Length > maxDumpBytes)
             {
-                var b = bytes[offset + i];
-                sb.Append(b is >= 32 and <= 126 ? (char)b : '.');
+                sb.AppendLine().Append($"… [đã giới hạn hiển thị {maxDumpBytes:N0} bytes đầu]");
             }
-            sb.AppendLine("|");
-        }
-
-        if (fileInfo.Length > maxDumpBytes)
-        {
-            sb.AppendLine().Append($"… [đã giới hạn hiển thị {maxDumpBytes:N0} bytes đầu]");
         }
 
         return sb.ToString();
