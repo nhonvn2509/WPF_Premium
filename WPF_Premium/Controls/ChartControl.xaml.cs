@@ -316,11 +316,11 @@ public partial class ChartControl : UserControl
         IReadOnlyList<SKColor> palette,
         SKColor mutedForeground)
     {
-        var panel = new StackPanel
+        var panel = new WrapPanel
         {
             Orientation = Orientation.Horizontal,
             HorizontalAlignment = HorizontalAlignment.Center,
-            Margin = new Thickness(0, 6, 0, 0)
+            Margin = new Thickness(0, 6, 0, 2)
         };
         for (var index = 0; index < series.Count; index++)
         {
@@ -328,7 +328,7 @@ public partial class ChartControl : UserControl
             var item = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
-                Margin = new Thickness(0, 0, 12, 0)
+                Margin = new Thickness(0, 2, 12, 2)
             };
             var swatch = new Border
             {
@@ -359,6 +359,7 @@ public partial class ChartControl : UserControl
         var stroke = new SolidColorPaint(color) { StrokeThickness = 2 };
         var fill = new SolidColorPaint(new SKColor(color.Red, color.Green, color.Blue, 64));
         var labelPaint = new SolidColorPaint(foreground);
+        var geometrySize = series.Values.Count > 40 ? 0 : (series.Values.Count > 20 ? 4 : 7);
         return Kind switch
         {
             ChartKind.Line => new LineSeries<double>
@@ -367,6 +368,8 @@ public partial class ChartControl : UserControl
                 Values = series.Values,
                 Stroke = stroke,
                 Fill = null,
+                GeometrySize = geometrySize,
+                GeometryStroke = stroke,
                 YToolTipLabelFormatter = point => point.Coordinate.PrimaryValue.ToString("N0")
             },
             ChartKind.Area => new LineSeries<double>
@@ -375,6 +378,8 @@ public partial class ChartControl : UserControl
                 Values = series.Values,
                 Stroke = stroke,
                 Fill = fill,
+                GeometrySize = geometrySize,
+                GeometryStroke = stroke,
                 YToolTipLabelFormatter = point => point.Coordinate.PrimaryValue.ToString("N0")
             },
             ChartKind.Column => new ColumnSeries<double>
@@ -444,8 +449,8 @@ public partial class ChartControl : UserControl
                 LabelsPaint = new SolidColorPaint(foreground),
                 SeparatorsPaint = new SolidColorPaint(border),
                 TicksPaint = new SolidColorPaint(border),
-                MinStep = 1,
-                ForceStepToMin = true
+                MinStep = labels.Count > 12 ? Math.Max(1, Math.Ceiling(labels.Count / 10.0)) : 1,
+                ForceStepToMin = labels.Count <= 12
             }
             : new Axis
             {

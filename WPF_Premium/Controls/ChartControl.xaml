@@ -22,7 +22,7 @@
                        FontSize="12"
                        Foreground="{DynamicResource MutedForegroundBrush}"
                        TextWrapping="Wrap" />
-            <Grid x:Name="ChartSurface" Grid.Row="2" MinHeight="200" />
+            <Grid x:Name="ChartSurface" Grid.Row="2" MinHeight="120" />
         </Grid>
     </Border>
 </UserControl>
