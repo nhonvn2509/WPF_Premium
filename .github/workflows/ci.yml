@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main, develop, developer]
+  pull_request:
+    branches: [master, main, develop, developer]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  SOLUTION_FILE: 'WPF_Premium.slnx'
+  TEST_PROJECT: 'WPF_Premium.UIAutomationTests/WPF_Premium.UIAutomationTests.csproj'
+
+jobs:
+  build:
+    name: Build and Unit Tests (Release)
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.SOLUTION_FILE }}
+
+      - name: Build solution (Release)
+        run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore
+
+      - name: Run unit tests (Release)
+        run: dotnet test ${{ env.TEST_PROJECT }} --configuration Release --no-build --filter "FullyQualifiedName!~DemoUiTests&FullyQualifiedName!~FilePreviewUiTests&FullyQualifiedName!~PremiumInteractionTests" --logger "trx;LogFileName=unit-tests.trx" --results-directory TestResults
+
+      - name: Upload unit test results
+        uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: unit-test-results
+          path: TestResults/*.trx
+          retention-days: 7
+
+  ui-tests:
+    name: UI Automation Tests (Release)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    needs: build
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.SOLUTION_FILE }}
+
+      - name: Build solution (Release)
+        run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore
+
+      - name: Run UI automation tests (Release)
+        run: dotnet test ${{ env.TEST_PROJECT }} --configuration Release --no-build --logger "trx;LogFileName=ui-tests.trx" --results-directory TestResults
+
+      - name: Upload UI test results
+        uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: ui-test-results
+          path: TestResults/*.trx
+          retention-days: 7
