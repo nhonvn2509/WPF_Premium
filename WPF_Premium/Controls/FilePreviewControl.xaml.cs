@@ -14,6 +14,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using MahApps.Metro.IconPacks;
 using Microsoft.Win32;
+using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using MagickImage = ImageMagick.MagickImage;
 using MagickFormat = ImageMagick.MagickFormat;
@@ -275,6 +276,12 @@ public partial class FilePreviewControl : UserControl
 
     private void ShowDocument(string path, string? html)
     {
+        if (html is not null && !IsWebView2RuntimeAvailable())
+        {
+            ShowOfficeDocumentFallback(path, System.IO.Path.GetExtension(path).ToLowerInvariant());
+            return;
+        }
+
         var browser = _documentBrowser;
         if (browser is null)
         {
@@ -320,6 +327,12 @@ public partial class FilePreviewControl : UserControl
     {
         try
         {
+            if (!IsWebView2RuntimeAvailable())
+            {
+                ShowOfficeDocumentFallback(path, extension);
+                return;
+            }
+
             ShowDocument(path, OfficePreviewHtmlRenderer.Render(path));
         }
         catch (Exception) when (extension is ".doc" or ".xls" or ".ppt")
@@ -328,11 +341,63 @@ public partial class FilePreviewControl : UserControl
         }
     }
 
+    private void ShowOfficeDocumentFallback(string path, string extension)
+    {
+        try
+        {
+            var document = OfficePreviewFlowDocumentRenderer.Render(path);
+            var viewer = new FlowDocumentScrollViewer
+            {
+                Document = document,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                IsToolBarVisible = false,
+                Background = Brushes.Transparent
+            };
+            AutomationProperties.SetAutomationId(viewer, "PreviewOfficeFallbackViewer");
+            AutomationProperties.SetName(viewer, "Bản xem trước tài liệu Office");
+            ContentHost.Children.Clear();
+            ContentHost.Children.Add(viewer);
+            ZoomText.Text = "Office";
+        }
+        catch (Exception) when (extension is ".doc" or ".xls" or ".ppt")
+        {
+            ShowText(path, extension);
+        }
+        catch (Exception ex)
+        {
+            ShowMessage($"Không thể tạo bản xem trước: {ex.Message}");
+        }
+    }
+
+    private static bool IsWebView2RuntimeAvailable()
+    {
+        try
+        {
+            return !string.IsNullOrWhiteSpace(CoreWebView2Environment.GetAvailableBrowserVersionString());
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static async Task<CoreWebView2Environment> CreateWebView2EnvironmentAsync()
+    {
+        var userDataFolder = System.IO.Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "WPF_Premium",
+            "WebView2");
+        Directory.CreateDirectory(userDataFolder);
+        return await CoreWebView2Environment.CreateAsync(browserExecutableFolder: null, userDataFolder: userDataFolder);
+    }
+
     private async Task InitializeDocumentBrowserAsync(WebView2 browser, string path, string? html, long navGen)
     {
         try
         {
-            await browser.EnsureCoreWebView2Async();
+            var environment = await CreateWebView2EnvironmentAsync();
+            await browser.EnsureCoreWebView2Async(environment);
             if (!ReferenceEquals(_documentBrowser, browser)) return;
             if (!_documentBrowserInitialized)
             {
@@ -367,6 +432,13 @@ public partial class FilePreviewControl : UserControl
             _documentBrowser.Dispose();
             _documentBrowser = null;
             _documentBrowserInitialized = false;
+
+            if (html is not null)
+            {
+                ShowOfficeDocumentFallback(path, System.IO.Path.GetExtension(path).ToLowerInvariant());
+                return;
+            }
+
             ShowMessage($"Không thể khởi tạo trình xem tài liệu: {ex.Message}");
         }
     }
