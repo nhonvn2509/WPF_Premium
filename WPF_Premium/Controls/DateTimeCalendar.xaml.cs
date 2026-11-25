@@ -55,8 +55,8 @@ public partial class DateTimeCalendar : UserControl
     public DateTimeCalendar()
     {
         InitializeComponent();
-        HourPicker.ItemsSource = Enumerable.Range(0, 24).Select(hour => hour.ToString("D2", CultureInfo.InvariantCulture)).ToArray();
-        MinutePicker.ItemsSource = Enumerable.Range(0, 60).Select(minute => minute.ToString("D2", CultureInfo.InvariantCulture)).ToArray();
+        HourPicker.ItemsSource = ControlHelpers.Hours24;
+        MinutePicker.ItemsSource = ControlHelpers.MinutesOrSeconds60;
         HourPicker.SelectionChanged += Time_SelectionChanged;
         MinutePicker.SelectionChanged += Time_SelectionChanged;
         DateSelector.SelectedDateChanged += DateSelector_SelectedDateChanged;

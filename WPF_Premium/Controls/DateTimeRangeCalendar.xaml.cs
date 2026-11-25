@@ -51,17 +51,15 @@ public partial class DateTimeRangeCalendar : UserControl
     {
         InitializeComponent();
 
-        var hours = Enumerable.Range(0, 24).Select(value => value.ToString("D2", CultureInfo.InvariantCulture)).ToArray();
-        var minutesAndSeconds = Enumerable.Range(0, 60).Select(value => value.ToString("D2", CultureInfo.InvariantCulture)).ToArray();
         foreach (var picker in new[] { StartHour, EndHour })
         {
-            picker.ItemsSource = hours;
+            picker.ItemsSource = ControlHelpers.Hours24;
             picker.SelectionChanged += TimePicker_SelectionChanged;
         }
 
         foreach (var picker in new[] { StartSecond, EndSecond })
         {
-            picker.ItemsSource = minutesAndSeconds;
+            picker.ItemsSource = ControlHelpers.MinutesOrSeconds60;
             picker.SelectionChanged += TimePicker_SelectionChanged;
         }
 
@@ -136,10 +134,9 @@ public partial class DateTimeRangeCalendar : UserControl
 
     private void UpdateMinuteOptions()
     {
-        var minutes = Enumerable.Range(0, 60)
-            .Where(value => value % MinuteInterval == 0)
-            .Select(value => value.ToString("D2", CultureInfo.InvariantCulture))
-            .ToArray();
+        var minutes = MinuteInterval <= 1
+            ? ControlHelpers.MinutesOrSeconds60
+            : ControlHelpers.CreateTwoDigitSeries(60, MinuteInterval);
         StartMinute.ItemsSource = minutes;
         EndMinute.ItemsSource = minutes;
     }

@@ -14,8 +14,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using MahApps.Metro.IconPacks;
 using Microsoft.Win32;
-using Microsoft.Web.WebView2.Core;
-using Microsoft.Web.WebView2.Wpf;
+using PDFtoImage;
 using MagickImage = ImageMagick.MagickImage;
 using MagickFormat = ImageMagick.MagickFormat;
 using Sdcb.LibRaw;
@@ -38,9 +37,7 @@ public partial class FilePreviewControl : UserControl
     private LibVLCSharp.Shared.MediaPlayer? _vlcVideoPlayer;
     private LibVLCSharp.Shared.Media? _vlcMedia;
     private LibVLCSharp.WPF.VideoView? _vlcVideoView;
-    private WebView2? _documentBrowser;
-    private bool _documentBrowserInitialized;
-    private string? _activeDocumentPath;
+    private CancellationTokenSource? _documentRenderCts;
     private long _documentNavigationGeneration;
     private DispatcherTimer? _audioPositionTimer;
     private DispatcherTimer? _videoPositionTimer;
@@ -130,7 +127,7 @@ public partial class FilePreviewControl : UserControl
             else if (IsVideo(ext)) ShowVideo(path);
             else if (ext == ".pdf")
             {
-                if (IsValidPdfHeader(path)) ShowDocument(path, null);
+                if (IsValidPdfHeader(path)) ShowPdfDocument(path);
                 else ShowText(path, ext);
             }
             else if (IsOfficeDocument(ext)) ShowOfficeDocument(path, ext);
@@ -274,74 +271,172 @@ public partial class FilePreviewControl : UserControl
         ToolsPanel.Visibility = visibility;
     }
 
-    private void ShowDocument(string path, string? html)
+    private void ShowPdfDocument(string path)
     {
-        if (html is not null && !IsWebView2RuntimeAvailable())
-        {
-            ShowOfficeDocumentFallback(path, System.IO.Path.GetExtension(path).ToLowerInvariant());
-            return;
-        }
-
-        var browser = _documentBrowser;
-        if (browser is null)
-        {
-            browser = new WebView2();
-            AutomationProperties.SetAutomationId(browser, "PreviewDocumentBrowser");
-            _documentBrowser = browser;
-            _documentBrowserInitialized = false;
-        }
-
-        AutomationProperties.SetName(browser, html is null ? "Trình xem PDF" : "Bản xem trước tài liệu Office");
-        _activeDocumentPath = path;
         var navGen = ++_documentNavigationGeneration;
+        _documentRenderCts?.Cancel();
+        _documentRenderCts?.Dispose();
+        var cts = new CancellationTokenSource();
+        _documentRenderCts = cts;
 
-        if (!ContentHost.Children.Contains(browser))
+        var pagesPanel = new StackPanel
         {
-            ContentHost.Children.Add(browser);
-        }
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(16)
+        };
+        var scrollViewer = new ScrollViewer
+        {
+            Content = pagesPanel,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            Background = new SolidColorBrush(Color.FromRgb(0xDF, 0xE3, 0xE8))
+        };
+        AutomationProperties.SetAutomationId(scrollViewer, "PreviewDocumentBrowser");
+        AutomationProperties.SetName(scrollViewer, "Trình xem PDF");
 
-        if (_documentBrowserInitialized && browser.CoreWebView2 is not null)
+        ContentHost.Children.Clear();
+        ContentHost.Children.Add(scrollViewer);
+        ZoomText.Text = "PDF";
+
+        _ = RenderPdfPagesAsync(path, pagesPanel, navGen, cts.Token);
+    }
+
+    private async Task RenderPdfPagesAsync(string path, StackPanel pagesPanel, long navGen, CancellationToken cancellationToken)
+    {
+        try
         {
-            NavigateDocumentBrowser(browser, path, html);
-        }
-        else if (browser.IsLoaded)
-        {
-            _ = InitializeDocumentBrowserAsync(browser, path, html, navGen);
-        }
-        else
-        {
-            RoutedEventHandler loaded = null!;
-            loaded = async (_, _) =>
+            var pdfBytes = await File.ReadAllBytesAsync(path, cancellationToken);
+            var totalPages = await Task.Run(() => Conversion.GetPageCount(pdfBytes), cancellationToken);
+            var maxPages = Math.Min(totalPages, 50);
+            var renderOptions = new PDFtoImage.RenderOptions(Dpi: 150);
+
+            for (var i = 0; i < maxPages; i++)
             {
-                browser.Loaded -= loaded;
-                if (ReferenceEquals(_documentBrowser, browser) && navGen == _documentNavigationGeneration)
-                    await InitializeDocumentBrowserAsync(browser, path, html, navGen);
-            };
-            browser.Loaded += loaded;
-        }
+                if (cancellationToken.IsCancellationRequested || navGen != _documentNavigationGeneration) return;
 
-        ZoomText.Text = html is null ? "PDF" : "Office";
+                var pageIndex = i;
+                var bitmap = await Task.Run(() =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    using var stream = new MemoryStream();
+                    Conversion.SavePng(stream, pdfBytes, page: pageIndex, options: renderOptions);
+                    stream.Position = 0;
+                    var img = new BitmapImage();
+                    img.BeginInit();
+                    img.CacheOption = BitmapCacheOption.OnLoad;
+                    img.StreamSource = stream;
+                    img.EndInit();
+                    img.Freeze();
+                    return img;
+                }, cancellationToken);
+
+                if (cancellationToken.IsCancellationRequested || navGen != _documentNavigationGeneration) return;
+
+                var pageBorder = new Border
+                {
+                    Background = Brushes.White,
+                    Margin = new Thickness(0, 0, 0, 12),
+                    Padding = new Thickness(4),
+                    Child = new Image
+                    {
+                        Source = bitmap,
+                        Stretch = Stretch.Uniform,
+                        MaxWidth = 960
+                    }
+                };
+                pagesPanel.Children.Add(pageBorder);
+            }
+
+            if (totalPages > maxPages && !cancellationToken.IsCancellationRequested && navGen == _documentNavigationGeneration)
+            {
+                pagesPanel.Children.Add(new TextBlock
+                {
+                    Text = $"Đã giới hạn phần xem trước ở {maxPages} / {totalPages} trang.",
+                    Foreground = (Brush)FindResource("MutedForegroundBrush"),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 8, 0, 16)
+                });
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            if (cancellationToken.IsCancellationRequested || navGen != _documentNavigationGeneration) return;
+            ShowMessage($"Không thể xem trước PDF (PDFium): {ex.Message}");
+        }
     }
 
     private void ShowOfficeDocument(string path, string extension)
     {
+        if (LibreOfficePreviewConverter.IsAvailable)
+        {
+            _ = ShowOfficeViaLibreOfficeAsync(path, extension);
+            return;
+        }
+
+        ShowOfficeFallback(path, extension);
+    }
+
+    private async Task ShowOfficeViaLibreOfficeAsync(string path, string extension)
+    {
+        var navGen = ++_documentNavigationGeneration;
+        _documentRenderCts?.Cancel();
+        _documentRenderCts?.Dispose();
+        var cts = new CancellationTokenSource();
+        _documentRenderCts = cts;
+
+        ShowMessage("Đang kết xuất tài liệu bằng LibreOffice + PDFium...");
+        ZoomText.Text = "Office";
+
         try
         {
-            if (!IsWebView2RuntimeAvailable())
+            var pdfPath = await LibreOfficePreviewConverter.ConvertToPdfAsync(path, cts.Token);
+            if (cts.IsCancellationRequested || navGen != _documentNavigationGeneration)
             {
-                ShowOfficeDocumentFallback(path, extension);
                 return;
             }
 
-            ShowDocument(path, OfficePreviewHtmlRenderer.Render(path));
+            if (!string.IsNullOrEmpty(pdfPath) && File.Exists(pdfPath))
+            {
+                var pagesPanel = new StackPanel
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Margin = new Thickness(16)
+                };
+                var scrollViewer = new ScrollViewer
+                {
+                    Content = pagesPanel,
+                    HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                    Background = new SolidColorBrush(Color.FromRgb(0xDF, 0xE3, 0xE8))
+                };
+                AutomationProperties.SetAutomationId(scrollViewer, "PreviewDocumentBrowser");
+                AutomationProperties.SetName(scrollViewer, "Bản xem trước LibreOffice + PDFium");
+
+                ContentHost.Children.Clear();
+                ContentHost.Children.Add(scrollViewer);
+                ZoomText.Text = "PDFium";
+                await RenderPdfPagesAsync(pdfPath, pagesPanel, navGen, cts.Token);
+                return;
+            }
         }
-        catch (Exception) when (extension is ".doc" or ".xls" or ".ppt")
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
         {
-            ShowText(path, extension);
+            return;
+        }
+        catch
+        {
+        }
+
+        if (!cts.IsCancellationRequested && navGen == _documentNavigationGeneration)
+        {
+            ShowOfficeFallback(path, extension);
         }
     }
 
-    private void ShowOfficeDocumentFallback(string path, string extension)
+    private void ShowOfficeFallback(string path, string extension)
     {
         try
         {
@@ -354,7 +449,7 @@ public partial class FilePreviewControl : UserControl
                 IsToolBarVisible = false,
                 Background = Brushes.Transparent
             };
-            AutomationProperties.SetAutomationId(viewer, "PreviewOfficeFallbackViewer");
+            AutomationProperties.SetAutomationId(viewer, "PreviewDocumentBrowser");
             AutomationProperties.SetName(viewer, "Bản xem trước tài liệu Office");
             ContentHost.Children.Clear();
             ContentHost.Children.Add(viewer);
@@ -370,98 +465,12 @@ public partial class FilePreviewControl : UserControl
         }
     }
 
-    private static bool IsWebView2RuntimeAvailable()
-    {
-        try
-        {
-            return !string.IsNullOrWhiteSpace(CoreWebView2Environment.GetAvailableBrowserVersionString());
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    private static async Task<CoreWebView2Environment> CreateWebView2EnvironmentAsync()
-    {
-        var userDataFolder = System.IO.Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "WPF_Premium",
-            "WebView2");
-        Directory.CreateDirectory(userDataFolder);
-        return await CoreWebView2Environment.CreateAsync(browserExecutableFolder: null, userDataFolder: userDataFolder);
-    }
-
-    private async Task InitializeDocumentBrowserAsync(WebView2 browser, string path, string? html, long navGen)
-    {
-        try
-        {
-            var environment = await CreateWebView2EnvironmentAsync();
-            await browser.EnsureCoreWebView2Async(environment);
-            if (!ReferenceEquals(_documentBrowser, browser)) return;
-            if (!_documentBrowserInitialized)
-            {
-                browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
-                browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
-                browser.CoreWebView2.NavigationStarting += (_, args) =>
-                {
-                    if (!Uri.TryCreate(args.Uri, UriKind.Absolute, out var uri)) return;
-                    if (uri.Scheme == "about") return;
-                    var currentPath = _activeDocumentPath;
-                    if (uri.IsFile &&
-                        (string.IsNullOrEmpty(currentPath) ||
-                         !System.IO.Path.GetFullPath(uri.LocalPath).Equals(System.IO.Path.GetFullPath(currentPath), StringComparison.OrdinalIgnoreCase)))
-                    {
-                        args.Cancel = true;
-                    }
-                    else if (uri.Scheme is "http" or "https" or "mailto" or "ftp")
-                    {
-                        args.Cancel = true;
-                    }
-                };
-                _documentBrowserInitialized = true;
-            }
-
-            if (navGen != _documentNavigationGeneration) return;
-            NavigateDocumentBrowser(browser, path, html);
-        }
-        catch (Exception ex)
-        {
-            if (!ReferenceEquals(_documentBrowser, browser) || navGen != _documentNavigationGeneration) return;
-            ContentHost.Children.Clear();
-            _documentBrowser.Dispose();
-            _documentBrowser = null;
-            _documentBrowserInitialized = false;
-
-            if (html is not null)
-            {
-                ShowOfficeDocumentFallback(path, System.IO.Path.GetExtension(path).ToLowerInvariant());
-                return;
-            }
-
-            ShowMessage($"Không thể khởi tạo trình xem tài liệu: {ex.Message}");
-        }
-    }
-
-    private static void NavigateDocumentBrowser(WebView2 browser, string path, string? html)
-    {
-        browser.CoreWebView2.Settings.IsScriptEnabled = html is null;
-        if (html is null) browser.CoreWebView2.Navigate(new Uri(path).AbsoluteUri);
-        else browser.NavigateToString(html);
-    }
-
     private void CloseDocumentBrowser()
     {
         ++_documentNavigationGeneration;
-        _activeDocumentPath = null;
-        if (_documentBrowser is not null)
-        {
-            ContentHost.Children.Remove(_documentBrowser);
-            if (_documentBrowserInitialized && _documentBrowser.CoreWebView2 is not null)
-            {
-                _documentBrowser.CoreWebView2.Navigate("about:blank");
-            }
-        }
+        _documentRenderCts?.Cancel();
+        _documentRenderCts?.Dispose();
+        _documentRenderCts = null;
     }
 
     private static bool IsValidPdfHeader(string path)
@@ -484,8 +493,8 @@ public partial class FilePreviewControl : UserControl
     }
 
     private static bool IsOfficeDocument(string extension) =>
-        extension is ".docx" or ".docm" or ".xlsx" or ".xlsm" or ".pptx" or
-            ".doc" or ".xls" or ".ppt" or ".odt" or ".ott" or ".ods" or ".odp";
+        extension is ".docx" or ".docm" or ".dot" or ".dotx" or ".xlsx" or ".xlsm" or ".pptx" or ".pptm" or
+            ".doc" or ".xls" or ".ppt" or ".odt" or ".ott" or ".ods" or ".ots" or ".odp" or ".otp" or ".rtf";
 
     private void ShowImage(string path)
     {

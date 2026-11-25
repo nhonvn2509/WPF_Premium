@@ -4,12 +4,13 @@
     <ProjectReference Include="..\WPF_Premium.Core\WPF_Premium.Core.csproj" />
     <ProjectReference Include="..\WPF_Premium.Documents\WPF_Premium.Documents.csproj" />
     <Compile Include="..\WPF_Premium\Controls\FilePreviewControl.xaml.cs" Link="Controls\FilePreviewControl.xaml.cs" />
+    <Compile Include="..\WPF_Premium\Controls\LibreOfficePreviewConverter.cs" Link="Controls\LibreOfficePreviewConverter.cs" />
     <Compile Include="..\WPF_Premium\Controls\OfficePreviewFlowDocumentRenderer.cs" Link="Controls\OfficePreviewFlowDocumentRenderer.cs" />
     <Page Include="..\WPF_Premium\Controls\FilePreviewControl.xaml" Link="Controls\FilePreviewControl.xaml" />
     <PackageReference Include="LibVLCSharp.WPF" Version="3.10.2" />
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="15.0.0" />
     <PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3179.45" />
+    <PackageReference Include="PDFtoImage" Version="5.4.0" />
     <PackageReference Include="Sdcb.LibRaw" Version="0.21.1.7" />
     <PackageReference Include="Sdcb.LibRaw.runtime.win64" Version="0.21.1" />
     <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.24" />

@@ -1,5 +1,6 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using WPF_Premium.Themes;
@@ -8,6 +9,14 @@ namespace WPF_Premium.Controls;
 
 internal static class ControlHelpers
 {
+    public static readonly string[] Hours24 = CreateTwoDigitSeries(24);
+    public static readonly string[] MinutesOrSeconds60 = CreateTwoDigitSeries(60);
+
+    public static string[] CreateTwoDigitSeries(int count, int step = 1) =>
+        Enumerable.Range(0, count)
+            .Where(value => step <= 1 || value % step == 0)
+            .Select(value => value.ToString("D2", CultureInfo.InvariantCulture))
+            .ToArray();
     public static string GetDisplayText(object? item, string? displayMemberPath = null)
     {
         if (item is null)
