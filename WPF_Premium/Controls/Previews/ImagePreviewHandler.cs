@@ -117,7 +117,8 @@ internal sealed class ImagePreviewHandler : IFilePreviewHandler
                 }
                 else
                 {
-                    _statusText.Text = $"Không thể giải mã ảnh: {task.Exception?.GetBaseException().Message ?? "định dạng không được hỗ trợ"}. Hãy mở bằng ứng dụng mặc định.";
+                    var errMsg = task.Exception?.GetBaseException().Message?.TrimEnd('.') ?? "định dạng không được hỗ trợ";
+                    _statusText.Text = $"Không thể giải mã ảnh: {errMsg}. Hãy mở bằng ứng dụng mặc định.";
                 }
             }));
         }

@@ -154,7 +154,9 @@ public partial class PdfDocumentPreviewControl : UserControl
         }
         catch (Exception ex)
         {
-            LoadingText.Text = $"Không thể mở tài liệu: {ex.Message}";
+            LoadingText.Text = Previews.PreviewPasswordDetector.IsPasswordException(ex)
+                ? Previews.PreviewPasswordDetector.PasswordProtectedMessage
+                : $"Không thể mở tài liệu: {ex.Message}";
             LoadingText.Visibility = Visibility.Visible;
         }
     }

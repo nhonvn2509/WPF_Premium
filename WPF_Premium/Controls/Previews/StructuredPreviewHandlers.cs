@@ -13,15 +13,69 @@ internal sealed class StructuredPreviewHandler(
     {
         try
         {
+            if (context.Extension == ".zip" && PreviewPasswordDetector.IsEncryptedZipFile(context.FilePath))
+            {
+                host.SetToolbarMode(PreviewToolbarMode.None);
+                host.SetStatusText("Có mật khẩu");
+                return new SimplePreviewSession(CreatePasswordPromptView(context.FilePath, host));
+            }
+
             host.SetToolbarMode(PreviewToolbarMode.None);
             host.SetStatusText(statusLabel);
             var element = factory(context, () => host.ShowTextFallback(context.FilePath, context.Extension));
             return new SimplePreviewSession((FrameworkElement)element);
         }
+        catch (Exception ex) when (PreviewPasswordDetector.IsPasswordException(ex))
+        {
+            host.SetToolbarMode(PreviewToolbarMode.None);
+            host.SetStatusText("Có mật khẩu");
+            return new SimplePreviewSession(CreatePasswordPromptView(context.FilePath, host));
+        }
         catch
         {
             return new TextPreviewHandler().CreateSession(context, host);
         }
+    }
+
+    private static FrameworkElement CreatePasswordPromptView(string filePath, IPreviewHost host)
+    {
+        var stack = new System.Windows.Controls.StackPanel
+        {
+            Margin = new Thickness(24),
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            MaxWidth = 520
+        };
+        stack.Children.Add(new System.Windows.Controls.TextBlock
+        {
+            Text = PreviewPasswordDetector.PasswordProtectedMessage,
+            TextWrapping = TextWrapping.Wrap,
+            TextAlignment = TextAlignment.Center,
+            Foreground = host.TryFindBrush("MutedForegroundBrush") ?? System.Windows.Media.Brushes.Gray
+        });
+        var openBtn = new System.Windows.Controls.Button
+        {
+            Content = "Mở bằng ứng dụng mặc định",
+            Margin = new Thickness(0, 12, 0, 0),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Padding = new Thickness(12, 5, 12, 5)
+        };
+        if (host.TryFindStyle("ButtonOutline") is Style outlineStyle)
+        {
+            openBtn.Style = outlineStyle;
+        }
+        openBtn.Click += (_, _) =>
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(filePath) { UseShellExecute = true });
+            }
+            catch
+            {
+            }
+        };
+        stack.Children.Add(openBtn);
+        return stack;
     }
 
     private sealed class SimplePreviewSession(FrameworkElement view) : IPreviewSession

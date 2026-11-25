@@ -26,23 +26,26 @@ internal static class OfficePreviewFlowDocumentRenderer
     private const long MaxXmlEntrySize = 32 * 1024 * 1024;
     private const long MaxImageEntrySize = 10 * 1024 * 1024;
 
-    private static readonly Brush PaperBackground = Brushes.White;
-    private static readonly Brush PaperForeground = new SolidColorBrush(Color.FromRgb(0x20, 0x21, 0x24));
-    private static readonly Brush MutedForeground = new SolidColorBrush(Color.FromRgb(0x62, 0x67, 0x6E));
-    private static readonly Brush CellBorderBrush = new SolidColorBrush(Color.FromRgb(0xAE, 0xB5, 0xBD));
-    private static readonly Brush HeaderCellBackground = new SolidColorBrush(Color.FromRgb(0xF1, 0xF3, 0xF5));
+    private static Brush GetThemeBrush(string key, Brush fallback) =>
+        Application.Current?.TryFindResource(key) as Brush ?? fallback;
+
+    private static Brush PaperBackground => GetThemeBrush("BackgroundBrush", Brushes.White);
+    private static Brush PaperForeground => GetThemeBrush("ForegroundBrush", new SolidColorBrush(Color.FromRgb(0x20, 0x21, 0x24)));
+    private static Brush MutedForeground => GetThemeBrush("MutedForegroundBrush", new SolidColorBrush(Color.FromRgb(0x62, 0x67, 0x6E)));
+    private static Brush CellBorderBrush => GetThemeBrush("BorderBrush", new SolidColorBrush(Color.FromRgb(0xAE, 0xB5, 0xBD)));
+    private static Brush HeaderCellBackground => GetThemeBrush("MutedBrush", new SolidColorBrush(Color.FromRgb(0xF1, 0xF3, 0xF5)));
 
     public static FlowDocument Render(string path)
     {
         var doc = new FlowDocument
         {
-            Background = PaperBackground,
-            Foreground = PaperForeground,
             FontFamily = new FontFamily("Segoe UI, Arial"),
             FontSize = 14,
             PagePadding = new Thickness(32),
             ColumnWidth = double.PositiveInfinity
         };
+        doc.SetResourceReference(FlowDocument.BackgroundProperty, "BackgroundBrush");
+        doc.SetResourceReference(FlowDocument.ForegroundProperty, "ForegroundBrush");
 
         var blocks = Path.GetExtension(path).ToLowerInvariant() switch
         {
@@ -246,6 +249,13 @@ internal static class OfficePreviewFlowDocumentRenderer
                 if (TryParseHexBrush(fill, out var fillBrush))
                 {
                     cell.Background = fillBrush;
+                    if (fillBrush is SolidColorBrush scb)
+                    {
+                        var lum = (0.299 * scb.Color.R + 0.587 * scb.Color.G + 0.114 * scb.Color.B) / 255.0;
+                        cell.Foreground = lum > 0.55
+                            ? new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x1E))
+                            : new SolidColorBrush(Color.FromRgb(0xF3, 0xF4, 0xF6));
+                    }
                 }
 
                 foreach (var block in cellElement.Elements())

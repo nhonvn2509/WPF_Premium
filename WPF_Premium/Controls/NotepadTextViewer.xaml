@@ -20,16 +20,37 @@
                 Padding="6,4">
             <DockPanel LastChildFill="False">
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBox x:Name="FindInputBox"
-                             AutomationProperties.AutomationId="PreviewSearchBox"
-                             Width="190"
-                             Height="25"
-                             MinHeight="25"
-                             Padding="6,2"
-                             VerticalContentAlignment="Center"
-                             ToolTip="Tìm trong nội dung (Ctrl+F, Enter: Tìm tiếp)"
-                             TextChanged="FindInputBox_TextChanged"
-                             KeyDown="FindInputBox_KeyDown" />
+                    <Grid Width="190" Height="25">
+                        <TextBox x:Name="FindInputBox"
+                                 AutomationProperties.AutomationId="PreviewSearchBox"
+                                 Height="25"
+                                 MinHeight="25"
+                                 Padding="6,2"
+                                 VerticalContentAlignment="Center"
+                                 ToolTip="Tìm trong nội dung (Ctrl+F, Enter: Tìm tiếp)"
+                                 TextChanged="FindInputBox_TextChanged"
+                                 KeyDown="FindInputBox_KeyDown" />
+                        <TextBlock Text="Tìm trong tệp... (Ctrl+F)"
+                                   Margin="8,0,6,0"
+                                   VerticalAlignment="Center"
+                                   FontSize="11.5"
+                                   IsHitTestVisible="False">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{DynamicResource MutedForegroundBrush}" />
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Text, ElementName=FindInputBox}" Value="">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Text, ElementName=FindInputBox}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
                     <Button Style="{StaticResource ButtonOutline}"
                             Height="25" MinHeight="25" Width="26" Padding="2" Margin="4,0,2,0"
                             ToolTip="Tìm trước (Shift+F3)"
@@ -118,12 +139,26 @@
                             AutomationProperties.AutomationId="PreviewCopyButton"
                             Style="{StaticResource ButtonOutline}"
                             Height="25" MinHeight="25" Padding="7,2"
+                            Margin="0,0,4,0"
                             ToolTip="Sao chép vùng chọn hoặc toàn bộ"
                             AutomationProperties.Name="Sao chép nội dung"
                             Click="CopyButton_Click">
                         <StackPanel Orientation="Horizontal">
                             <iconPacks:PackIconMaterial Kind="ContentCopy" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,4,0" />
                             <TextBlock Text="Sao chép" FontSize="11.5" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="EncodingMenuButton"
+                            AutomationProperties.AutomationId="PreviewEncodingMenuButton"
+                            Style="{StaticResource ButtonOutline}"
+                            Height="25" MinHeight="25" Padding="7,2"
+                            ToolTip="Biên mã / Chuyển đổi bảng mã (giống Notepad++)"
+                            AutomationProperties.Name="Biên mã"
+                            Click="EncodingMenuButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Biên mã" FontSize="11.5" VerticalAlignment="Center" />
+                            <iconPacks:PackIconMaterial Kind="ChevronDown" Width="12" Height="12" VerticalAlignment="Center" Margin="4,0,0,0" />
                         </StackPanel>
                     </Button>
 

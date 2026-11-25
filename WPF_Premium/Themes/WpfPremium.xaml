@@ -608,6 +608,9 @@
                         <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
                             <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
                         </DataTrigger>
+                        <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                            <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
+                        </DataTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -1594,45 +1597,33 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:Field}">
                     <StackPanel>
-                        <Grid Margin="0,4,0,0">
-                            <Border x:Name="FieldFrame"
-                                    Margin="0,6,0,0"
-                                    Padding="8,8"
-                                    Background="{DynamicResource CardBrush}"
-                                    BorderBrush="{DynamicResource BorderBrush}"
-                                    BorderThickness="{DynamicResource WpfPremium.SurfaceBorderThickness}"
-                                    CornerRadius="{DynamicResource WpfPremium.SurfaceCornerRadius}">
-                                <ContentPresenter ContentSource="Content" />
-                            </Border>
-                            <Border x:Name="FieldLegend"
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Top"
-                                    Margin="10,0,0,0"
-                                    Padding="4,0"
-                                    Background="{DynamicResource CardBrush}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock x:Name="FieldLabel"
-                                               Text="{TemplateBinding Label}"
-                                               Foreground="{DynamicResource ForegroundBrush}"
-                                               FontWeight="Medium"
-                                               FontSize="12" />
-                                    <TextBlock x:Name="RequiredMark"
-                                               Text=" *"
-                                               Foreground="{DynamicResource DestructiveBrush}"
-                                               Visibility="Collapsed" />
-                                    <TextBlock x:Name="FieldError"
-                                               Text="{TemplateBinding DisplayError}"
-                                               Foreground="{DynamicResource DestructiveBrush}"
-                                               FontWeight="Medium"
-                                               FontSize="12"
-                                               TextWrapping="Wrap"
-                                               Visibility="Collapsed" />
-                                </StackPanel>
-                            </Border>
-                        </Grid>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <TextBlock x:Name="FieldLabel"
+                                       Text="{TemplateBinding Label}"
+                                       Foreground="{DynamicResource ForegroundBrush}"
+                                       FontWeight="SemiBold"
+                                       FontSize="12" />
+                            <TextBlock x:Name="RequiredMark"
+                                       Text=" *"
+                                       Foreground="{DynamicResource DestructiveBrush}"
+                                       Visibility="Collapsed" />
+                            <TextBlock x:Name="FieldError"
+                                       Text="{TemplateBinding DisplayError}"
+                                       Foreground="{DynamicResource DestructiveBrush}"
+                                       FontWeight="Medium"
+                                       FontSize="12"
+                                       TextWrapping="Wrap"
+                                       Visibility="Collapsed" />
+                        </StackPanel>
+                        <Border x:Name="FieldFrame"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                BorderThickness="0">
+                            <ContentPresenter ContentSource="Content" />
+                        </Border>
                         <TextBlock x:Name="FieldDescription" Text="{TemplateBinding Description}"
                                    Foreground="{DynamicResource MutedForegroundBrush}"
-                                   FontSize="12" Margin="0,6,0,0" />
+                                   FontSize="12" Margin="0,5,0,0" />
                     </StackPanel>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsRequired" Value="True">

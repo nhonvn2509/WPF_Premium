@@ -1,7 +1,9 @@
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit.Highlighting;
@@ -11,6 +13,17 @@ namespace WPF_Premium.Controls;
 public partial class NotepadTextViewer : UserControl
 {
     private const double BaseFontSize = 13d;
+    private const int MaxEncodingReloadBytes = 2 * 1024 * 1024;
+
+    private string? _currentFilePath;
+    private string? _currentExtension;
+    private string _activeEncodingKey = "UTF-8";
+    private ContextMenu? _encodingMenu;
+
+    static NotepadTextViewer()
+    {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+    }
 
     public NotepadTextViewer()
     {
@@ -43,11 +56,14 @@ public partial class NotepadTextViewer : UserControl
 
     public void SetContent(string? content, string? filePath = null, string? extension = null, string? encodingLabel = null)
     {
+        _currentFilePath = filePath;
+        _currentExtension = extension ?? Path.GetExtension(filePath ?? string.Empty);
         var text = content ?? string.Empty;
         Editor.Text = text;
         Editor.ScrollToHome();
-        ApplySyntaxHighlighting(extension ?? Path.GetExtension(filePath ?? string.Empty));
-        EncodingStatusLabel.Text = string.IsNullOrWhiteSpace(encodingLabel) ? "UTF-8" : encodingLabel;
+        ApplySyntaxHighlighting(_currentExtension);
+        _activeEncodingKey = string.IsNullOrWhiteSpace(encodingLabel) ? DetectBomEncodingKey(filePath) : encodingLabel;
+        EncodingStatusLabel.Text = _activeEncodingKey;
         EolStatusLabel.Text = text.Contains("\r\n", StringComparison.Ordinal)
             ? "Windows (CR LF)"
             : text.Contains('\n') ? "Unix (LF)" : "Windows (CR LF)";
@@ -173,8 +189,36 @@ public partial class NotepadTextViewer : UserControl
         var definition = string.IsNullOrEmpty(mappedExt)
             ? null
             : HighlightingManager.Instance.GetDefinitionByExtension(mappedExt);
+        if (definition is not null && IsDarkThemeActive())
+        {
+            foreach (var color in definition.NamedHighlightingColors)
+            {
+                if (color.Foreground?.GetColor(null) is { } fg)
+                {
+                    var lum = (0.299 * fg.R + 0.587 * fg.G + 0.114 * fg.B) / 255.0;
+                    if (lum < 0.52)
+                    {
+                        var r = (byte)Math.Min(255, fg.R + (255 - fg.R) * 0.55);
+                        var g = (byte)Math.Min(255, fg.G + (255 - fg.G) * 0.55);
+                        var b = (byte)Math.Min(255, fg.B + (255 - fg.B) * 0.55);
+                        color.Foreground = new SimpleHighlightingBrush(Color.FromArgb(fg.A, r, g, b));
+                    }
+                }
+            }
+        }
         Editor.SyntaxHighlighting = definition;
-        SyntaxLabel.Text = definition is not null ? $"{definition.Name} ({ext})" : "Văn bản thuần";
+        var bareExt = ext.TrimStart('.');
+        SyntaxLabel.Text = definition is not null ? $"{definition.Name} ({bareExt})" : "Văn bản thuần";
+    }
+
+    private static bool IsDarkThemeActive()
+    {
+        if (Application.Current?.TryFindResource("BackgroundBrush") is SolidColorBrush bg)
+        {
+            var lum = (0.299 * bg.Color.R + 0.587 * bg.Color.G + 0.114 * bg.Color.B) / 255.0;
+            return lum < 0.45;
+        }
+        return false;
     }
 
     private void ApplyEditorAppearance()
@@ -313,4 +357,186 @@ public partial class NotepadTextViewer : UserControl
     }
 
     private void CopyButton_Click(object sender, RoutedEventArgs e) => CopySelectedOrAll();
+
+    private void EncodingMenuButton_Click(object sender, RoutedEventArgs e)
+    {
+        _encodingMenu = BuildEncodingMenu();
+        _encodingMenu.PlacementTarget = EncodingMenuButton;
+        _encodingMenu.Placement = PlacementMode.Bottom;
+        _encodingMenu.IsOpen = true;
+    }
+
+    private ContextMenu BuildEncodingMenu()
+    {
+        var menu = new ContextMenu();
+        if (TryFindResource("DropdownMenu") is Style dropdownStyle)
+        {
+            menu.Style = dropdownStyle;
+        }
+
+        MenuItem MakeViewItem(string header, string key, Func<Encoding> encodingFactory, bool stripBom = false)
+        {
+            var item = new MenuItem
+            {
+                Header = header,
+                IsCheckable = true,
+                IsChecked = string.Equals(_activeEncodingKey, key, StringComparison.OrdinalIgnoreCase)
+            };
+            item.Click += (_, _) => ApplyViewEncoding(key, encodingFactory(), stripBom);
+            return item;
+        }
+
+        MenuItem MakeConvertItem(string header, string key, Func<Encoding> encodingFactory)
+        {
+            var item = new MenuItem { Header = header };
+            item.Click += (_, _) => ConvertDisplayedTextToEncoding(key, encodingFactory());
+            return item;
+        }
+
+        menu.Items.Add(MakeViewItem("ANSI", "ANSI", () => Encoding.GetEncoding(1252)));
+        menu.Items.Add(MakeViewItem("UTF-8", "UTF-8", () => new UTF8Encoding(false)));
+        menu.Items.Add(MakeViewItem("UTF-8-BOM", "UTF-8-BOM", () => new UTF8Encoding(true), stripBom: true));
+        menu.Items.Add(MakeViewItem("UTF-16 BE BOM", "UTF-16 BE BOM", () => Encoding.BigEndianUnicode, stripBom: true));
+        menu.Items.Add(MakeViewItem("UTF-16 LE BOM", "UTF-16 LE BOM", () => Encoding.Unicode, stripBom: true));
+
+        var charSetsMenu = new MenuItem { Header = "Tập ký tự" };
+        foreach (var (groupName, entries) in GetCharacterSetGroups())
+        {
+            var groupItem = new MenuItem { Header = groupName };
+            foreach (var (label, codePage) in entries)
+            {
+                var cp = codePage;
+                groupItem.Items.Add(MakeViewItem(label, label, () => Encoding.GetEncoding(cp)));
+            }
+            charSetsMenu.Items.Add(groupItem);
+        }
+        menu.Items.Add(charSetsMenu);
+
+        menu.Items.Add(new Separator());
+        menu.Items.Add(MakeConvertItem("Chuyển đổi sang ANSI", "ANSI", () => Encoding.GetEncoding(1252)));
+        menu.Items.Add(MakeConvertItem("Chuyển đổi sang UTF-8", "UTF-8", () => new UTF8Encoding(false)));
+        menu.Items.Add(MakeConvertItem("Chuyển đổi sang UTF-8-BOM", "UTF-8-BOM", () => new UTF8Encoding(true)));
+        menu.Items.Add(MakeConvertItem("Chuyển đổi sang UTF-16 BE BOM", "UTF-16 BE BOM", () => Encoding.BigEndianUnicode));
+        menu.Items.Add(MakeConvertItem("Chuyển đổi sang UTF-16 LE BOM", "UTF-16 LE BOM", () => Encoding.Unicode));
+
+        return menu;
+    }
+
+    private static (string Group, (string Label, int CodePage)[] Items)[] GetCharacterSetGroups() =>
+    [
+        ("Ả Rập", [("ISO 8859-6", 28596), ("OEM 720", 720), ("Windows-1256", 1256)]),
+        ("Ban-tích", [("ISO 8859-4", 28594), ("ISO 8859-13", 28603), ("OEM 775", 775), ("Windows-1257", 1257)]),
+        ("Xen-tơ", [("ISO 8859-14", 28604)]),
+        ("Ki-rin", [("ISO 8859-5", 28595), ("KOI8-R", 20866), ("KOI8-U", 21866), ("Macintosh", 10007), ("OEM 855", 855), ("OEM 866", 866), ("Windows-1251", 1251)]),
+        ("Trung Âu", [("ISO 8859-2", 28592), ("OEM 852", 852), ("Windows-1250", 1250)]),
+        ("Hán", [("Big5 (Phồn thể)", 950), ("GB2312 (Giản thể)", 936)]),
+        ("Đông Âu", [("ISO 8859-2", 28592)]),
+        ("Hy Lạp", [("ISO 8859-7", 28597), ("OEM 737", 737), ("OEM 869", 869), ("Windows-1253", 1253)]),
+        ("Do Thái", [("ISO 8859-8", 28598), ("OEM 862", 862), ("Windows-1255", 1255)]),
+        ("Nhật", [("Shift-JIS", 932)]),
+        ("Hàn", [("EUC-KR", 51949), ("Windows 949", 949)]),
+        ("Bắc Âu", [("OEM 865", 865), ("OEM 861", 861)]),
+        ("Thái", [("TIS-620 (Windows-874)", 874)]),
+        ("Thổ Nhĩ Kỳ", [("ISO 8859-3", 28593), ("ISO 8859-9", 28599), ("OEM 857", 857), ("Windows-1254", 1254)]),
+        ("Tây Âu", [("ISO 8859-1", 28591), ("ISO 8859-15", 28605), ("OEM 850", 850), ("OEM 858", 858), ("OEM 860", 860), ("OEM 863", 863), ("Windows-1252", 1252)]),
+        ("Việt", [("Windows-1258", 1258)])
+    ];
+
+    private void ApplyViewEncoding(string encodingKey, Encoding encoding, bool stripBom)
+    {
+        string decoded;
+        if (!string.IsNullOrWhiteSpace(_currentFilePath) && File.Exists(_currentFilePath))
+        {
+            var bytes = ReadSampleBytes(_currentFilePath);
+            decoded = DecodeBytes(bytes, encoding, stripBom);
+        }
+        else
+        {
+            var currentEnc = ResolveEncodingByKey(_activeEncodingKey);
+            var bytes = currentEnc.GetBytes(Editor.Text);
+            decoded = DecodeBytes(bytes, encoding, stripBom);
+        }
+
+        if (decoded.Contains('\0'))
+        {
+            decoded = decoded.Replace('\0', ' ');
+        }
+
+        Editor.Text = decoded;
+        Editor.ScrollToHome();
+        _activeEncodingKey = encodingKey;
+        EncodingStatusLabel.Text = encodingKey;
+        UpdateStatusBar();
+    }
+
+    private void ConvertDisplayedTextToEncoding(string targetKey, Encoding targetEncoding)
+    {
+        var bytes = targetEncoding.GetBytes(Editor.Text);
+        var converted = targetEncoding.GetString(bytes);
+        if (converted.Contains('\0'))
+        {
+            converted = converted.Replace('\0', ' ');
+        }
+
+        Editor.Text = converted;
+        _activeEncodingKey = targetKey;
+        EncodingStatusLabel.Text = targetKey;
+        UpdateStatusBar();
+    }
+
+    private static byte[] ReadSampleBytes(string path)
+    {
+        using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        var len = (int)Math.Min(MaxEncodingReloadBytes, fs.Length);
+        var buffer = new byte[len];
+        var offset = 0;
+        while (offset < len)
+        {
+            var read = fs.Read(buffer, offset, len - offset);
+            if (read == 0) break;
+            offset += read;
+        }
+        return offset == buffer.Length ? buffer : buffer[..offset];
+    }
+
+    private static string DecodeBytes(byte[] bytes, Encoding encoding, bool stripBom)
+    {
+        var offset = 0;
+        if (stripBom)
+        {
+            var preamble = encoding.GetPreamble();
+            if (preamble.Length > 0 && bytes.Length >= preamble.Length && bytes.AsSpan(0, preamble.Length).SequenceEqual(preamble))
+            {
+                offset = preamble.Length;
+            }
+        }
+        return encoding.GetString(bytes, offset, bytes.Length - offset);
+    }
+
+    private static string DetectBomEncodingKey(string? filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath)) return "UTF-8";
+        try
+        {
+            Span<byte> bom = stackalloc byte[3];
+            using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            var read = fs.Read(bom);
+            if (read >= 3 && bom[0] == 0xEF && bom[1] == 0xBB && bom[2] == 0xBF) return "UTF-8-BOM";
+            if (read >= 2 && bom[0] == 0xFF && bom[1] == 0xFE) return "UTF-16 LE BOM";
+            if (read >= 2 && bom[0] == 0xFE && bom[1] == 0xFF) return "UTF-16 BE BOM";
+        }
+        catch
+        {
+        }
+        return "UTF-8";
+    }
+
+    private static Encoding ResolveEncodingByKey(string key) => key switch
+    {
+        "ANSI" => Encoding.GetEncoding(1252),
+        "UTF-8-BOM" => new UTF8Encoding(true),
+        "UTF-16 BE BOM" => Encoding.BigEndianUnicode,
+        "UTF-16 LE BOM" => Encoding.Unicode,
+        _ => new UTF8Encoding(false)
+    };
 }

@@ -10,6 +10,9 @@
             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
             <DockPanel x:Name="HeaderPanel" Margin="8,6" LastChildFill="True">
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Click="CopyPath_Click" Style="{StaticResource ButtonOutline}" Width="30" Height="28" MinHeight="28" Padding="3" Margin="0,0,5,0" ToolTip="Sao chép đường dẫn tệp" AutomationProperties.Name="Sao chép đường dẫn tệp" AutomationProperties.AutomationId="CopyFilePathButton">
+                        <iconPacks:PackIconMaterial Kind="ContentCopy" />
+                    </Button>
                     <Button Click="OpenDefault_Click" Style="{StaticResource ButtonOutline}" Width="30" Height="28" MinHeight="28" Padding="3" Margin="0,0,5,0" ToolTip="Mở bằng ứng dụng mặc định" AutomationProperties.Name="Mở bằng ứng dụng mặc định" AutomationProperties.AutomationId="OpenWithDefaultAppButton">
                         <iconPacks:PackIconMaterial Kind="OpenInApp" />
                     </Button>

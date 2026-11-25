@@ -204,17 +204,41 @@ public partial class FilePreviewControl : UserControl, IPreviewHost
     public void ShowMessage(string message)
     {
         ContentHost.Children.Clear();
+        var stack = new StackPanel
+        {
+            Margin = new Thickness(24),
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            MaxWidth = 520
+        };
         var text = new TextBlock
         {
             Text = message,
-            Margin = new Thickness(24),
             TextWrapping = TextWrapping.Wrap,
-            VerticalAlignment = VerticalAlignment.Center,
-            HorizontalAlignment = HorizontalAlignment.Center,
+            TextAlignment = TextAlignment.Center,
             Foreground = TryFindBrush("MutedForegroundBrush") ?? Brushes.Gray
         };
         AutomationProperties.SetAutomationId(text, "PreviewLoadError");
-        ContentHost.Children.Add(text);
+        stack.Children.Add(text);
+
+        if (!string.IsNullOrWhiteSpace(_filePath) && File.Exists(_filePath))
+        {
+            var openBtn = new Button
+            {
+                Content = "Mở bằng ứng dụng mặc định",
+                Margin = new Thickness(0, 12, 0, 0),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Padding = new Thickness(12, 5, 12, 5)
+            };
+            if (TryFindStyle("ButtonOutline") is Style outlineStyle)
+            {
+                openBtn.Style = outlineStyle;
+            }
+            openBtn.Click += OpenDefault_Click;
+            stack.Children.Add(openBtn);
+        }
+
+        ContentHost.Children.Add(stack);
     }
 
     public Style? TryFindStyle(string resourceKey) => TryFindResource(resourceKey) as Style;
@@ -225,7 +249,7 @@ public partial class FilePreviewControl : UserControl, IPreviewHost
         var fileName = Path.GetFileName(fullPath);
         var extension = Path.GetExtension(fullPath);
         FileNameText.Text = Path.GetFileNameWithoutExtension(fullPath);
-        FileExtensionText.Text = extension.ToUpperInvariant();
+        FileExtensionText.Text = extension.TrimStart('.').ToUpperInvariant();
         FileSizeText.Text = FormatSize(new FileInfo(fullPath).Length);
         AutomationProperties.SetName(FileNameText, fileName);
     }
@@ -267,6 +291,11 @@ public partial class FilePreviewControl : UserControl, IPreviewHost
     private void OnDrop(object sender, DragEventArgs e)
     {
         if (e.Data.GetData(DataFormats.FileDrop) is string[] files && files.Length > 0) LoadFile(files[0]);
+    }
+
+    private void CopyPath_Click(object s, RoutedEventArgs e)
+    {
+        if (!string.IsNullOrWhiteSpace(_filePath)) Clipboard.SetText(_filePath);
     }
 
     private void OpenDefault_Click(object s, RoutedEventArgs e) => Launch(_filePath);

@@ -124,7 +124,7 @@
                           AutomationProperties.Name="Trình xem tài liệu PDF"
                           HorizontalScrollBarVisibility="Auto"
                           VerticalScrollBarVisibility="Auto"
-                          Background="#DFE3E8"
+                          Background="{DynamicResource BackgroundBrush}"
                           ScrollChanged="PagesScrollViewer_ScrollChanged"
                           PreviewMouseWheel="PagesScrollViewer_PreviewMouseWheel">
                 <StackPanel x:Name="PagesPanel"

@@ -56,6 +56,8 @@ internal sealed class TextPreviewHandler : IFilePreviewHandler
             ".doc" or ".xls" or ".ppt" => ReadLegacyOffice(path, ext),
             ".eml" => ReadEml(path),
             ".json" => ReadJsonPreview(path),
+            ".xml" or ".hdr" or ".config" or ".xaml" => ReadXmlPreview(path),
+            ".pcap" or ".cap" => ReadPcapSummary(path),
             ".zip" => ReadZipArchive(path),
             _ => ReadNotepadTextPreview(path)
         };
@@ -82,6 +84,86 @@ internal sealed class TextPreviewHandler : IFilePreviewHandler
             return "Tệp JSON quá lớn để xem trước (giới hạn 8 MB). Hãy mở bằng ứng dụng mặc định.";
         using var doc = JsonDocument.Parse(File.ReadAllText(path));
         return LimitPreview(JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true }), MaxTextPreviewCharacters, "JSON");
+    }
+
+    private static string ReadXmlPreview(string path)
+    {
+        var raw = ReadNotepadTextPreview(path);
+        try
+        {
+            var xdoc = System.Xml.Linq.XDocument.Parse(raw);
+            return LimitPreview(xdoc.ToString(), MaxTextPreviewCharacters, "XML");
+        }
+        catch
+        {
+            return raw;
+        }
+    }
+
+    private static string ReadPcapSummary(string path)
+    {
+        try
+        {
+            using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using var br = new BinaryReader(fs);
+            if (fs.Length < 24) return ReadNotepadTextPreview(path);
+            var magic = br.ReadUInt32();
+            bool littleEndian = magic is 0xA1B2C3D4 or 0xA1B23C4D;
+            bool bigEndian = magic is 0xD4C3B2A1 or 0x4D3CB2A1;
+            if (!littleEndian && !bigEndian) return ReadNotepadTextPreview(path);
+
+            ushort ReadU16() { var b = br.ReadBytes(2); return littleEndian ? BitConverter.ToUInt16(b) : (ushort)((b[0] << 8) | b[1]); }
+            uint ReadU32() { var b = br.ReadBytes(4); return littleEndian ? BitConverter.ToUInt32(b) : (uint)((b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3]); }
+
+            var vMaj = ReadU16();
+            var vMin = ReadU16();
+            _ = ReadU32(); // thiszone
+            _ = ReadU32(); // sigfigs
+            var snapLen = ReadU32();
+            var linkType = ReadU32();
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"=== PHÂN TÍCH GÓI TIN PCAP (v{vMaj}.{vMin}, LinkType={linkType}, SnapLen={snapLen}) ===");
+            sb.AppendLine($"{"#",-5} {"Thời gian (UTC)",-20} {"Độ dài",7}  {"Nguồn",-22} {"Đích",-22} {"Giao thức"}");
+            sb.AppendLine(new string('-', 92));
+
+            int idx = 0;
+            while (fs.Position + 16 <= fs.Length && idx < 500)
+            {
+                var tsSec = ReadU32();
+                var tsUsec = ReadU32();
+                var inclLen = ReadU32();
+                var origLen = ReadU32();
+                if (inclLen > 262144 || fs.Position + inclLen > fs.Length) break;
+                var pkt = br.ReadBytes((int)inclLen);
+                idx++;
+                var time = DateTimeOffset.FromUnixTimeSeconds(tsSec).UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss");
+                string src = "-", dst = "-", proto = $"L2({linkType})";
+                if (linkType == 1 && pkt.Length >= 34 && pkt[12] == 0x08 && pkt[13] == 0x00)
+                {
+                    int ihl = (pkt[14] & 0x0F) * 4;
+                    byte p = pkt[23];
+                    proto = p switch { 6 => "TCP", 17 => "UDP", 1 => "ICMP", _ => $"IP({p})" };
+                    src = $"{pkt[26]}.{pkt[27]}.{pkt[28]}.{pkt[29]}";
+                    dst = $"{pkt[30]}.{pkt[31]}.{pkt[32]}.{pkt[33]}";
+                    if ((p == 6 || p == 17) && pkt.Length >= 14 + ihl + 4)
+                    {
+                        int sp = (pkt[14 + ihl] << 8) | pkt[14 + ihl + 1];
+                        int dp = (pkt[14 + ihl + 2] << 8) | pkt[14 + ihl + 3];
+                        src += $":{sp}";
+                        dst += $":{dp}";
+                    }
+                }
+                sb.AppendLine($"{idx,-5} {time,-20} {origLen,7}  {src,-22} {dst,-22} {proto}");
+            }
+            sb.AppendLine(new string('-', 92));
+            sb.AppendLine($"Tổng số gói đã đọc: {idx:N0}");
+            return sb.ToString();
+        }
+        catch
+        {
+            return ReadNotepadTextPreview(path);
+        }
     }
 
     private static string ReadNotepadTextPreview(string path)

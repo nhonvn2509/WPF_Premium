@@ -61,6 +61,13 @@ internal sealed class DocumentPreviewHandler : IFilePreviewHandler
                 return;
             }
 
+            if (PreviewPasswordDetector.IsEncryptedOfficeFile(path, extension))
+            {
+                host.SetStatusText("Có mật khẩu");
+                host.ShowMessage(PreviewPasswordDetector.PasswordProtectedMessage);
+                return;
+            }
+
             if (LibreOfficePreviewConverter.IsAvailable)
             {
                 _ = ConvertAndLoadOfficeAsync();
@@ -125,7 +132,11 @@ internal sealed class DocumentPreviewHandler : IFilePreviewHandler
                 try
                 {
                     _container.Children.Clear();
-                    _container.Children.Add(RichPreviewHelpers.CreateSpreadsheetPreview(path, extension, () => host.ShowTextFallback(path, extension)));
+                    _container.Children.Add(RichPreviewHelpers.CreateSpreadsheetPreview(
+                        path,
+                        extension,
+                        () => host.ShowTextFallback(path, extension),
+                        extension is ".xlsx" or ".xlsm" ? RenderOfficeDocumentView : null));
                     host.SetStatusText("Bảng tính");
                     return;
                 }
@@ -134,6 +145,11 @@ internal sealed class DocumentPreviewHandler : IFilePreviewHandler
                 }
             }
 
+            RenderOfficeDocumentView();
+        }
+
+        private void RenderOfficeDocumentView()
+        {
             try
             {
                 var document = OfficePreviewFlowDocumentRenderer.Render(path);
@@ -147,9 +163,54 @@ internal sealed class DocumentPreviewHandler : IFilePreviewHandler
                 };
                 AutomationProperties.SetAutomationId(viewer, "PreviewDocumentBrowser");
                 AutomationProperties.SetName(viewer, "Bản xem trước tài liệu Office");
+
+                var officeRoot = new DockPanel { LastChildFill = true };
+                var toolbarBorder = new Border
+                {
+                    Padding = new Thickness(8, 4, 8, 4),
+                    BorderThickness = new Thickness(0, 0, 0, 1),
+                    BorderBrush = host.TryFindBrush("BorderBrush") ?? Brushes.Gray,
+                    Background = host.TryFindBrush("CardBrush") ?? Brushes.Transparent
+                };
+                var toolbar = new DockPanel { LastChildFill = false };
+                var outlineStyle = host.TryFindStyle("ButtonOutline");
+
+                var zoomOut = new Button { Content = "-", Style = outlineStyle, Width = 26, Height = 26, Padding = new Thickness(2), Margin = new Thickness(0, 0, 4, 0), ToolTip = "Thu nhỏ cỡ chữ" };
+                var zoomIn = new Button { Content = "+", Style = outlineStyle, Width = 26, Height = 26, Padding = new Thickness(2), Margin = new Thickness(0, 0, 8, 0), ToolTip = "Phóng to cỡ chữ" };
+                var fontLabel = new TextBlock { Text = "100%", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0), Foreground = host.TryFindBrush("MutedForegroundBrush") ?? Brushes.Gray };
+                zoomOut.Click += (_, _) => { document.FontSize = Math.Max(9, document.FontSize - 1); fontLabel.Text = $"{Math.Round(document.FontSize / 14.0 * 100)}%"; };
+                zoomIn.Click += (_, _) => { document.FontSize = Math.Min(28, document.FontSize + 1); fontLabel.Text = $"{Math.Round(document.FontSize / 14.0 * 100)}%"; };
+
+                var copyAllBtn = new Button { Content = "Sao chép văn bản", Style = outlineStyle, Height = 26, Padding = new Thickness(8, 2, 8, 2), Margin = new Thickness(0, 0, 6, 0), ToolTip = "Sao chép toàn bộ nội dung văn bản tài liệu" };
+                copyAllBtn.Click += (_, _) =>
+                {
+                    var range = new System.Windows.Documents.TextRange(document.ContentStart, document.ContentEnd);
+                    Clipboard.SetText(range.Text);
+                };
+
+                var rawBtn = new Button { Content = "Xem văn bản thô", Style = outlineStyle, Height = 26, Padding = new Thickness(8, 2, 8, 2), ToolTip = "Chuyển sang trình xem văn bản / Hex" };
+                rawBtn.Click += (_, _) => host.ShowTextFallback(path, extension);
+                DockPanel.SetDock(rawBtn, Dock.Right);
+
+                toolbar.Children.Add(rawBtn);
+                toolbar.Children.Add(zoomOut);
+                toolbar.Children.Add(zoomIn);
+                toolbar.Children.Add(fontLabel);
+                toolbar.Children.Add(copyAllBtn);
+                toolbarBorder.Child = toolbar;
+
+                DockPanel.SetDock(toolbarBorder, Dock.Top);
+                officeRoot.Children.Add(toolbarBorder);
+                officeRoot.Children.Add(viewer);
+
                 _container.Children.Clear();
-                _container.Children.Add(viewer);
+                _container.Children.Add(officeRoot);
                 host.SetStatusText("Office");
+            }
+            catch (Exception ex) when (PreviewPasswordDetector.IsPasswordException(ex))
+            {
+                host.SetStatusText("Có mật khẩu");
+                host.ShowMessage(PreviewPasswordDetector.PasswordProtectedMessage);
             }
             catch (Exception) when (extension is ".doc" or ".xls" or ".ppt")
             {

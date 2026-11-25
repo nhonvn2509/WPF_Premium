@@ -70,12 +70,11 @@ internal static class RichPreviewHelpers
         root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
         var toolbar = new DockPanel { Margin = new Thickness(8, 6, 8, 6), LastChildFill = false };
-        var searchBox = new TextBox
+        var searchBox = new SearchBox
         {
-            Width = 220,
+            Width = 240,
             Height = 27,
-            Padding = new Thickness(6, 3, 6, 3),
-            VerticalContentAlignment = VerticalAlignment.Center,
+            Placeholder = "Tìm tên hoặc đường dẫn trong gói nén...",
             ToolTip = "Tìm kiếm theo tên hoặc đường dẫn trong gói nén"
         };
         var searchLabel = new TextBlock { Text = "Lọc:", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) };
@@ -112,6 +111,7 @@ internal static class RichPreviewHelpers
             HeadersVisibility = DataGridHeadersVisibility.Column,
             AlternatingRowBackground = new SolidColorBrush(System.Windows.Media.Color.FromArgb(16, 128, 128, 128))
         };
+        ApplyThemedDataGrid(grid);
         grid.Columns.Add(new DataGridTextColumn { Header = "Đường dẫn", Binding = new Binding(nameof(ArchiveItemRow.Path)), Width = new DataGridLength(1, DataGridLengthUnitType.Star) });
         grid.Columns.Add(new DataGridTextColumn { Header = "Loại", Binding = new Binding(nameof(ArchiveItemRow.Kind)), Width = 80 });
         grid.Columns.Add(new DataGridTextColumn { Header = "Kích thước", Binding = new Binding(nameof(ArchiveItemRow.Size)), Width = 100 });
@@ -122,7 +122,7 @@ internal static class RichPreviewHelpers
         var view = CollectionViewSource.GetDefaultView(entries);
         searchBox.TextChanged += (_, _) =>
         {
-            var q = searchBox.Text.Trim();
+            var q = (searchBox.Text ?? string.Empty).Trim();
             view.Filter = string.IsNullOrEmpty(q)
                 ? null
                 : obj => obj is ArchiveItemRow row && row.Path.Contains(q, StringComparison.OrdinalIgnoreCase);
@@ -215,21 +215,23 @@ internal static class RichPreviewHelpers
         {
             var textDoc = new FlowDocument
             {
-                Background = Brushes.White,
-                Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x20, 0x21, 0x24)),
                 FontFamily = new FontFamily("Segoe UI, Arial"),
                 FontSize = 14,
                 PagePadding = new Thickness(20),
                 ColumnWidth = double.PositiveInfinity
             };
+            textDoc.SetResourceReference(FlowDocument.BackgroundProperty, "BackgroundBrush");
+            textDoc.SetResourceReference(FlowDocument.ForegroundProperty, "ForegroundBrush");
             textDoc.Blocks.Add(new Paragraph(new Run(message.TextBody ?? "(Thư không có nội dung)")));
-            bodyElement = new FlowDocumentScrollViewer
+            var viewer = new FlowDocumentScrollViewer
             {
                 Document = textDoc,
                 IsToolBarVisible = false,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                Background = Brushes.White
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
             };
+            viewer.SetResourceReference(Control.BackgroundProperty, "BackgroundBrush");
+            viewer.SetResourceReference(Control.ForegroundProperty, "ForegroundBrush");
+            bodyElement = viewer;
         }
 
         Grid.SetRow(bodyElement, 1);
@@ -245,13 +247,13 @@ internal static class RichPreviewHelpers
 
         var flowDoc = new FlowDocument
         {
-            Background = Brushes.White,
-            Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x1F, 0x23, 0x28)),
             FontFamily = new FontFamily("Segoe UI, Arial"),
             FontSize = 14,
             PagePadding = new Thickness(24),
             ColumnWidth = double.PositiveInfinity
         };
+        flowDoc.SetResourceReference(FlowDocument.BackgroundProperty, "BackgroundBrush");
+        flowDoc.SetResourceReference(FlowDocument.ForegroundProperty, "ForegroundBrush");
 
         foreach (var block in syntaxDoc)
         {
@@ -287,9 +289,10 @@ internal static class RichPreviewHelpers
         {
             Document = flowDoc,
             IsToolBarVisible = false,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            Background = Brushes.White
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto
         };
+        viewer.SetResourceReference(Control.BackgroundProperty, "BackgroundBrush");
+        viewer.SetResourceReference(Control.ForegroundProperty, "ForegroundBrush");
 
         Grid.SetRow(barBorder, 0);
         Grid.SetRow(viewer, 1);
@@ -298,7 +301,7 @@ internal static class RichPreviewHelpers
         return root;
     }
 
-    public static UIElement CreateSpreadsheetPreview(string path, string extension, Action showSource)
+    public static UIElement CreateSpreadsheetPreview(string path, string extension, Action showSource, Action? showOfficeLayout = null)
     {
         var sheets = ReadSpreadsheetSheets(path, extension);
         var root = new Grid();
@@ -310,12 +313,11 @@ internal static class RichPreviewHelpers
         foreach (var s in sheets) sheetCombo.Items.Add(s.Name);
         if (sheets.Count > 0) sheetCombo.SelectedIndex = 0;
 
-        var filterBox = new TextBox
+        var filterBox = new SearchBox
         {
-            Width = 200,
+            Width = 220,
             Height = 27,
-            Padding = new Thickness(6, 3, 6, 3),
-            VerticalContentAlignment = VerticalAlignment.Center,
+            Placeholder = "Lọc nhanh dòng trong bảng...",
             ToolTip = "Lọc nhanh các dòng trong bảng"
         };
         var infoText = new TextBlock
@@ -325,12 +327,26 @@ internal static class RichPreviewHelpers
             Foreground = Application.Current?.TryFindResource("MutedForegroundBrush") as Brush ?? Brushes.Gray
         };
 
+        var btnStyle = Application.Current?.TryFindResource("ButtonOutline") as Style;
         var sourceBtn = new Button { Content = "Xem dạng văn bản", Height = 27, Padding = new Thickness(10, 2, 10, 2) };
-        if (Application.Current?.TryFindResource("ButtonOutline") is Style btnStyle) sourceBtn.Style = btnStyle;
+        if (btnStyle is not null) sourceBtn.Style = btnStyle;
         sourceBtn.Click += (_, _) => showSource();
         DockPanel.SetDock(sourceBtn, Dock.Right);
 
+        var copyCsvBtn = new Button { Content = "Sao chép CSV", Height = 27, Padding = new Thickness(10, 2, 10, 2), Margin = new Thickness(0, 0, 6, 0), ToolTip = "Sao chép các dòng đang hiển thị ra Clipboard dạng CSV" };
+        if (btnStyle is not null) copyCsvBtn.Style = btnStyle;
+        DockPanel.SetDock(copyCsvBtn, Dock.Right);
+
         toolbar.Children.Add(sourceBtn);
+        toolbar.Children.Add(copyCsvBtn);
+        if (showOfficeLayout is not null)
+        {
+            var layoutBtn = new Button { Content = "Bố cục gốc", Height = 27, Padding = new Thickness(10, 2, 10, 2), Margin = new Thickness(0, 0, 6, 0), ToolTip = "Xem bố cục gốc (ô gộp, nhiều bảng, ảnh nhúng)" };
+            if (btnStyle is not null) layoutBtn.Style = btnStyle;
+            layoutBtn.Click += (_, _) => showOfficeLayout();
+            DockPanel.SetDock(layoutBtn, Dock.Right);
+            toolbar.Children.Add(layoutBtn);
+        }
         toolbar.Children.Add(sheetCombo);
         toolbar.Children.Add(new TextBlock { Text = "Lọc:", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) });
         toolbar.Children.Add(filterBox);
@@ -345,6 +361,7 @@ internal static class RichPreviewHelpers
             HeadersVisibility = DataGridHeadersVisibility.Column,
             AlternatingRowBackground = new SolidColorBrush(System.Windows.Media.Color.FromArgb(16, 128, 128, 128))
         };
+        ApplyThemedDataGrid(dataGrid);
 
         void BindSheet(int index)
         {
@@ -353,7 +370,7 @@ internal static class RichPreviewHelpers
             var dv = dt.DefaultView;
             dataGrid.ItemsSource = dv;
             infoText.Text = $"{dt.Rows.Count:N0} dòng · {dt.Columns.Count:N0} cột";
-            var q = filterBox.Text.Trim().Replace("'", "''");
+            var q = (filterBox.Text ?? string.Empty).Trim().Replace("'", "''");
             if (string.IsNullOrEmpty(q))
             {
                 dv.RowFilter = string.Empty;
@@ -368,6 +385,19 @@ internal static class RichPreviewHelpers
 
         sheetCombo.SelectionChanged += (_, _) => BindSheet(sheetCombo.SelectedIndex);
         filterBox.TextChanged += (_, _) => BindSheet(Math.Max(0, sheetCombo.SelectedIndex));
+        copyCsvBtn.Click += (_, _) =>
+        {
+            if (dataGrid.ItemsSource is DataView dv && dv.Table is { } tbl)
+            {
+                var csv = new StringBuilder();
+                csv.AppendLine(string.Join(",", tbl.Columns.Cast<DataColumn>().Select(c => $"\"{c.ColumnName.Replace("\"", "\"\"")}\"")));
+                foreach (DataRowView rv in dv)
+                {
+                    csv.AppendLine(string.Join(",", tbl.Columns.Cast<DataColumn>().Select(c => $"\"{Convert.ToString(rv[c.ColumnName])?.Replace("\"", "\"\"")}\"")));
+                }
+                Clipboard.SetText(csv.ToString());
+            }
+        };
         if (sheets.Count > 0) BindSheet(0);
 
         var barBorder = new Border
@@ -448,6 +478,19 @@ internal static class RichPreviewHelpers
         root.Children.Add(barBorder);
         root.Children.Add(viewer);
         return root;
+    }
+
+    private static void ApplyThemedDataGrid(DataGrid grid)
+    {
+        grid.SetResourceReference(Control.BackgroundProperty, "CardBrush");
+        grid.SetResourceReference(Control.ForegroundProperty, "ForegroundBrush");
+        grid.SetResourceReference(Control.BorderBrushProperty, "BorderBrush");
+        grid.SetResourceReference(DataGrid.RowBackgroundProperty, "CardBrush");
+        grid.SetResourceReference(DataGrid.HorizontalGridLinesBrushProperty, "BorderBrush");
+        grid.SetResourceReference(DataGrid.VerticalGridLinesBrushProperty, "BorderBrush");
+        if (Application.Current?.TryFindResource("TableRow") is Style rowStyle) grid.RowStyle = rowStyle;
+        if (Application.Current?.TryFindResource("TableCell") is Style cellStyle) grid.CellStyle = cellStyle;
+        if (Application.Current?.TryFindResource("TableColumnHeader") is Style hdrStyle) grid.ColumnHeaderStyle = hdrStyle;
     }
 
     private static UIElement CreateHtmlRendererElement(string html)
@@ -531,9 +574,8 @@ internal static class RichPreviewHelpers
 
             case CodeBlock code:
                 var codeText = code.Lines.ToString();
-                return new Section
+                var codeSection = new Section
                 {
-                    Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF6, 0xF8, 0xFA)),
                     Padding = new Thickness(12),
                     Margin = new Thickness(0, 4, 0, 10),
                     Blocks =
@@ -546,6 +588,8 @@ internal static class RichPreviewHelpers
                         }
                     }
                 };
+                codeSection.SetResourceReference(TextElement.BackgroundProperty, "CardBrush");
+                return codeSection;
 
             case ListBlock list:
                 var wpfList = new System.Windows.Documents.List
@@ -568,12 +612,12 @@ internal static class RichPreviewHelpers
             case QuoteBlock quote:
                 var section = new Section
                 {
-                    BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xD0, 0xD7, 0xDE)),
                     BorderThickness = new Thickness(3, 0, 0, 0),
                     Padding = new Thickness(12, 2, 0, 2),
-                    Margin = new Thickness(4, 4, 0, 8),
-                    Foreground = Brushes.DimGray
+                    Margin = new Thickness(4, 4, 0, 8)
                 };
+                section.SetResourceReference(System.Windows.Documents.Block.BorderBrushProperty, "BorderBrush");
+                section.SetResourceReference(TextElement.ForegroundProperty, "MutedForegroundBrush");
                 foreach (var sub in quote)
                 {
                     var subBlock = ConvertMarkdownBlock(sub);
@@ -597,11 +641,12 @@ internal static class RichPreviewHelpers
                     target.Add(new Run(lit.Content.ToString()));
                     break;
                 case CodeInline code:
-                    target.Add(new Run(code.Content)
+                    var inlineCode = new Run(code.Content)
                     {
-                        FontFamily = new FontFamily("Consolas, Courier New"),
-                        Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xEF, 0xF1, 0xF3))
-                    });
+                        FontFamily = new FontFamily("Consolas, Courier New")
+                    };
+                    inlineCode.SetResourceReference(TextElement.BackgroundProperty, "MutedBrush");
+                    target.Add(inlineCode);
                     break;
                 case EmphasisInline emph:
                     var span = new Span();
@@ -661,26 +706,8 @@ internal static class RichPreviewHelpers
             {
                 var id = sheet.Id?.Value;
                 if (string.IsNullOrEmpty(id) || wbPart.GetPartById(id) is not WorksheetPart wsPart) continue;
-                var dt = new DataTable(sheet.Name?.Value ?? "Trang");
-                var rows = wsPart.Worksheet?.Descendants<DocumentFormat.OpenXml.Spreadsheet.Row>().Take(2000).ToList() ?? [];
-                var maxCols = Math.Max(1, rows.SelectMany(r => r.Elements<DocumentFormat.OpenXml.Spreadsheet.Cell>()).Select(c => GetColumnIndex(c.CellReference?.Value)).DefaultIfEmpty(0).Max() + 1);
-                for (var c = 0; c < maxCols; c++) dt.Columns.Add(GetExcelColumnName(c));
-
-                foreach (var r in rows)
-                {
-                    var dr = dt.NewRow();
-                    foreach (var cell in r.Elements<DocumentFormat.OpenXml.Spreadsheet.Cell>())
-                    {
-                        var colIdx = GetColumnIndex(cell.CellReference?.Value);
-                        if (colIdx >= 0 && colIdx < dt.Columns.Count)
-                        {
-                            dr[colIdx] = ReadCellValue(cell, sharedStrings);
-                        }
-                    }
-                    dt.Rows.Add(dr);
-                }
-
-                result.Add((sheet.Name?.Value ?? $"Trang {result.Count + 1}", dt));
+                var sheetName = sheet.Name?.Value ?? $"Trang {result.Count + 1}";
+                result.AddRange(ExtractSheetTables(wsPart, sheetName, sharedStrings));
             }
 
             return result;
@@ -717,6 +744,210 @@ internal static class RichPreviewHelpers
         return legacyResult;
     }
 
+    private static List<(string Name, DataTable Table)> ExtractSheetTables(
+        WorksheetPart wsPart,
+        string sheetName,
+        List<string>? sharedStrings)
+    {
+        var rows = wsPart.Worksheet?.Descendants<DocumentFormat.OpenXml.Spreadsheet.Row>().Take(2000).ToList() ?? [];
+        var fullDt = new DataTable(sheetName);
+        var grid = new Dictionary<(int Row, int Col), string>();
+        var maxCols = 1;
+        var parsedRows = new List<(int RowIdx, List<(int ColIdx, string Val)> Cells)>(rows.Count);
+
+        for (var i = 0; i < rows.Count; i++)
+        {
+            var r = rows[i];
+            var rowIdx = r.RowIndex?.HasValue == true ? Math.Max(0, (int)r.RowIndex.Value - 1) : i;
+            var cells = new List<(int ColIdx, string Val)>();
+            var seqCol = 0;
+            foreach (var cell in r.Elements<DocumentFormat.OpenXml.Spreadsheet.Cell>())
+            {
+                var colIdx = string.IsNullOrWhiteSpace(cell.CellReference?.Value)
+                    ? seqCol
+                    : GetColumnIndex(cell.CellReference!.Value);
+                seqCol = colIdx + 1;
+                if (colIdx + 1 > maxCols) maxCols = colIdx + 1;
+
+                var val = ReadCellValue(cell, sharedStrings);
+                cells.Add((colIdx, val));
+                if (!string.IsNullOrWhiteSpace(val))
+                {
+                    grid[(rowIdx, colIdx)] = val;
+                }
+            }
+            parsedRows.Add((rowIdx, cells));
+        }
+
+        for (var c = 0; c < maxCols; c++) fullDt.Columns.Add(GetExcelColumnName(c));
+        foreach (var (_, cells) in parsedRows)
+        {
+            var dr = fullDt.NewRow();
+            foreach (var (colIdx, val) in cells)
+            {
+                if (colIdx >= 0 && colIdx < fullDt.Columns.Count) dr[colIdx] = val;
+            }
+            fullDt.Rows.Add(dr);
+        }
+
+        var regions = DetectTableRegions(wsPart, grid);
+        if (regions.Count < 2)
+        {
+            return [(sheetName, fullDt)];
+        }
+
+        var list = new List<(string, DataTable)>(regions.Count + 1)
+        {
+            ($"{sheetName} (Toàn bộ)", fullDt)
+        };
+        foreach (var (label, minR, maxR, minC, maxC) in regions)
+        {
+            var subName = $"{sheetName} — {label}";
+            list.Add((subName, BuildSubTableDataTable(grid, minR, maxR, minC, maxC, subName)));
+        }
+        return list;
+    }
+
+    private static List<(string Label, int MinR, int MaxR, int MinC, int MaxC)> DetectTableRegions(
+        WorksheetPart wsPart,
+        Dictionary<(int Row, int Col), string> grid)
+    {
+        var regions = new List<(string Label, int MinR, int MaxR, int MinC, int MaxC)>();
+        foreach (var tdp in wsPart.TableDefinitionParts)
+        {
+            var tbl = tdp.Table;
+            if (TryParseCellRange(tbl?.Reference?.Value, out var r1, out var c1, out var r2, out var c2)
+                && (r2 > r1 || c2 > c1))
+            {
+                var name = tbl?.DisplayName?.Value ?? tbl?.Name?.Value ?? tbl?.Reference?.Value ?? $"Bảng {regions.Count + 1}";
+                regions.Add((name, r1, r2, c1, c2));
+            }
+        }
+        if (regions.Count >= 2 || grid.Count == 0)
+        {
+            return regions.OrderBy(r => r.MinR).ThenBy(r => r.MinC).ToList();
+        }
+
+        // Fallback: split occupied cells into horizontal row bands, then vertical column bands.
+        regions.Clear();
+        var occupiedRows = grid.Keys.Select(k => k.Row).Distinct().OrderBy(r => r).ToList();
+        foreach (var (bandR1, bandR2) in GetContiguousSpans(occupiedRows))
+        {
+            var bandCols = grid.Keys
+                .Where(k => k.Row >= bandR1 && k.Row <= bandR2)
+                .Select(k => k.Col)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToList();
+
+            foreach (var (bandC1, bandC2) in GetContiguousSpans(bandCols))
+            {
+                var subRows = grid.Keys
+                    .Where(k => k.Row >= bandR1 && k.Row <= bandR2 && k.Col >= bandC1 && k.Col <= bandC2)
+                    .Select(k => k.Row)
+                    .Distinct()
+                    .OrderBy(r => r)
+                    .ToList();
+
+                foreach (var (subR1, subR2) in GetContiguousSpans(subRows))
+                {
+                    if (subR2 - subR1 < 1 || bandC2 - bandC1 < 1) continue;
+                    var range = $"{GetExcelColumnName(bandC1)}{subR1 + 1}:{GetExcelColumnName(bandC2)}{subR2 + 1}";
+                    regions.Add(($"Bảng {regions.Count + 1} ({range})", subR1, subR2, bandC1, bandC2));
+                }
+            }
+        }
+
+        return regions;
+    }
+
+    private static IEnumerable<(int Start, int End)> GetContiguousSpans(List<int> sortedIndices)
+    {
+        if (sortedIndices.Count == 0) yield break;
+        var start = sortedIndices[0];
+        var prev = sortedIndices[0];
+        for (var i = 1; i < sortedIndices.Count; i++)
+        {
+            if (sortedIndices[i] != prev + 1)
+            {
+                yield return (start, prev);
+                start = sortedIndices[i];
+            }
+            prev = sortedIndices[i];
+        }
+        yield return (start, prev);
+    }
+
+    private static DataTable BuildSubTableDataTable(
+        Dictionary<(int Row, int Col), string> grid,
+        int minR,
+        int maxR,
+        int minC,
+        int maxC,
+        string tableName)
+    {
+        var dt = new DataTable(tableName);
+        var headerNonEmpty = 0;
+        for (var c = minC; c <= maxC; c++)
+        {
+            if (grid.ContainsKey((minR, c))) headerNonEmpty++;
+        }
+
+        var useFirstRowAsHeader = headerNonEmpty >= 2 && maxR > minR;
+        var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        for (var c = minC; c <= maxC; c++)
+        {
+            var baseName = useFirstRowAsHeader && grid.TryGetValue((minR, c), out var h) && !string.IsNullOrWhiteSpace(h)
+                ? h.Trim()
+                : GetExcelColumnName(c);
+            var uniqueName = baseName;
+            var suffix = 2;
+            while (!usedNames.Add(uniqueName))
+            {
+                uniqueName = $"{baseName} ({suffix++})";
+            }
+            dt.Columns.Add(uniqueName);
+        }
+
+        var startRow = useFirstRowAsHeader ? minR + 1 : minR;
+        for (var r = startRow; r <= maxR; r++)
+        {
+            var dr = dt.NewRow();
+            for (var c = minC; c <= maxC; c++)
+            {
+                if (grid.TryGetValue((r, c), out var val))
+                {
+                    dr[c - minC] = val;
+                }
+            }
+            dt.Rows.Add(dr);
+        }
+        return dt;
+    }
+
+    private static bool TryParseCellRange(string? range, out int r1, out int c1, out int r2, out int c2)
+    {
+        r1 = c1 = r2 = c2 = 0;
+        if (string.IsNullOrWhiteSpace(range)) return false;
+        var parts = range.Split(':');
+        if (parts.Length != 2) return false;
+        return TryParseCellRef(parts[0], out r1, out c1) && TryParseCellRef(parts[1], out r2, out c2);
+    }
+
+    private static bool TryParseCellRef(string? cellRef, out int rowIdx, out int colIdx)
+    {
+        rowIdx = colIdx = 0;
+        if (string.IsNullOrWhiteSpace(cellRef)) return false;
+        var clean = cellRef.Trim().Replace("$", string.Empty);
+        var split = 0;
+        while (split < clean.Length && char.IsLetter(clean[split])) split++;
+        if (split == 0 || split == clean.Length) return false;
+        if (!int.TryParse(clean[split..], out var rowNum) || rowNum < 1) return false;
+        colIdx = GetColumnIndex(clean);
+        rowIdx = rowNum - 1;
+        return true;
+    }
+
     private static List<string> SplitDelimitedLine(string line, char delimiter)
     {
         var cells = new List<string>();
@@ -746,10 +977,18 @@ internal static class RichPreviewHelpers
 
     private static string ReadCellValue(DocumentFormat.OpenXml.Spreadsheet.Cell cell, List<string>? sharedStrings)
     {
-        var raw = cell.CellValue?.InnerText ?? cell.InnerText ?? string.Empty;
+        if (cell.DataType?.Value == DocumentFormat.OpenXml.Spreadsheet.CellValues.InlineString)
+        {
+            return cell.InlineString?.InnerText ?? string.Empty;
+        }
+        var raw = cell.CellValue?.InnerText ?? string.Empty;
         if (cell.DataType?.Value == DocumentFormat.OpenXml.Spreadsheet.CellValues.SharedString && int.TryParse(raw, out var idx) && sharedStrings is not null && idx >= 0 && idx < sharedStrings.Count)
         {
             return sharedStrings[idx];
+        }
+        if (cell.DataType?.Value == DocumentFormat.OpenXml.Spreadsheet.CellValues.Boolean)
+        {
+            return raw == "1" ? "TRUE" : "FALSE";
         }
         return raw;
     }
