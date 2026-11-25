@@ -1,0 +1,144 @@
+<UserControl x:Class="WPF_Premium.Controls.PdfDocumentPreviewControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             MinHeight="0">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Thanh công cụ tài liệu PDF / Office -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource CardBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="6,4">
+            <DockPanel LastChildFill="True">
+                <TextBlock x:Name="DocumentInfoText"
+                           DockPanel.Dock="Right"
+                           VerticalAlignment="Center"
+                           FontSize="12"
+                           Foreground="{DynamicResource MutedForegroundBrush}"
+                           Margin="8,0,4,0" />
+
+                <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <ToggleButton x:Name="ThumbnailsToggle"
+                                  Style="{StaticResource Toggle}"
+                                  Height="27"
+                                  Padding="8,2"
+                                  Margin="0,0,6,0"
+                                  ToolTip="Bật/tắt thanh thu nhỏ các trang"
+                                  Click="ThumbnailsToggle_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="ViewAgendaOutline" Width="13" Height="13" VerticalAlignment="Center" Margin="0,0,5,0" />
+                            <TextBlock Text="Trang thu nhỏ" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ToggleButton>
+
+                    <Button x:Name="FirstPageButton" Click="FirstPage_Click" Style="{StaticResource ButtonOutline}" Width="27" Height="27" MinHeight="27" Padding="3" Margin="0,0,2,0" ToolTip="Trang đầu">
+                        <iconPacks:PackIconMaterial Kind="PageFirst" />
+                    </Button>
+                    <Button x:Name="PrevPageButton" Click="PrevPage_Click" Style="{StaticResource ButtonOutline}" Width="27" Height="27" MinHeight="27" Padding="3" Margin="0,0,4,0" ToolTip="Trang trước">
+                        <iconPacks:PackIconMaterial Kind="ChevronLeft" />
+                    </Button>
+
+                    <TextBox x:Name="PageNumberBox"
+                             Width="44"
+                             Height="27"
+                             MinHeight="27"
+                             Padding="4,2"
+                             VerticalContentAlignment="Center"
+                             HorizontalContentAlignment="Center"
+                             Text="1"
+                             ToolTip="Nhập số trang rồi nhấn Enter"
+                             KeyDown="PageNumberBox_KeyDown" />
+                    <TextBlock x:Name="TotalPagesText"
+                               Text="/ 1"
+                               VerticalAlignment="Center"
+                               Margin="4,0,4,0"
+                               Foreground="{DynamicResource MutedForegroundBrush}" />
+
+                    <Button x:Name="NextPageButton" Click="NextPage_Click" Style="{StaticResource ButtonOutline}" Width="27" Height="27" MinHeight="27" Padding="3" Margin="0,0,2,0" ToolTip="Trang sau">
+                        <iconPacks:PackIconMaterial Kind="ChevronRight" />
+                    </Button>
+                    <Button x:Name="LastPageButton" Click="LastPage_Click" Style="{StaticResource ButtonOutline}" Width="27" Height="27" MinHeight="27" Padding="3" Margin="0,0,8,0" ToolTip="Trang cuối">
+                        <iconPacks:PackIconMaterial Kind="PageLast" />
+                    </Button>
+
+                    <Button Click="ZoomOut_Click" Style="{StaticResource ButtonOutline}" Width="27" Height="27" MinHeight="27" Padding="3" Margin="0,0,2,0" ToolTip="Thu nhỏ">
+                        <iconPacks:PackIconMaterial Kind="MagnifyMinus" />
+                    </Button>
+                    <TextBlock x:Name="ZoomLevelText"
+                               Text="100%"
+                               MinWidth="42"
+                               TextAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="12"
+                               Margin="2,0" />
+                    <Button Click="ZoomIn_Click" Style="{StaticResource ButtonOutline}" Width="27" Height="27" MinHeight="27" Padding="3" Margin="0,0,4,0" ToolTip="Phóng to">
+                        <iconPacks:PackIconMaterial Kind="MagnifyPlus" />
+                    </Button>
+                    <Button Click="FitWidth_Click" Style="{StaticResource ButtonOutline}" Height="27" MinHeight="27" Padding="8,2" Margin="0,0,4,0" ToolTip="Vừa chiều rộng khung xem">
+                        <TextBlock Text="Vừa rộng" />
+                    </Button>
+                    <Button Click="FitPage_Click" Style="{StaticResource ButtonOutline}" Height="27" MinHeight="27" Padding="8,2" Margin="0,0,8,0" ToolTip="Vừa trọn một trang">
+                        <TextBlock Text="Vừa trang" />
+                    </Button>
+
+                    <Button Click="RotateLeft_Click" Style="{StaticResource ButtonOutline}" Width="27" Height="27" MinHeight="27" Padding="3" Margin="0,0,2,0" ToolTip="Xoay trái 90°">
+                        <iconPacks:PackIconMaterial Kind="RotateLeft" />
+                    </Button>
+                    <Button Click="RotateRight_Click" Style="{StaticResource ButtonOutline}" Width="27" Height="27" MinHeight="27" Padding="3" Margin="0,0,4,0" ToolTip="Xoay phải 90°">
+                        <iconPacks:PackIconMaterial Kind="RotateRight" />
+                    </Button>
+                </WrapPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Nội dung chính: Sidebar thumbnail + Vùng cuộn trang PDF -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border x:Name="ThumbnailsSidebar"
+                    Grid.Column="0"
+                    Width="156"
+                    Background="{DynamicResource CardBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="0,0,1,0"
+                    Visibility="Collapsed">
+                <ListBox x:Name="ThumbnailsList"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         SelectionChanged="ThumbnailsList_SelectionChanged" />
+            </Border>
+
+            <ScrollViewer x:Name="PagesScrollViewer"
+                          Grid.Column="1"
+                          AutomationProperties.AutomationId="PreviewDocumentBrowser"
+                          AutomationProperties.Name="Trình xem tài liệu PDF"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto"
+                          Background="#DFE3E8"
+                          ScrollChanged="PagesScrollViewer_ScrollChanged"
+                          PreviewMouseWheel="PagesScrollViewer_PreviewMouseWheel">
+                <StackPanel x:Name="PagesPanel"
+                            HorizontalAlignment="Center"
+                            Margin="16" />
+            </ScrollViewer>
+
+            <TextBlock x:Name="LoadingText"
+                       Grid.Column="1"
+                       Text="Đang tải tài liệu…"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource MutedForegroundBrush}"
+                       Visibility="Collapsed" />
+        </Grid>
+    </Grid>
+</UserControl>

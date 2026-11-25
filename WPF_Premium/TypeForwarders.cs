@@ -20,6 +20,7 @@ using WPF_Premium.Themes;
 [assembly: TypeForwardedTo(typeof(Divider))]
 [assembly: TypeForwardedTo(typeof(Field))]
 [assembly: TypeForwardedTo(typeof(FilePreviewControl))]
+[assembly: TypeForwardedTo(typeof(NotepadTextViewer))]
 [assembly: TypeForwardedTo(typeof(FormattedInputControl))]
 [assembly: TypeForwardedTo(typeof(MultiSelectControl))]
 [assembly: TypeForwardedTo(typeof(OfflineMapControl))]

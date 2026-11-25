@@ -1,0 +1,221 @@
+<UserControl x:Class="WPF_Premium.Controls.NotepadTextViewer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             PreviewKeyDown="UserControl_PreviewKeyDown">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Thanh công cụ Notepad++ gọn & 100% Tiếng Việt -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource CardBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="6,4">
+            <DockPanel LastChildFill="False">
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBox x:Name="FindInputBox"
+                             AutomationProperties.AutomationId="PreviewSearchBox"
+                             Width="190"
+                             Height="25"
+                             MinHeight="25"
+                             Padding="6,2"
+                             VerticalContentAlignment="Center"
+                             ToolTip="Tìm trong nội dung (Ctrl+F, Enter: Tìm tiếp)"
+                             TextChanged="FindInputBox_TextChanged"
+                             KeyDown="FindInputBox_KeyDown" />
+                    <Button Style="{StaticResource ButtonOutline}"
+                            Height="25" MinHeight="25" Width="26" Padding="2" Margin="4,0,2,0"
+                            ToolTip="Tìm trước (Shift+F3)"
+                            AutomationProperties.Name="Tìm trước"
+                            Click="FindPrevButton_Click">
+                        <iconPacks:PackIconMaterial Kind="ArrowUp" Width="12" Height="12" />
+                    </Button>
+                    <Button x:Name="FindNextButton"
+                            AutomationProperties.AutomationId="PreviewFindNextButton"
+                            Style="{StaticResource ButtonOutline}"
+                            Height="25" MinHeight="25" Width="26" Padding="2" Margin="0,0,4,0"
+                            ToolTip="Tìm tiếp (F3)"
+                            AutomationProperties.Name="Tìm tiếp"
+                            Click="FindNextButton_Click">
+                        <iconPacks:PackIconMaterial Kind="ArrowDown" Width="12" Height="12" />
+                    </Button>
+                    <ToggleButton x:Name="MatchCaseButton"
+                                  Style="{StaticResource Toggle}"
+                                  Height="25" Padding="6,2" Margin="0,0,3,0"
+                                  ToolTip="Phân biệt chữ hoa/thường"
+                                  Click="SearchOption_Changed">
+                        <TextBlock Text="Aa" FontSize="11.5" FontWeight="SemiBold" />
+                    </ToggleButton>
+                    <ToggleButton x:Name="WholeWordButton"
+                                  Style="{StaticResource Toggle}"
+                                  Height="25" Padding="6,2" Margin="0,0,3,0"
+                                  ToolTip="Khớp toàn bộ từ"
+                                  Click="SearchOption_Changed">
+                        <TextBlock Text="\b" FontSize="11.5" FontFamily="Consolas" />
+                    </ToggleButton>
+                    <ToggleButton x:Name="RegexButton"
+                                  Style="{StaticResource Toggle}"
+                                  Height="25" Padding="6,2" Margin="0,0,6,0"
+                                  ToolTip="Biểu thức chính quy (Regex)"
+                                  Click="SearchOption_Changed">
+                        <TextBlock Text=".*" FontSize="11.5" FontFamily="Consolas" />
+                    </ToggleButton>
+
+                    <ToggleButton x:Name="WordWrapButton"
+                                  AutomationProperties.AutomationId="PreviewWordWrapToggle"
+                                  Style="{StaticResource Toggle}"
+                                  Height="25"
+                                  Padding="7,2"
+                                  Margin="0,0,4,0"
+                                  IsChecked="True"
+                                  ToolTip="Tự động xuống dòng"
+                                  Click="WordWrapButton_Click">
+                        <TextBlock Text="Xuống dòng" FontSize="11.5" VerticalAlignment="Center" />
+                    </ToggleButton>
+
+                    <ToggleButton x:Name="ShowSymbolsButton"
+                                  Style="{StaticResource Toggle}"
+                                  Height="25"
+                                  Padding="7,2"
+                                  Margin="0,0,4,0"
+                                  ToolTip="Hiển thị ký tự ẩn / khoảng trắng / xuống dòng (¶)"
+                                  Click="ShowSymbolsButton_Click">
+                        <TextBlock Text="Ký tự ẩn" FontSize="11.5" VerticalAlignment="Center" />
+                    </ToggleButton>
+
+                    <ToggleButton x:Name="GoToLineToggleButton"
+                                  Style="{StaticResource Toggle}"
+                                  Height="25"
+                                  Padding="7,2"
+                                  Margin="0,0,4,0"
+                                  ToolTip="Đi tới dòng (Ctrl+G)"
+                                  Click="GoToLineButton_Click">
+                        <TextBlock Text="Đi tới dòng" FontSize="11.5" VerticalAlignment="Center" />
+                    </ToggleButton>
+
+                    <Button Style="{StaticResource ButtonOutline}"
+                            Height="25" MinHeight="25" Width="25" Padding="2" Margin="0,0,2,0"
+                            ToolTip="Thu nhỏ (Ctrl + Lăn chuột)"
+                            AutomationProperties.Name="Thu nhỏ"
+                            Click="ZoomOutButton_Click">
+                        <iconPacks:PackIconMaterial Kind="Minus" Width="12" Height="12" />
+                    </Button>
+                    <Button Style="{StaticResource ButtonOutline}"
+                            Height="25" MinHeight="25" Width="25" Padding="2" Margin="0,0,4,0"
+                            ToolTip="Phóng to (Ctrl + Lăn chuột)"
+                            AutomationProperties.Name="Phóng to"
+                            Click="ZoomInButton_Click">
+                        <iconPacks:PackIconMaterial Kind="Plus" Width="12" Height="12" />
+                    </Button>
+                    <Button x:Name="CopyButton"
+                            AutomationProperties.AutomationId="PreviewCopyButton"
+                            Style="{StaticResource ButtonOutline}"
+                            Height="25" MinHeight="25" Padding="7,2"
+                            ToolTip="Sao chép vùng chọn hoặc toàn bộ"
+                            AutomationProperties.Name="Sao chép nội dung"
+                            Click="CopyButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="ContentCopy" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,4,0" />
+                            <TextBlock Text="Sao chép" FontSize="11.5" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <TextBlock x:Name="FindStatusText"
+                               VerticalAlignment="Center"
+                               Margin="8,0,0,0"
+                               FontSize="11.5"
+                               Foreground="{DynamicResource MutedForegroundBrush}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Thanh Đi tới dòng (Ctrl+G) -->
+        <Border x:Name="GoToLinePanel"
+                Grid.Row="1"
+                Background="{DynamicResource CardBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="6,4"
+                Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Đi tới dòng:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="11.5" />
+                <TextBox x:Name="GoToLineBox"
+                         Width="80" Height="24" MinHeight="24" Padding="4,2"
+                         VerticalContentAlignment="Center"
+                         KeyDown="GoToLineBox_KeyDown" />
+                <Button Style="{StaticResource ButtonOutline}"
+                        Height="24" MinHeight="24" Padding="10,2" Margin="6,0,0,0"
+                        Content="Chuyển tới"
+                        Click="GoToLineConfirm_Click" />
+            </StackPanel>
+        </Border>
+
+        <!-- AvalonEdit (Scintilla / Notepad++ style editor) -->
+        <avalonedit:TextEditor x:Name="Editor"
+                               Grid.Row="2"
+                               IsReadOnly="True"
+                               ShowLineNumbers="True"
+                               WordWrap="True"
+                               FontFamily="Consolas"
+                               FontSize="13"
+                               Padding="4,2"
+                               HorizontalScrollBarVisibility="Auto"
+                               VerticalScrollBarVisibility="Auto"
+                               Background="{DynamicResource BackgroundBrush}"
+                               Foreground="{DynamicResource ForegroundBrush}"
+                               LineNumbersForeground="#FF808080"
+                               PreviewMouseWheel="Editor_PreviewMouseWheel" />
+
+        <!-- Thanh trạng thái tiếng Việt kiểu Notepad++ -->
+        <Border Grid.Row="3"
+                Background="{DynamicResource CardBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="8,3">
+            <DockPanel LastChildFill="False">
+                <TextBlock x:Name="SyntaxLabel"
+                           DockPanel.Dock="Left"
+                           FontSize="11"
+                           Foreground="{DynamicResource MutedForegroundBrush}"
+                           Text="Văn bản thuần"
+                           Margin="0,0,16,0" />
+                <TextBlock x:Name="LengthLinesLabel"
+                           DockPanel.Dock="Left"
+                           FontSize="11"
+                           Foreground="{DynamicResource MutedForegroundBrush}"
+                           Text="Độ dài : 0   Tổng dòng : 1"
+                           Margin="0,0,16,0" />
+                <TextBlock x:Name="CaretLabel"
+                           DockPanel.Dock="Left"
+                           FontSize="11"
+                           Foreground="{DynamicResource MutedForegroundBrush}"
+                           Text="Dòng : 1   Cột : 1   Chọn : 0" />
+
+                <TextBlock x:Name="ZoomStatusLabel"
+                           DockPanel.Dock="Right"
+                           FontSize="11"
+                           Foreground="{DynamicResource MutedForegroundBrush}"
+                           Text="100%"
+                           Margin="14,0,0,0" />
+                <TextBlock x:Name="EncodingStatusLabel"
+                           DockPanel.Dock="Right"
+                           FontSize="11"
+                           Foreground="{DynamicResource MutedForegroundBrush}"
+                           Text="UTF-8"
+                           Margin="14,0,0,0" />
+                <TextBlock x:Name="EolStatusLabel"
+                           DockPanel.Dock="Right"
+                           FontSize="11"
+                           Foreground="{DynamicResource MutedForegroundBrush}"
+                           Text="Windows (CR LF)" />
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>
