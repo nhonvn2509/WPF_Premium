@@ -4,6 +4,7 @@
     <ProjectReference Include="..\WPF_Premium.Core\WPF_Premium.Core.csproj" />
     <ProjectReference Include="..\WPF_Premium.Documents\WPF_Premium.Documents.csproj" />
     <Compile Include="..\WPF_Premium\Controls\FilePreviewControl.xaml.cs" Link="Controls\FilePreviewControl.xaml.cs" />
+    <Compile Include="..\WPF_Premium\Controls\OfficePreviewFlowDocumentRenderer.cs" Link="Controls\OfficePreviewFlowDocumentRenderer.cs" />
     <Page Include="..\WPF_Premium\Controls\FilePreviewControl.xaml" Link="Controls\FilePreviewControl.xaml" />
     <PackageReference Include="LibVLCSharp.WPF" Version="3.10.2" />
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="15.0.0" />
