@@ -161,12 +161,19 @@ public sealed class SearchBox : UserControl
         searchBox.TextChanged?.Invoke(searchBox, EventArgs.Empty);
     }
 
-    private static void OnPlaceholderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
-        ((SearchBox)d)._textBox.Tag = e.NewValue;
+    private static void OnPlaceholderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var searchBox = (SearchBox)d;
+        searchBox._textBox.Tag = string.IsNullOrEmpty(searchBox._textBox.Text) ? e.NewValue : null;
+    }
 
     private static void OnAutomationIdChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
         AutomationProperties.SetAutomationId(((SearchBox)d)._textBox, e.NewValue as string);
 
-    private void UpdateClearButtonVisibility() =>
-        _clearButton.Visibility = string.IsNullOrEmpty(_textBox.Text) ? Visibility.Collapsed : Visibility.Visible;
+    private void UpdateClearButtonVisibility()
+    {
+        var isEmpty = string.IsNullOrEmpty(_textBox.Text);
+        _clearButton.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
+        _textBox.Tag = isEmpty ? Placeholder : null;
+    }
 }

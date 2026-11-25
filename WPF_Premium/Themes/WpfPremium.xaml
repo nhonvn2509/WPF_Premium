@@ -605,12 +605,12 @@
                                    Visibility="Collapsed" />
                     </Grid>
                     <ControlTemplate.Triggers>
-                        <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                        <Trigger Property="Text" Value="">
                             <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                        </Trigger>
+                        <Trigger Property="Text" Value="{x:Null}">
                             <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
-                        </DataTrigger>
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

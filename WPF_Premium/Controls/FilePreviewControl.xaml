@@ -28,7 +28,7 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="FileNameText" AutomationProperties.AutomationId="FileNameText" Text="Chưa chọn tệp" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
                     <TextBlock x:Name="FileExtensionText" Grid.Column="1" FontSize="12" Foreground="{DynamicResource MutedForegroundBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="FileSizeText" Grid.Column="2" FontSize="12" Foreground="{DynamicResource MutedForegroundBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="FileSizeText" Grid.Column="2" FontSize="12" Foreground="{DynamicResource MutedForegroundBrush}" Margin="8,0,8,0" VerticalAlignment="Center"/>
                 </Grid>
             </DockPanel>
             <Border x:Name="ToolsPanel" Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,1" Padding="5">
