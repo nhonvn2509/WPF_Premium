@@ -323,9 +323,18 @@ public static class DialogService
         headerBorder.SetResourceReference(Border.BorderBrushProperty, "BorderBrush");
         layout.Children.Add(headerBorder);
 
+        var resolvedContent = content is string textContent
+            ? new TextBlock
+            {
+                Text = textContent,
+                TextWrapping = TextWrapping.Wrap,
+                LineHeight = 20
+            }
+            : content;
+
         var body = new ContentControl
         {
-            Content = content,
+            Content = resolvedContent,
             Margin = new Thickness(
                 width is > 500 ? 0 : 18,
                 width is > 500 ? 0 : 12,

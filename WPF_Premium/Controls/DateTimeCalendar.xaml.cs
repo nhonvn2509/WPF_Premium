@@ -237,7 +237,7 @@ public partial class DateTimeCalendar : UserControl
         SetCurrentValue(SelectedDateTimeProperty, date.Date.AddHours(hour).AddMinutes(minute));
     }
 
-    private void DateToggle_Click(object sender, RoutedEventArgs e)
+    private void DateToggle_CheckedChanged(object sender, RoutedEventArgs e)
     {
         SetCurrentValue(IsPopupOpenProperty, DateToggle.IsChecked == true);
     }
