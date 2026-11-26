@@ -7,17 +7,52 @@
             BorderThickness="{DynamicResource WpfPremium.SurfaceBorderThickness}"
             CornerRadius="{DynamicResource WpfPremium.SurfaceCornerRadius}">
         <Grid>
-            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-            <DockPanel x:Name="HeaderPanel" Margin="8,6" LastChildFill="True">
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                    <Button Click="CopyPath_Click" Style="{StaticResource ButtonOutline}" Width="30" Height="28" MinHeight="28" Padding="3" Margin="0,0,5,0" ToolTip="Sao chép đường dẫn tệp" AutomationProperties.Name="Sao chép đường dẫn tệp" AutomationProperties.AutomationId="CopyFilePathButton">
-                        <iconPacks:PackIconMaterial Kind="ContentCopy" />
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+            <DockPanel x:Name="HeaderPanel" Margin="8,4" LastChildFill="True">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="BackToRichPreviewButton"
+                            Click="BackToRichPreview_Click"
+                            Style="{StaticResource ButtonOutline}"
+                            Height="26" MinHeight="26" Padding="8,2" Margin="0,0,6,0"
+                            Visibility="Collapsed"
+                            ToolTip="Quay lại bản xem trước định dạng gốc"
+                            AutomationProperties.Name="Quay lại bản xem trước"
+                            AutomationProperties.AutomationId="BackToRichPreviewButton">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="ArrowLeft" Width="12" Height="12" Margin="0,0,4,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Quay lại" FontSize="11.5" VerticalAlignment="Center" />
+                        </StackPanel>
                     </Button>
-                    <Button Click="OpenDefault_Click" Style="{StaticResource ButtonOutline}" Width="30" Height="28" MinHeight="28" Padding="3" Margin="0,0,5,0" ToolTip="Mở bằng ứng dụng mặc định" AutomationProperties.Name="Mở bằng ứng dụng mặc định" AutomationProperties.AutomationId="OpenWithDefaultAppButton">
-                        <iconPacks:PackIconMaterial Kind="OpenInApp" />
+                    <Border x:Name="ToolsPanel" BorderThickness="0" Padding="0" Margin="0,0,6,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <StackPanel x:Name="ImageTools" AutomationProperties.AutomationId="PreviewImageTools" Orientation="Horizontal" Visibility="Collapsed">
+                                <Button Click="ZoomOut_Click" Style="{StaticResource ButtonOutline}" Width="26" Height="26" MinHeight="26" Padding="2" Margin="0,0,2,0" ToolTip="Thu nhỏ" AutomationProperties.Name="Thu nhỏ" AutomationProperties.AutomationId="ImageZoomOutButton"><iconPacks:PackIconMaterial Kind="MagnifyMinus" Width="13" Height="13" /></Button>
+                                <Button Click="ZoomReset_Click" Style="{StaticResource ButtonOutline}" Height="26" MinHeight="26" Padding="6,2" Margin="0,0,2,0" ToolTip="Kích thước 100%" AutomationProperties.Name="Kích thước 100%" AutomationProperties.AutomationId="ImageZoomResetButton"><TextBlock Text="100%" FontSize="11" /></Button>
+                                <Button Click="ZoomIn_Click" Style="{StaticResource ButtonOutline}" Width="26" Height="26" MinHeight="26" Padding="2" Margin="0,0,4,0" ToolTip="Phóng to" AutomationProperties.Name="Phóng to" AutomationProperties.AutomationId="ImageZoomInButton"><iconPacks:PackIconMaterial Kind="MagnifyPlus" Width="13" Height="13" /></Button>
+                                <Button Click="ImageFit_Click" Style="{StaticResource ButtonOutline}" Width="26" Height="26" MinHeight="26" Padding="2" Margin="0,0,2,0" ToolTip="Vừa khung xem"><iconPacks:PackIconMaterial Kind="FitToScreenOutline" Width="13" Height="13" /></Button>
+                                <Button Click="ImageFill_Click" Style="{StaticResource ButtonOutline}" Width="26" Height="26" MinHeight="26" Padding="2" Margin="0,0,4,0" ToolTip="Lấp đầy khung xem"><iconPacks:PackIconMaterial Kind="ArrowExpandAll" Width="13" Height="13" /></Button>
+                                <Button Click="ImageRotateLeft_Click" Style="{StaticResource ButtonOutline}" Width="26" Height="26" MinHeight="26" Padding="2" Margin="0,0,2,0" ToolTip="Xoay trái 90°"><iconPacks:PackIconMaterial Kind="RotateLeft" Width="13" Height="13" /></Button>
+                                <Button Click="ImageRotateRight_Click" Style="{StaticResource ButtonOutline}" Width="26" Height="26" MinHeight="26" Padding="2" Margin="0,0,2,0" ToolTip="Xoay phải 90°"><iconPacks:PackIconMaterial Kind="RotateRight" Width="13" Height="13" /></Button>
+                                <Button Click="ImageFlipHorizontal_Click" Style="{StaticResource ButtonOutline}" Width="26" Height="26" MinHeight="26" Padding="2" Margin="0,0,2,0" ToolTip="Lật ngang"><iconPacks:PackIconMaterial Kind="FlipHorizontal" Width="13" Height="13" /></Button>
+                                <Button Click="ImageFlipVertical_Click" Style="{StaticResource ButtonOutline}" Width="26" Height="26" MinHeight="26" Padding="2" Margin="0,0,4,0" ToolTip="Lật dọc"><iconPacks:PackIconMaterial Kind="FlipVertical" Width="13" Height="13" /></Button>
+                                <ToggleButton x:Name="CheckerboardToggle" Style="{StaticResource Toggle}" Click="Checkerboard_Click" Width="26" Height="26" Padding="2" Margin="0,0,2,0" ToolTip="Bật/tắt nền caro cho ảnh trong suốt"><iconPacks:PackIconMaterial Kind="Checkerboard" Width="13" Height="13" /></ToggleButton>
+                                <ToggleButton x:Name="MagnifierToggle" Style="{StaticResource Toggle}" Click="Magnifier_Click" Width="26" Height="26" Padding="2" Margin="0,0,4,0" ToolTip="Bật/tắt kính lúp" AutomationProperties.Name="Bật/tắt kính lúp" AutomationProperties.AutomationId="ImageMagnifierToggle"><iconPacks:PackIconMaterial Kind="MagnifyScan" Width="13" Height="13" /></ToggleButton>
+                            </StackPanel>
+                            <StackPanel x:Name="TextTools" AutomationProperties.AutomationId="PreviewTextTools" Orientation="Horizontal" Visibility="Collapsed">
+                                <ToggleButton x:Name="ReadableStringsToggle" AutomationProperties.AutomationId="PreviewReadableStringsToggle" Style="{StaticResource Toggle}" Width="26" Height="26" Padding="2" Margin="0,0,2,0" VerticalAlignment="Center" ToolTip="Text đọc được" AutomationProperties.Name="Text đọc được" Click="TextDisplayMode_Changed"><iconPacks:PackIconMaterial Kind="FileDocumentOutline" Width="13" Height="13" /></ToggleButton>
+                                <ToggleButton x:Name="HexAsciiToggle" AutomationProperties.AutomationId="PreviewHexAsciiToggle" Style="{StaticResource Toggle}" Width="26" Height="26" Padding="2" Margin="0,0,4,0" VerticalAlignment="Center" ToolTip="Hex / ASCII" AutomationProperties.Name="Hex / ASCII" Click="TextDisplayMode_Changed"><iconPacks:PackIconMaterial Kind="CodeBraces" Width="13" Height="13" /></ToggleButton>
+                            </StackPanel>
+                            <TextBlock x:Name="ZoomText" AutomationProperties.AutomationId="PreviewZoomText" Text="100%" FontSize="11" VerticalAlignment="Center" Margin="2,0,4,0" Foreground="{DynamicResource MutedForegroundBrush}"/>
+                        </StackPanel>
+                    </Border>
+                    <Button Click="CopyPath_Click" Style="{StaticResource ButtonOutline}" Width="26" Height="26" MinHeight="26" Padding="2" Margin="0,0,3,0" ToolTip="Sao chép đường dẫn tệp" AutomationProperties.Name="Sao chép đường dẫn tệp" AutomationProperties.AutomationId="CopyFilePathButton">
+                        <iconPacks:PackIconMaterial Kind="ContentCopy" Width="13" Height="13" />
                     </Button>
-                    <Button Click="OpenFolder_Click" Style="{StaticResource ButtonOutline}" Width="30" Height="28" MinHeight="28" Padding="3" ToolTip="Mở thư mục chứa tệp" AutomationProperties.Name="Mở thư mục chứa tệp" AutomationProperties.AutomationId="OpenContainingFolderButton">
-                        <iconPacks:PackIconMaterial Kind="FolderOpen" />
+                    <Button Click="OpenDefault_Click" Style="{StaticResource ButtonOutline}" Width="26" Height="26" MinHeight="26" Padding="2" Margin="0,0,3,0" ToolTip="Mở bằng ứng dụng mặc định" AutomationProperties.Name="Mở bằng ứng dụng mặc định" AutomationProperties.AutomationId="OpenWithDefaultAppButton">
+                        <iconPacks:PackIconMaterial Kind="OpenInApp" Width="13" Height="13" />
+                    </Button>
+                    <Button Click="OpenFolder_Click" Style="{StaticResource ButtonOutline}" Width="26" Height="26" MinHeight="26" Padding="2" ToolTip="Mở thư mục chứa tệp" AutomationProperties.Name="Mở thư mục chứa tệp" AutomationProperties.AutomationId="OpenContainingFolderButton">
+                        <iconPacks:PackIconMaterial Kind="FolderOpen" Width="13" Height="13" />
                     </Button>
                 </StackPanel>
                 <Grid VerticalAlignment="Center">
@@ -26,36 +61,12 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock x:Name="FileNameText" AutomationProperties.AutomationId="FileNameText" Text="Chưa chọn tệp" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="FileExtensionText" Grid.Column="1" FontSize="12" Foreground="{DynamicResource MutedForegroundBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="FileSizeText" Grid.Column="2" FontSize="12" Foreground="{DynamicResource MutedForegroundBrush}" Margin="8,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="FileNameText" AutomationProperties.AutomationId="FileNameText" Text="Chưa chọn tệp" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="FileExtensionText" Grid.Column="1" FontSize="11.5" Foreground="{DynamicResource MutedForegroundBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="FileSizeText" Grid.Column="2" FontSize="11.5" Foreground="{DynamicResource MutedForegroundBrush}" Margin="6,0,8,0" VerticalAlignment="Center"/>
                 </Grid>
             </DockPanel>
-            <Border x:Name="ToolsPanel" Grid.Row="1" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,1" Padding="5">
-                <DockPanel LastChildFill="True">
-                    <StackPanel x:Name="ImageTools" AutomationProperties.AutomationId="PreviewImageTools" DockPanel.Dock="Left" Orientation="Horizontal" Visibility="Collapsed">
-                        <Button Click="ZoomOut_Click" Style="{StaticResource ButtonOutline}" Width="28" Height="27" MinHeight="27" Padding="3" Margin="0,0,2,0" ToolTip="Thu nhỏ" AutomationProperties.Name="Thu nhỏ" AutomationProperties.AutomationId="ImageZoomOutButton"><iconPacks:PackIconMaterial Kind="MagnifyMinus" /></Button>
-                        <Button Click="ZoomReset_Click" Style="{StaticResource ButtonOutline}" Height="27" MinHeight="27" Padding="7,2" Margin="0,0,2,0" ToolTip="Kích thước 100%" AutomationProperties.Name="Kích thước 100%" AutomationProperties.AutomationId="ImageZoomResetButton"><TextBlock Text="100%" /></Button>
-                        <Button Click="ZoomIn_Click" Style="{StaticResource ButtonOutline}" Width="28" Height="27" MinHeight="27" Padding="3" Margin="0,0,6,0" ToolTip="Phóng to" AutomationProperties.Name="Phóng to" AutomationProperties.AutomationId="ImageZoomInButton"><iconPacks:PackIconMaterial Kind="MagnifyPlus" /></Button>
-                        <Button Click="ImageFit_Click" Style="{StaticResource ButtonOutline}" Height="27" MinHeight="27" Padding="7,2" Margin="0,0,2,0" ToolTip="Vừa khung xem"><TextBlock Text="Vừa khung" /></Button>
-                        <Button Click="ImageFill_Click" Style="{StaticResource ButtonOutline}" Height="27" MinHeight="27" Padding="7,2" Margin="0,0,6,0" ToolTip="Lấp đầy khung xem"><TextBlock Text="Lấp đầy" /></Button>
-                        <Button Click="ImageRotateLeft_Click" Style="{StaticResource ButtonOutline}" Width="28" Height="27" MinHeight="27" Padding="3" Margin="0,0,2,0" ToolTip="Xoay trái 90°"><iconPacks:PackIconMaterial Kind="RotateLeft" /></Button>
-                        <Button Click="ImageRotateRight_Click" Style="{StaticResource ButtonOutline}" Width="28" Height="27" MinHeight="27" Padding="3" Margin="0,0,2,0" ToolTip="Xoay phải 90°"><iconPacks:PackIconMaterial Kind="RotateRight" /></Button>
-                        <Button Click="ImageFlipHorizontal_Click" Style="{StaticResource ButtonOutline}" Width="28" Height="27" MinHeight="27" Padding="3" Margin="0,0,2,0" ToolTip="Lật ngang"><iconPacks:PackIconMaterial Kind="FlipHorizontal" /></Button>
-                        <Button Click="ImageFlipVertical_Click" Style="{StaticResource ButtonOutline}" Width="28" Height="27" MinHeight="27" Padding="3" Margin="0,0,6,0" ToolTip="Lật dọc"><iconPacks:PackIconMaterial Kind="FlipVertical" /></Button>
-                        <ToggleButton x:Name="CheckerboardToggle" Style="{StaticResource Toggle}" Click="Checkerboard_Click" Height="27" Padding="7,2" Margin="0,0,4,0" ToolTip="Bật/tắt nền caro cho ảnh trong suốt"><TextBlock Text="Nền caro" /></ToggleButton>
-                        <ToggleButton x:Name="MagnifierToggle" Style="{StaticResource Toggle}" Click="Magnifier_Click" Height="27" Padding="7,2" ToolTip="Bật/tắt kính lúp" AutomationProperties.Name="Bật/tắt kính lúp" AutomationProperties.AutomationId="ImageMagnifierToggle">
-                            <StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="MagnifyScan" Width="13" Height="13" VerticalAlignment="Center" Margin="0,0,4,0" /><TextBlock Text="Kính lúp" VerticalAlignment="Center" /></StackPanel>
-                        </ToggleButton>
-                    </StackPanel>
-                    <StackPanel x:Name="TextTools" AutomationProperties.AutomationId="PreviewTextTools" DockPanel.Dock="Left" Orientation="Horizontal" Visibility="Collapsed">
-                        <ToggleButton x:Name="ReadableStringsToggle" AutomationProperties.AutomationId="PreviewReadableStringsToggle" Style="{StaticResource Toggle}" Content="Text đọc được" Height="27" Padding="8,2" Margin="0,0,4,0" VerticalAlignment="Center" ToolTip="Bật/tắt hiển thị các chuỗi ký tự đọc được" Click="TextDisplayMode_Changed" />
-                        <ToggleButton x:Name="HexAsciiToggle" AutomationProperties.AutomationId="PreviewHexAsciiToggle" Style="{StaticResource Toggle}" Content="Hex / ASCII" Height="27" Padding="8,2" VerticalAlignment="Center" ToolTip="Bật/tắt hiển thị mã Hex / ASCII" Click="TextDisplayMode_Changed" />
-                    </StackPanel>
-                    <TextBlock x:Name="ZoomText" AutomationProperties.AutomationId="PreviewZoomText" DockPanel.Dock="Right" Text="100%" VerticalAlignment="Center" Foreground="{DynamicResource MutedForegroundBrush}"/>
-                </DockPanel>
-            </Border>
-            <Grid Grid.Row="2" x:Name="ContentHost" AutomationProperties.AutomationId="PreviewContentHost" ClipToBounds="True" Background="{DynamicResource BackgroundBrush}">
+            <Grid Grid.Row="1" x:Name="ContentHost" AutomationProperties.AutomationId="PreviewContentHost" ClipToBounds="True" Background="{DynamicResource BackgroundBrush}">
                 <TextBlock x:Name="EmptyText" Text="Mở hoặc kéo thả tệp vào đây để xem trước" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource MutedForegroundBrush}"/>
             </Grid>
         </Grid>

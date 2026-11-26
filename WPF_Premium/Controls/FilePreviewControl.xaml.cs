@@ -101,6 +101,7 @@ public partial class FilePreviewControl : UserControl, IPreviewHost
     private void LoadWithHandler(PreviewContext context, IFilePreviewHandler handler)
     {
         DisposeActiveSession();
+        BackToRichPreviewButton.Visibility = Visibility.Collapsed;
         _filePath = context.FilePath;
         UpdateHeaderMetadata(context.FilePath);
         ContentHost.Children.Clear();
@@ -199,6 +200,16 @@ public partial class FilePreviewControl : UserControl, IPreviewHost
     {
         var context = new PreviewContext(path, extension);
         LoadWithHandler(context, new TextPreviewHandler());
+        BackToRichPreviewButton.Visibility = Visibility.Visible;
+    }
+
+    private void BackToRichPreview_Click(object sender, RoutedEventArgs e)
+    {
+        BackToRichPreviewButton.Visibility = Visibility.Collapsed;
+        if (!string.IsNullOrWhiteSpace(_filePath) && File.Exists(_filePath))
+        {
+            LoadFile(_filePath);
+        }
     }
 
     public void ShowMessage(string message)

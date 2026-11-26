@@ -399,6 +399,24 @@ public partial class NotepadTextViewer : UserControl
         menu.Items.Add(MakeViewItem("UTF-16 BE BOM", "UTF-16 BE BOM", () => Encoding.BigEndianUnicode, stripBom: true));
         menu.Items.Add(MakeViewItem("UTF-16 LE BOM", "UTF-16 LE BOM", () => Encoding.Unicode, stripBom: true));
 
+        var base64EncodeView = new MenuItem
+        {
+            Header = "Base64 (Mã hóa tệp)",
+            IsCheckable = true,
+            IsChecked = string.Equals(_activeEncodingKey, "Base64", StringComparison.OrdinalIgnoreCase)
+        };
+        base64EncodeView.Click += (_, _) => ApplyBase64Encode();
+        menu.Items.Add(base64EncodeView);
+
+        var base64DecodeView = new MenuItem
+        {
+            Header = "Base64 (Giải mã → UTF-8)",
+            IsCheckable = true,
+            IsChecked = string.Equals(_activeEncodingKey, "Base64 → UTF-8", StringComparison.OrdinalIgnoreCase)
+        };
+        base64DecodeView.Click += (_, _) => ApplyBase64Decode();
+        menu.Items.Add(base64DecodeView);
+
         var charSetsMenu = new MenuItem { Header = "Tập ký tự" };
         foreach (var (groupName, entries) in GetCharacterSetGroups())
         {
@@ -418,6 +436,14 @@ public partial class NotepadTextViewer : UserControl
         menu.Items.Add(MakeConvertItem("Chuyển đổi sang UTF-8-BOM", "UTF-8-BOM", () => new UTF8Encoding(true)));
         menu.Items.Add(MakeConvertItem("Chuyển đổi sang UTF-16 BE BOM", "UTF-16 BE BOM", () => Encoding.BigEndianUnicode));
         menu.Items.Add(MakeConvertItem("Chuyển đổi sang UTF-16 LE BOM", "UTF-16 LE BOM", () => Encoding.Unicode));
+
+        var toBase64Item = new MenuItem { Header = "Chuyển đổi sang Base64" };
+        toBase64Item.Click += (_, _) => ConvertDisplayedTextToBase64();
+        menu.Items.Add(toBase64Item);
+
+        var fromBase64Item = new MenuItem { Header = "Giải mã Base64 (văn bản đang xem)" };
+        fromBase64Item.Click += (_, _) => DecodeDisplayedBase64();
+        menu.Items.Add(fromBase64Item);
 
         return menu;
     }
@@ -482,6 +508,75 @@ public partial class NotepadTextViewer : UserControl
         _activeEncodingKey = targetKey;
         EncodingStatusLabel.Text = targetKey;
         UpdateStatusBar();
+    }
+
+    private void ApplyBase64Encode()
+    {
+        byte[] bytes;
+        if (!string.IsNullOrWhiteSpace(_currentFilePath) && File.Exists(_currentFilePath))
+        {
+            bytes = ReadSampleBytes(_currentFilePath);
+        }
+        else
+        {
+            bytes = ResolveEncodingByKey(_activeEncodingKey).GetBytes(Editor.Text);
+        }
+
+        Editor.Text = Convert.ToBase64String(bytes, Base64FormattingOptions.InsertLineBreaks);
+        Editor.ScrollToHome();
+        _activeEncodingKey = "Base64";
+        EncodingStatusLabel.Text = "Base64";
+        UpdateStatusBar();
+    }
+
+    private void ApplyBase64Decode()
+    {
+        string raw;
+        if (!string.IsNullOrWhiteSpace(_currentFilePath) && File.Exists(_currentFilePath))
+        {
+            raw = Encoding.UTF8.GetString(ReadSampleBytes(_currentFilePath));
+        }
+        else
+        {
+            raw = Editor.Text;
+        }
+
+        DecodeBase64StringIntoEditor(raw);
+    }
+
+    private void ConvertDisplayedTextToBase64()
+    {
+        var bytes = ResolveEncodingByKey(_activeEncodingKey).GetBytes(Editor.Text);
+        Editor.Text = Convert.ToBase64String(bytes, Base64FormattingOptions.InsertLineBreaks);
+        _activeEncodingKey = "Base64";
+        EncodingStatusLabel.Text = "Base64";
+        UpdateStatusBar();
+    }
+
+    private void DecodeDisplayedBase64() => DecodeBase64StringIntoEditor(Editor.Text);
+
+    private void DecodeBase64StringIntoEditor(string raw)
+    {
+        try
+        {
+            var cleaned = new string(raw.Where(c => !char.IsWhiteSpace(c)).ToArray());
+            var decodedBytes = Convert.FromBase64String(cleaned);
+            var decoded = Encoding.UTF8.GetString(decodedBytes);
+            if (decoded.Contains('\0'))
+            {
+                decoded = decoded.Replace('\0', ' ');
+            }
+
+            Editor.Text = decoded;
+            Editor.ScrollToHome();
+            _activeEncodingKey = "Base64 → UTF-8";
+            EncodingStatusLabel.Text = "Base64 → UTF-8";
+            UpdateStatusBar();
+        }
+        catch (FormatException)
+        {
+            FindStatusText.Text = "Nội dung không phải chuỗi Base64 hợp lệ";
+        }
     }
 
     private static byte[] ReadSampleBytes(string path)

@@ -34,7 +34,7 @@ internal sealed class AudioPreviewHandler : IFilePreviewHandler
 
     private sealed class AudioPreviewSession : IPreviewSession
     {
-        private readonly Grid _root = new() { Margin = new Thickness(18) };
+        private readonly Grid _root = new() { Margin = new Thickness(8, 6, 8, 6) };
         private readonly DispatcherTimer _timer;
         private readonly MediaPlayer? _wpfPlayer;
         private LibVLCSharp.Shared.MediaPlayer? _vlcPlayer;
@@ -57,18 +57,18 @@ internal sealed class AudioPreviewHandler : IFilePreviewHandler
                 : WavWaveformReader.Read(path, 800);
 
             var channelCount = Math.Max(1, waveData.ChannelCount);
-            var channelTrackHeight = channelCount == 1 ? 180d : Math.Max(68d, Math.Min(120d, 320d / channelCount));
-            var totalWaveHeight = channelTrackHeight * channelCount + Math.Max(0, channelCount - 1) * 6d;
+            var minChannelHeight = 48d;
 
             var waveSurface = new Grid
             {
-                MinHeight = totalWaveHeight,
+                MinHeight = minChannelHeight,
                 Background = new SolidColorBrush(Color.FromRgb(25, 28, 35)),
                 ClipToBounds = true,
                 Cursor = isMidi ? Cursors.Arrow : Cursors.Hand
             };
 
-            var tracksPanel = new StackPanel();
+            var tracksPanel = new Grid();
+            var trackBorders = new List<Border>(channelCount);
             var channelCanvases = new List<Canvas>(channelCount);
             Color[] channelColors =
             [
@@ -78,10 +78,11 @@ internal sealed class AudioPreviewHandler : IFilePreviewHandler
 
             for (var ch = 0; ch < channelCount; ch++)
             {
+                tracksPanel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
                 var trackBorder = new Border
                 {
-                    Height = channelTrackHeight,
-                    Margin = ch == 0 ? new Thickness(0) : new Thickness(0, 6, 0, 0),
+                    MinHeight = minChannelHeight,
+                    Margin = ch == 0 ? new Thickness(0) : new Thickness(0, 4, 0, 0),
                     Background = new SolidColorBrush(Color.FromRgb(20, 23, 30)),
                     BorderBrush = new SolidColorBrush(Color.FromRgb(42, 48, 60)),
                     BorderThickness = new Thickness(0, 0, 0, ch < channelCount - 1 ? 1 : 0)
@@ -105,12 +106,14 @@ internal sealed class AudioPreviewHandler : IFilePreviewHandler
                     });
                 }
                 trackBorder.Child = trackGrid;
+                Grid.SetRow(trackBorder, ch);
+                trackBorders.Add(trackBorder);
                 tracksPanel.Children.Add(trackBorder);
             }
 
             var overlayCanvas = new Canvas { IsHitTestVisible = false, ClipToBounds = true };
             var selectionRect = new Rectangle { Fill = new SolidColorBrush(Color.FromArgb(65, 59, 130, 246)), Stroke = new SolidColorBrush(Color.FromRgb(96, 165, 250)), StrokeThickness = 1, Visibility = Visibility.Collapsed };
-            var playheadLine = new Line { X1 = 0, X2 = 0, Y1 = 0, Y2 = totalWaveHeight, Stroke = new SolidColorBrush(Color.FromRgb(248, 113, 113)), StrokeThickness = 1.6, Visibility = isMidi ? Visibility.Collapsed : Visibility.Visible };
+            var playheadLine = new Line { X1 = 0, X2 = 0, Y1 = 0, Y2 = minChannelHeight, Stroke = new SolidColorBrush(Color.FromRgb(248, 113, 113)), StrokeThickness = 1.6, Visibility = isMidi ? Visibility.Collapsed : Visibility.Visible };
             overlayCanvas.Children.Add(selectionRect);
             overlayCanvas.Children.Add(playheadLine);
             waveSurface.Children.Add(tracksPanel);
@@ -185,7 +188,7 @@ internal sealed class AudioPreviewHandler : IFilePreviewHandler
             void UpdateOverlays()
             {
                 var width = waveSurface.ActualWidth;
-                var height = waveSurface.ActualHeight > 0 ? waveSurface.ActualHeight : totalWaveHeight;
+                var height = waveSurface.ActualHeight > 0 ? waveSurface.ActualHeight : minChannelHeight;
                 if (width <= 0 || totalDuration <= TimeSpan.Zero) return;
                 var currentSec = useVlcAudio ? (_vlcPlayer is { Time: >= 0 } ? _vlcPlayer.Time / 1000d : seek.Value) : (_wpfPlayer?.Position.TotalSeconds ?? seek.Value);
                 var x = Math.Clamp(currentSec / totalDuration.TotalSeconds, 0, 1) * width;
@@ -243,13 +246,15 @@ internal sealed class AudioPreviewHandler : IFilePreviewHandler
             void RenderWaveform()
             {
                 var width = waveSurface.ActualWidth;
-                if (width < 20) return;
+                var totalH = waveSurface.ActualHeight;
+                if (width < 20 || totalH < 20) return;
                 for (var ch = 0; ch < channelCanvases.Count; ch++)
                 {
                     var canvas = channelCanvases[ch];
                     canvas.Children.Clear();
+                    var trackH = trackBorders[ch].ActualHeight > 10 ? trackBorders[ch].ActualHeight : (totalH / Math.Max(1, channelCanvases.Count));
                     var peaks = waveData.ChannelPeaks[Math.Min(ch, waveData.ChannelPeaks.Length - 1)];
-                    var midY = channelTrackHeight / 2d;
+                    var midY = trackH / 2d;
                     var centerBrush = new SolidColorBrush(Color.FromArgb(70, 148, 163, 184)); centerBrush.Freeze();
                     canvas.Children.Add(new Line { X1 = 0, X2 = width, Y1 = midY, Y2 = midY, Stroke = centerBrush, StrokeThickness = 1 });
                     var strokeBrush = new SolidColorBrush(channelColors[ch % channelColors.Length]); strokeBrush.Freeze();
@@ -261,7 +266,7 @@ internal sealed class AudioPreviewHandler : IFilePreviewHandler
                         var endIdx = Math.Max(startIdx + 1, (int)((double)(i + 1) / bars * peaks.Length));
                         float peak = 0;
                         for (var j = startIdx; j < endIdx && j < peaks.Length; j++) peak = Math.Max(peak, peaks[j]);
-                        var h = (0.05 + peak * 0.86) * (channelTrackHeight - 10);
+                        var h = (0.05 + peak * 0.86) * Math.Max(12d, trackH - 8);
                         var x = i * actualStep + actualStep * 0.5;
                         canvas.Children.Add(new Line { X1 = x, X2 = x, Y1 = midY - h / 2d, Y2 = midY + h / 2d, Stroke = strokeBrush, StrokeThickness = Math.Max(1.2, actualStep * 0.65) });
                     }

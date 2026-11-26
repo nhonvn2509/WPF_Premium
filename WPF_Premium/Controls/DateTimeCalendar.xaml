@@ -34,6 +34,8 @@
         </ToggleButton>
         <Popup x:Name="CalendarPopup"
                AutomationProperties.AutomationId="DateTimeCalendarPopup"
+               AllowsTransparency="True"
+               PopupAnimation="Fade"
                Placement="Bottom"
                PlacementTarget="{Binding ElementName=DateToggle}"
                StaysOpen="False"

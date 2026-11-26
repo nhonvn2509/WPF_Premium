@@ -8,62 +8,77 @@
         <ResourceDictionary Source="/WPF_Premium.Core;component/Themes/WpfPremiumAvalonDock.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
-    <SolidColorBrush x:Key="BackgroundBrush" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="ForegroundBrush" Color="#FF09090B" />
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#FFF8FAFC" />
+    <SolidColorBrush x:Key="ForegroundBrush" Color="#FF0F172A" />
     <SolidColorBrush x:Key="CardBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="PopoverBrush" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="MutedBrush" Color="#FFF4F4F5" />
-    <SolidColorBrush x:Key="MutedForegroundBrush" Color="#FF71717A" />
-    <SolidColorBrush x:Key="BorderBrush" Color="#FFE4E4E7" />
+    <SolidColorBrush x:Key="MutedBrush" Color="#FFF1F5F9" />
+    <SolidColorBrush x:Key="MutedForegroundBrush" Color="#FF64748B" />
+    <SolidColorBrush x:Key="BorderBrush" Color="#FFE2E8F0" />
     <SolidColorBrush x:Key="InputBrush" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="PrimaryBrush" Color="#FF18181B" />
-    <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFFAFAFA" />
-    <SolidColorBrush x:Key="SecondaryBrush" Color="#FFF4F4F5" />
-    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF18181B" />
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#FF4F46E5" />
+    <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="SecondaryBrush" Color="#FFEEF2FF" />
+    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FF3730A3" />
     <SolidColorBrush x:Key="DestructiveBrush" Color="#FFDC2626" />
-    <SolidColorBrush x:Key="DestructiveForegroundBrush" Color="#FFFAFAFA" />
+    <SolidColorBrush x:Key="DestructiveForegroundBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="SuccessBrush" Color="#FF16A34A" />
-    <SolidColorBrush x:Key="SuccessForegroundBrush" Color="#FFFAFAFA" />
+    <SolidColorBrush x:Key="SuccessForegroundBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="InfoBrush" Color="#FF2563EB" />
-    <SolidColorBrush x:Key="InfoForegroundBrush" Color="#FFFAFAFA" />
-    <SolidColorBrush x:Key="WarningBrush" Color="#FFCA8A04" />
-    <SolidColorBrush x:Key="WarningForegroundBrush" Color="#FF18181B" />
-    <SolidColorBrush x:Key="FocusBrush" Color="#FF18181B" />
-    <SolidColorBrush x:Key="TraceActiveBrush" Color="#FF2563EB" />
-    <SolidColorBrush x:Key="SelectedTabBrush" Color="#FFE0E7FF" />
-    <SolidColorBrush x:Key="ChartColor1Brush" Color="#FF18181B" />
-    <SolidColorBrush x:Key="ChartColor2Brush" Color="#FF2563EB" />
-    <SolidColorBrush x:Key="ChartColor3Brush" Color="#FF16A34A" />
-    <SolidColorBrush x:Key="ChartColor4Brush" Color="#FFCA8A04" />
-    <SolidColorBrush x:Key="ChartColor5Brush" Color="#FFDC2626" />
-    <SolidColorBrush x:Key="ChartColor6Brush" Color="#FF7C3AED" />
-    <SolidColorBrush x:Key="ChartColor7Brush" Color="#FF0891B2" />
-    <SolidColorBrush x:Key="ChartColor8Brush" Color="#FFDB2777" />
-    <SolidColorBrush x:Key="ChartColor9Brush" Color="#FFEA580C" />
-    <SolidColorBrush x:Key="ChartColor10Brush" Color="#FF65A30D" />
-    <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="#FFD4D4D8" />
-    <SolidColorBrush x:Key="ScrollBarThumbHoverBrush" Color="#FFA1A1AA" />
+    <SolidColorBrush x:Key="InfoForegroundBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="WarningBrush" Color="#FFD97706" />
+    <SolidColorBrush x:Key="WarningForegroundBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="FocusBrush" Color="#FF6366F1" />
+    <SolidColorBrush x:Key="TraceActiveBrush" Color="#FF4F46E5" />
+    <SolidColorBrush x:Key="SelectedTabBrush" Color="#FFEEF2FF" />
+
+    <!-- Semantic Soft-Tinted Surfaces (Light) -->
+    <SolidColorBrush x:Key="InfoSoftBrush" Color="#FFEFF6FF" />
+    <SolidColorBrush x:Key="InfoBorderBrush" Color="#FFBFDBFE" />
+    <SolidColorBrush x:Key="InfoForegroundSoftBrush" Color="#FF1E40AF" />
+    <SolidColorBrush x:Key="SuccessSoftBrush" Color="#FFF0FDF4" />
+    <SolidColorBrush x:Key="SuccessBorderBrush" Color="#FFBBF7D0" />
+    <SolidColorBrush x:Key="SuccessForegroundSoftBrush" Color="#FF166534" />
+    <SolidColorBrush x:Key="WarningSoftBrush" Color="#FFFFFBEB" />
+    <SolidColorBrush x:Key="WarningBorderBrush" Color="#FFFDE68A" />
+    <SolidColorBrush x:Key="WarningForegroundSoftBrush" Color="#FF92400E" />
+    <SolidColorBrush x:Key="DestructiveSoftBrush" Color="#FFFEF2F2" />
+    <SolidColorBrush x:Key="DestructiveBorderBrush" Color="#FFFECACA" />
+    <SolidColorBrush x:Key="DestructiveForegroundSoftBrush" Color="#FF991B1B" />
+
+    <SolidColorBrush x:Key="ChartColor1Brush" Color="#FF4F46E5" />
+    <SolidColorBrush x:Key="ChartColor2Brush" Color="#FF0EA5E9" />
+    <SolidColorBrush x:Key="ChartColor3Brush" Color="#FF10B981" />
+    <SolidColorBrush x:Key="ChartColor4Brush" Color="#FFF59E0B" />
+    <SolidColorBrush x:Key="ChartColor5Brush" Color="#FFEF4444" />
+    <SolidColorBrush x:Key="ChartColor6Brush" Color="#FF8B5CF6" />
+    <SolidColorBrush x:Key="ChartColor7Brush" Color="#FF06B6D4" />
+    <SolidColorBrush x:Key="ChartColor8Brush" Color="#FFEC4899" />
+    <SolidColorBrush x:Key="ChartColor9Brush" Color="#FFF97316" />
+    <SolidColorBrush x:Key="ChartColor10Brush" Color="#FF84CC16" />
+    <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="#FFCBD5E1" />
+    <SolidColorBrush x:Key="ScrollBarThumbHoverBrush" Color="#FF94A3B8" />
     <BooleanToVisibilityConverter x:Key="WpfPremiumBooleanToVisibilityConverter" />
 
     <FontFamily x:Key="WpfPremium.FontFamily">Segoe UI</FontFamily>
     <sys:Double x:Key="WpfPremium.FontSize">13</sys:Double>
-    <sys:Double x:Key="WpfPremium.SmallFontSize">11</sys:Double>
+    <sys:Double x:Key="WpfPremium.SmallFontSize">12</sys:Double>
     <sys:Double x:Key="WpfPremium.Heading1FontSize">26</sys:Double>
     <sys:Double x:Key="WpfPremium.Heading2FontSize">22</sys:Double>
     <sys:Double x:Key="WpfPremium.Heading3FontSize">18</sys:Double>
-    <sys:Double x:Key="WpfPremium.ControlMinHeight">28</sys:Double>
-    <Thickness x:Key="WpfPremium.ControlPadding">7,4</Thickness>
-    <CornerRadius x:Key="WpfPremium.ControlCornerRadius">4</CornerRadius>
-    <CornerRadius x:Key="WpfPremium.SplitButtonMainCornerRadius">4,0,0,4</CornerRadius>
-    <CornerRadius x:Key="WpfPremium.SplitButtonArrowCornerRadius">0,4,4,0</CornerRadius>
-    <sys:Double x:Key="WpfPremium.IconSize">12</sys:Double>
-    <sys:Double x:Key="WpfPremium.CheckBoxSize">14</sys:Double>
-    <sys:Double x:Key="WpfPremium.SwitchWidth">38</sys:Double>
-    <sys:Double x:Key="WpfPremium.SwitchHeight">20</sys:Double>
-    <CornerRadius x:Key="WpfPremium.SwitchCornerRadius">10</CornerRadius>
-    <sys:Double x:Key="WpfPremium.SwitchThumbSize">14</sys:Double>
-    <sys:Double x:Key="WpfPremium.TableRowHeight">30</sys:Double>
-    <CornerRadius x:Key="WpfPremium.SurfaceCornerRadius">8</CornerRadius>
+    <sys:Double x:Key="WpfPremium.ControlMinHeight">32</sys:Double>
+    <Thickness x:Key="WpfPremium.ControlPadding">10,5</Thickness>
+    <CornerRadius x:Key="WpfPremium.ControlCornerRadius">6</CornerRadius>
+    <CornerRadius x:Key="WpfPremium.SplitButtonMainCornerRadius">6,0,0,6</CornerRadius>
+    <CornerRadius x:Key="WpfPremium.SplitButtonArrowCornerRadius">0,6,6,0</CornerRadius>
+    <sys:Double x:Key="WpfPremium.IconSize">14</sys:Double>
+    <sys:Double x:Key="WpfPremium.CheckBoxSize">16</sys:Double>
+    <sys:Double x:Key="WpfPremium.SwitchWidth">40</sys:Double>
+    <sys:Double x:Key="WpfPremium.SwitchHeight">22</sys:Double>
+    <CornerRadius x:Key="WpfPremium.SwitchCornerRadius">11</CornerRadius>
+    <sys:Double x:Key="WpfPremium.SwitchThumbSize">16</sys:Double>
+    <sys:Double x:Key="WpfPremium.TableRowHeight">34</sys:Double>
+    <CornerRadius x:Key="WpfPremium.SurfaceCornerRadius">10</CornerRadius>
     <Thickness x:Key="WpfPremium.ControlBorderThickness">1</Thickness>
     <Thickness x:Key="WpfPremium.SurfaceBorderThickness">1</Thickness>
     <FontWeight x:Key="WpfPremium.FontWeight">Normal</FontWeight>
@@ -251,6 +266,7 @@
         <Setter Property="shell:WindowChrome.WindowChrome">
             <Setter.Value>
                 <shell:WindowChrome CaptionHeight="38" ResizeBorderThickness="6"
+                                    CornerRadius="0" NonClientFrameEdges="None"
                                     GlassFrameThickness="0" UseAeroCaptionButtons="False" />
             </Setter.Value>
         </Setter>
@@ -544,9 +560,12 @@
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
-                        <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                        <Trigger Property="Text" Value="">
                             <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
-                        </DataTrigger>
+                        </Trigger>
+                        <Trigger Property="Text" Value="{x:Null}">
+                            <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
+                        </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="InputBorder" Property="BorderBrush" Value="{DynamicResource FocusBrush}" />
                             <Trigger.EnterActions>
@@ -610,6 +629,53 @@
                         </Trigger>
                         <Trigger Property="Text" Value="{x:Null}">
                             <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="{x:Type PasswordBox}">
+        <Setter Property="Background" Value="{DynamicResource InputBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource WpfPremium.ControlBorderThickness}" />
+        <Setter Property="Padding" Value="{DynamicResource WpfPremium.ControlPadding}" />
+        <Setter Property="MinHeight" Value="{DynamicResource WpfPremium.ControlMinHeight}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FontFamily" Value="{DynamicResource WpfPremium.FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource WpfPremium.FontSize}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource PrimaryBrush}" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type PasswordBox}">
+                    <Border x:Name="InputBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{DynamicResource WpfPremium.ControlCornerRadius}"
+                            ClipToBounds="True">
+                        <Grid>
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            <Border x:Name="FocusOverlay"
+                                    BorderBrush="{DynamicResource FocusBrush}"
+                                    BorderThickness="{DynamicResource WpfPremium.ControlBorderThickness}"
+                                    CornerRadius="{DynamicResource WpfPremium.ControlCornerRadius}"
+                                    Opacity="0"
+                                    IsHitTestVisible="False" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="InputBorder" Property="BorderBrush" Value="{DynamicResource FocusBrush}" />
+                            <Setter TargetName="FocusOverlay" Property="Opacity" Value="0.22" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="InputBorder" Property="Opacity" Value="0.5" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -750,20 +816,37 @@
                                 CornerRadius="{DynamicResource WpfPremium.ControlCornerRadius}"
                                 Margin="-2"
                                 IsHitTestVisible="False" />
-                        <Ellipse x:Name="SwitchThumb"
-                                 Width="{DynamicResource WpfPremium.SwitchThumbSize}"
-                                 Height="{DynamicResource WpfPremium.SwitchThumbSize}"
-                                 Margin="3"
-                                 HorizontalAlignment="Left"
-                                 Fill="{DynamicResource BackgroundBrush}">
-                            <Ellipse.RenderTransform>
+                        <Border x:Name="SwitchThumb"
+                                Width="{DynamicResource WpfPremium.SwitchThumbSize}"
+                                Height="{DynamicResource WpfPremium.SwitchThumbSize}"
+                                Margin="3"
+                                HorizontalAlignment="Left"
+                                Background="{DynamicResource PrimaryForegroundBrush}"
+                                CornerRadius="{DynamicResource WpfPremium.SwitchCornerRadius}">
+                            <Border.RenderTransform>
                                 <TranslateTransform X="0" />
-                            </Ellipse.RenderTransform>
-                        </Ellipse>
+                            </Border.RenderTransform>
+                            <Grid>
+                                <iconPacks:PackIconMaterial x:Name="SwitchOnIcon"
+                                                            Kind="Check"
+                                                            Width="10" Height="10"
+                                                            Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                            Visibility="Collapsed" />
+                                <iconPacks:PackIconMaterial x:Name="SwitchOffIcon"
+                                                            Kind="Close"
+                                                            Width="10" Height="10"
+                                                            Foreground="{DynamicResource MutedForegroundBrush}"
+                                                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                            Visibility="Visible" />
+                            </Grid>
+                        </Border>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="SwitchTrack" Property="Background" Value="{DynamicResource PrimaryBrush}" />
+                            <Setter TargetName="SwitchOnIcon" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="SwitchOffIcon" Property="Visibility" Value="Collapsed" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
@@ -827,12 +910,41 @@
                         <Border.RenderTransform>
                             <ScaleTransform ScaleX="1" ScaleY="1" />
                         </Border.RenderTransform>
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <iconPacks:PackIconMaterial x:Name="ToggleOnIcon"
+                                                        Kind="Check"
+                                                        Width="{DynamicResource WpfPremium.IconSize}"
+                                                        Height="{DynamicResource WpfPremium.IconSize}"
+                                                        Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                                        Margin="0,0,6,0"
+                                                        VerticalAlignment="Center"
+                                                        Visibility="Collapsed" />
+                            <iconPacks:PackIconMaterial x:Name="ToggleOffIcon"
+                                                        Kind="Close"
+                                                        Width="{DynamicResource WpfPremium.IconSize}"
+                                                        Height="{DynamicResource WpfPremium.IconSize}"
+                                                        Foreground="{DynamicResource MutedForegroundBrush}"
+                                                        Margin="0,0,6,0"
+                                                        VerticalAlignment="Center"
+                                                        Visibility="Visible" />
+                            <ContentPresenter Grid.Column="1"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Margin="{TemplateBinding Padding}"
+                                              RecognizesAccessKey="True"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="ToggleBorder" Property="Background" Value="{DynamicResource SecondaryBrush}" />
                             <Setter TargetName="ToggleBorder" Property="BorderBrush" Value="{DynamicResource ForegroundBrush}" />
+                            <Setter TargetName="ToggleOnIcon" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="ToggleOffIcon" Property="Visibility" Value="Collapsed" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="ToggleBorder" Property="Background" Value="{DynamicResource MutedBrush}" />
@@ -904,8 +1016,11 @@
     </Style>
     <Style TargetType="{x:Type TabItem}">
         <Setter Property="Foreground" Value="{DynamicResource MutedForegroundBrush}" />
-        <Setter Property="Padding" Value="8,5" />
-        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Padding" Value="12,7" />
+        <Setter Property="Margin" Value="0,0,4,0" />
+        <Setter Property="FontSize" Value="{DynamicResource WpfPremium.FontSize}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -914,51 +1029,38 @@
                             Background="Transparent"
                             BorderBrush="Transparent"
                             BorderThickness="0"
-                            CornerRadius="{DynamicResource WpfPremium.ControlCornerRadius}"
-                            RenderTransformOrigin="0.5,0.5"
-                            Padding="{TemplateBinding Padding}">
-                        <Border.RenderTransform>
-                            <ScaleTransform ScaleX="1" ScaleY="1" />
-                        </Border.RenderTransform>
-                        <ContentPresenter ContentSource="Header"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center" />
+                            CornerRadius="{DynamicResource WpfPremium.ControlCornerRadius}">
+                        <Grid>
+                            <ContentPresenter ContentSource="Header"
+                                              Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                            <Border x:Name="ActiveIndicator"
+                                    Height="2"
+                                    VerticalAlignment="Bottom"
+                                    Margin="8,0,8,0"
+                                    CornerRadius="1"
+                                    Background="{DynamicResource PrimaryBrush}"
+                                    Visibility="Collapsed" />
+                        </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource SelectedTabBrush}" />
+                            <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible" />
                             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
                         </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsSelected" Value="False" />
+                            </MultiTrigger.Conditions>
                             <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource MutedBrush}" />
                             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-                            <Trigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="TabBorder"
-                                                         Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
-                                                         To="1.025" Duration="0:0:0.12" />
-                                        <DoubleAnimation Storyboard.TargetName="TabBorder"
-                                                         Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
-                                                         To="1.025" Duration="0:0:0.12" />
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.EnterActions>
-                            <Trigger.ExitActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="TabBorder"
-                                                         Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
-                                                         To="1" Duration="0:0:0.12" />
-                                        <DoubleAnimation Storyboard.TargetName="TabBorder"
-                                                         Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
-                                                         To="1" Duration="0:0:0.12" />
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.ExitActions>
-                        </Trigger>
+                        </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.5" />
+                            <Setter Property="Opacity" Value="0.45" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -976,24 +1078,56 @@
     <Style x:Key="Collapsible" TargetType="{x:Type Expander}" BasedOn="{StaticResource Accordion}" />
 
     <Style x:Key="Alert" TargetType="{x:Type ContentControl}">
-        <Setter Property="Padding" Value="16" />
+        <Setter Property="Padding" Value="14,12" />
+        <Setter Property="Background" Value="{DynamicResource InfoSoftBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource InfoBorderBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ContentControl}">
-                    <Border Background="{DynamicResource CardBrush}"
-                            BorderBrush="{DynamicResource BorderBrush}"
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{DynamicResource WpfPremium.SurfaceBorderThickness}"
                             CornerRadius="{DynamicResource WpfPremium.SurfaceCornerRadius}"
-                            Padding="{TemplateBinding Padding}">
-                        <ContentPresenter ContentSource="Content" />
+                            ClipToBounds="True">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="4" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="AccentStripe" Grid.Column="0" Background="{DynamicResource InfoBrush}" />
+                            <ContentPresenter Grid.Column="1" ContentSource="Content" Margin="{TemplateBinding Padding}" />
+                        </Grid>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
-    <Style x:Key="AlertDestructive" TargetType="{x:Type ContentControl}" BasedOn="{StaticResource Alert}">
-        <Setter Property="Foreground" Value="{DynamicResource DestructiveBrush}" />
+    <Style x:Key="AlertDestructive" TargetType="{x:Type ContentControl}">
+        <Setter Property="Padding" Value="14,12" />
+        <Setter Property="Background" Value="{DynamicResource DestructiveSoftBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource DestructiveBorderBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource DestructiveForegroundSoftBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ContentControl}">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{DynamicResource WpfPremium.SurfaceBorderThickness}"
+                            CornerRadius="{DynamicResource WpfPremium.SurfaceCornerRadius}"
+                            ClipToBounds="True">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="4" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Background="{DynamicResource DestructiveBrush}" />
+                            <ContentPresenter Grid.Column="1" ContentSource="Content" Margin="{TemplateBinding Padding}" />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="Attachment" TargetType="{x:Type controls:AttachmentControl}">
@@ -1592,12 +1726,12 @@
         </Setter>
     </Style>
     <Style x:Key="Field" TargetType="{x:Type controls:Field}">
-        <Setter Property="Margin" Value="0,0,0,12" />
+        <Setter Property="Margin" Value="0,0,0,14" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:Field}">
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <StackPanel x:Name="FieldHeader" Orientation="Horizontal" Margin="0,0,0,6">
                             <TextBlock x:Name="FieldLabel"
                                        Text="{TemplateBinding Label}"
                                        Foreground="{DynamicResource ForegroundBrush}"
@@ -1606,36 +1740,31 @@
                             <TextBlock x:Name="RequiredMark"
                                        Text=" *"
                                        Foreground="{DynamicResource DestructiveBrush}"
-                                       Visibility="Collapsed" />
-                            <TextBlock x:Name="FieldError"
-                                       Text="{TemplateBinding DisplayError}"
-                                       Foreground="{DynamicResource DestructiveBrush}"
-                                       FontWeight="Medium"
-                                       FontSize="12"
-                                       TextWrapping="Wrap"
+                                       FontWeight="SemiBold"
                                        Visibility="Collapsed" />
                         </StackPanel>
-                        <Border x:Name="FieldFrame"
-                                Background="Transparent"
-                                BorderBrush="Transparent"
-                                BorderThickness="0">
-                            <ContentPresenter ContentSource="Content" />
-                        </Border>
+                        <ContentPresenter ContentSource="Content" />
+                        <TextBlock x:Name="FieldError"
+                                   Text="{TemplateBinding DisplayError}"
+                                   Foreground="{DynamicResource DestructiveBrush}"
+                                   FontWeight="Medium"
+                                   FontSize="12"
+                                   Margin="0,5,0,0"
+                                   TextWrapping="Wrap"
+                                   Visibility="Collapsed" />
                         <TextBlock x:Name="FieldDescription" Text="{TemplateBinding Description}"
                                    Foreground="{DynamicResource MutedForegroundBrush}"
-                                   FontSize="12" Margin="0,5,0,0" />
+                                   FontSize="12" Margin="0,5,0,0" TextWrapping="Wrap" />
                     </StackPanel>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsRequired" Value="True">
                             <Setter TargetName="RequiredMark" Property="Visibility" Value="Visible" />
                         </Trigger>
                         <Trigger Property="Label" Value="{x:Null}">
-                            <Setter TargetName="FieldLabel" Property="Visibility" Value="Collapsed" />
-                            <Setter TargetName="RequiredMark" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="FieldHeader" Property="Visibility" Value="Collapsed" />
                         </Trigger>
                         <Trigger Property="Label" Value="">
-                            <Setter TargetName="FieldLabel" Property="Visibility" Value="Collapsed" />
-                            <Setter TargetName="RequiredMark" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="FieldHeader" Property="Visibility" Value="Collapsed" />
                         </Trigger>
                         <Trigger Property="Description" Value="{x:Null}">
                             <Setter TargetName="FieldDescription" Property="Visibility" Value="Collapsed" />
@@ -1644,9 +1773,6 @@
                             <Setter TargetName="FieldDescription" Property="Visibility" Value="Collapsed" />
                         </Trigger>
                         <DataTrigger Binding="{Binding HasError, RelativeSource={RelativeSource TemplatedParent}}" Value="True">
-                            <Setter TargetName="FieldFrame" Property="BorderBrush" Value="{DynamicResource DestructiveBrush}" />
-                            <Setter TargetName="FieldLabel" Property="Visibility" Value="Collapsed" />
-                            <Setter TargetName="RequiredMark" Property="Visibility" Value="Collapsed" />
                             <Setter TargetName="FieldError" Property="Visibility" Value="Visible" />
                             <Setter TargetName="FieldDescription" Property="Visibility" Value="Collapsed" />
                         </DataTrigger>
@@ -1952,6 +2078,21 @@
         <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
         <Setter Property="Background" Value="{DynamicResource MutedBrush}" />
         <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ProgressBar}">
+                    <Border x:Name="PART_Track"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="4"
+                            ClipToBounds="True">
+                        <Border x:Name="PART_Indicator"
+                                HorizontalAlignment="Left"
+                                Background="{TemplateBinding Foreground}"
+                                CornerRadius="4" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
     <Style TargetType="{x:Type ProgressBar}" BasedOn="{StaticResource Progress}" />
     <Style x:Key="RadioGroup" TargetType="{x:Type StackPanel}">
@@ -1970,9 +2111,69 @@
     </Style>
     <Style x:Key="Slider" TargetType="{x:Type Slider}">
         <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource MutedBrush}" />
         <Setter Property="Minimum" Value="0" />
         <Setter Property="Maximum" Value="100" />
+        <Setter Property="MinHeight" Value="24" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Slider}">
+                    <Grid VerticalAlignment="Center" Background="Transparent">
+                        <Border Height="6"
+                                VerticalAlignment="Center"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="3" />
+                        <Track x:Name="PART_Track">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Command="{x:Static Slider.DecreaseLarge}" Focusable="False" IsTabStop="False">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Border Height="6"
+                                                    VerticalAlignment="Center"
+                                                    Background="{DynamicResource PrimaryBrush}"
+                                                    CornerRadius="3" />
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="{x:Static Slider.IncreaseLarge}" Focusable="False" IsTabStop="False">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Border Height="6" VerticalAlignment="Center" Background="Transparent" />
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb x:Name="Thumb" Width="18" Height="18">
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Border x:Name="ThumbDot"
+                                                    Width="18"
+                                                    Height="18"
+                                                    CornerRadius="9"
+                                                    Background="{DynamicResource CardBrush}"
+                                                    BorderBrush="{DynamicResource PrimaryBrush}"
+                                                    BorderThickness="2" />
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="ThumbDot" Property="BorderThickness" Value="3" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
+    <Style TargetType="{x:Type Slider}" BasedOn="{StaticResource Slider}" />
     <Style x:Key="TableColumnHeader" TargetType="{x:Type DataGridColumnHeader}">
         <Setter Property="Background" Value="{DynamicResource MutedBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -2161,7 +2362,7 @@
                                                        VerticalAlignment="Center"
                                                        Foreground="{DynamicResource MutedForegroundBrush}"
                                                        FontSize="11"
-                                                       Margin="10,0,0,0">
+                                                       Margin="10,0,8,0">
                                                 <TextBlock.Style>
                                                     <Style TargetType="{x:Type TextBlock}">
                                                         <Setter Property="Visibility" Value="Visible" />

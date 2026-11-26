@@ -32,6 +32,7 @@
             </Grid>
         </ToggleButton>
         <Popup x:Name="DropDownPopup"
+               AllowsTransparency="True"
                Placement="Bottom"
                PlacementTarget="{Binding ElementName=DropDownToggle}"
                StaysOpen="False"

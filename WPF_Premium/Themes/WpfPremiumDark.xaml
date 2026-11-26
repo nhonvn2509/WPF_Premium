@@ -4,39 +4,54 @@
         <ResourceDictionary Source="/WPF_Premium;component/Themes/WpfPremium.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
-    <SolidColorBrush x:Key="BackgroundBrush" Color="#FF09090B" />
-    <SolidColorBrush x:Key="ForegroundBrush" Color="#FFFAFAFA" />
-    <SolidColorBrush x:Key="CardBrush" Color="#FF09090B" />
-    <SolidColorBrush x:Key="PopoverBrush" Color="#FF09090B" />
-    <SolidColorBrush x:Key="MutedBrush" Color="#FF27272A" />
-    <SolidColorBrush x:Key="MutedForegroundBrush" Color="#FFA1A1AA" />
-    <SolidColorBrush x:Key="BorderBrush" Color="#FF27272A" />
-    <SolidColorBrush x:Key="InputBrush" Color="#FF27272A" />
-    <SolidColorBrush x:Key="PrimaryBrush" Color="#FFFAFAFA" />
-    <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FF18181B" />
-    <SolidColorBrush x:Key="SecondaryBrush" Color="#FF27272A" />
-    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FFFAFAFA" />
-    <SolidColorBrush x:Key="DestructiveBrush" Color="#FF7F1D1D" />
-    <SolidColorBrush x:Key="DestructiveForegroundBrush" Color="#FFFAFAFA" />
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#FF0B0F19" />
+    <SolidColorBrush x:Key="ForegroundBrush" Color="#FFF8FAFC" />
+    <SolidColorBrush x:Key="CardBrush" Color="#FF111827" />
+    <SolidColorBrush x:Key="PopoverBrush" Color="#FF1A2234" />
+    <SolidColorBrush x:Key="MutedBrush" Color="#FF1E293B" />
+    <SolidColorBrush x:Key="MutedForegroundBrush" Color="#FF94A3B8" />
+    <SolidColorBrush x:Key="BorderBrush" Color="#FF263145" />
+    <SolidColorBrush x:Key="InputBrush" Color="#FF0F172A" />
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#FF6366F1" />
+    <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="SecondaryBrush" Color="#FF1E1B4B" />
+    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#FFC7D2FE" />
+    <SolidColorBrush x:Key="DestructiveBrush" Color="#FFEF4444" />
+    <SolidColorBrush x:Key="DestructiveForegroundBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="SuccessBrush" Color="#FF22C55E" />
-    <SolidColorBrush x:Key="SuccessForegroundBrush" Color="#FF09090B" />
-    <SolidColorBrush x:Key="InfoBrush" Color="#FF60A5FA" />
-    <SolidColorBrush x:Key="InfoForegroundBrush" Color="#FF09090B" />
-    <SolidColorBrush x:Key="WarningBrush" Color="#FFEAB308" />
-    <SolidColorBrush x:Key="WarningForegroundBrush" Color="#FF09090B" />
-    <SolidColorBrush x:Key="FocusBrush" Color="#FFD4D4D8" />
-    <SolidColorBrush x:Key="TraceActiveBrush" Color="#FF60A5FA" />
-    <SolidColorBrush x:Key="SelectedTabBrush" Color="#FF1E3A8A" />
-    <SolidColorBrush x:Key="ChartColor1Brush" Color="#FFFAFAFA" />
-    <SolidColorBrush x:Key="ChartColor2Brush" Color="#FF60A5FA" />
+    <SolidColorBrush x:Key="SuccessForegroundBrush" Color="#FF052E16" />
+    <SolidColorBrush x:Key="InfoBrush" Color="#FF38BDF8" />
+    <SolidColorBrush x:Key="InfoForegroundBrush" Color="#FF082F49" />
+    <SolidColorBrush x:Key="WarningBrush" Color="#FFF59E0B" />
+    <SolidColorBrush x:Key="WarningForegroundBrush" Color="#FF0F172A" />
+    <SolidColorBrush x:Key="FocusBrush" Color="#FF818CF8" />
+    <SolidColorBrush x:Key="TraceActiveBrush" Color="#FF818CF8" />
+    <SolidColorBrush x:Key="SelectedTabBrush" Color="#FF1E293B" />
+
+    <!-- Semantic Soft-Tinted Surfaces (Dark) -->
+    <SolidColorBrush x:Key="InfoSoftBrush" Color="#FF172554" />
+    <SolidColorBrush x:Key="InfoBorderBrush" Color="#FF1E40AF" />
+    <SolidColorBrush x:Key="InfoForegroundSoftBrush" Color="#FF93C5FD" />
+    <SolidColorBrush x:Key="SuccessSoftBrush" Color="#FF052E16" />
+    <SolidColorBrush x:Key="SuccessBorderBrush" Color="#FF166534" />
+    <SolidColorBrush x:Key="SuccessForegroundSoftBrush" Color="#FF86EFAC" />
+    <SolidColorBrush x:Key="WarningSoftBrush" Color="#FF451A03" />
+    <SolidColorBrush x:Key="WarningBorderBrush" Color="#FFB45309" />
+    <SolidColorBrush x:Key="WarningForegroundSoftBrush" Color="#FFFCD34D" />
+    <SolidColorBrush x:Key="DestructiveSoftBrush" Color="#FF450A0A" />
+    <SolidColorBrush x:Key="DestructiveBorderBrush" Color="#FF991B1B" />
+    <SolidColorBrush x:Key="DestructiveForegroundSoftBrush" Color="#FFFCA5A5" />
+
+    <SolidColorBrush x:Key="ChartColor1Brush" Color="#FF818CF8" />
+    <SolidColorBrush x:Key="ChartColor2Brush" Color="#FF38BDF8" />
     <SolidColorBrush x:Key="ChartColor3Brush" Color="#FF4ADE80" />
-    <SolidColorBrush x:Key="ChartColor4Brush" Color="#FFFACC15" />
+    <SolidColorBrush x:Key="ChartColor4Brush" Color="#FFFBBF24" />
     <SolidColorBrush x:Key="ChartColor5Brush" Color="#FFF87171" />
     <SolidColorBrush x:Key="ChartColor6Brush" Color="#FFC084FC" />
     <SolidColorBrush x:Key="ChartColor7Brush" Color="#FF22D3EE" />
     <SolidColorBrush x:Key="ChartColor8Brush" Color="#FFF472B6" />
     <SolidColorBrush x:Key="ChartColor9Brush" Color="#FFFB923C" />
     <SolidColorBrush x:Key="ChartColor10Brush" Color="#FFA3E635" />
-    <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="#FF3F3F46" />
-    <SolidColorBrush x:Key="ScrollBarThumbHoverBrush" Color="#FF71717A" />
+    <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="#FF334155" />
+    <SolidColorBrush x:Key="ScrollBarThumbHoverBrush" Color="#FF475569" />
 </ResourceDictionary>

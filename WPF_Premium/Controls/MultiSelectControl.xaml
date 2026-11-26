@@ -36,6 +36,7 @@
             </Grid>
         </ToggleButton>
         <Popup x:Name="MultiSelectPopup"
+               AllowsTransparency="True"
                Placement="Bottom"
                PlacementTarget="{Binding ElementName=MultiSelectToggle}"
                StaysOpen="False"
