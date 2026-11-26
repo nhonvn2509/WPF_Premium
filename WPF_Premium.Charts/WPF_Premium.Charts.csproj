@@ -8,5 +8,7 @@
     <Compile Include="..\WPF_Premium\Controls\ChartSeries.cs" Link="Controls\ChartSeries.cs" />
     <Page Include="..\WPF_Premium\Controls\ChartControl.xaml" Link="Controls\ChartControl.xaml" />
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.5" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" Version="4.150.1" />
+    <PackageReference Include="SkiaSharp.Views.WPF" Version="4.150.1" />
   </ItemGroup>
 </Project>
